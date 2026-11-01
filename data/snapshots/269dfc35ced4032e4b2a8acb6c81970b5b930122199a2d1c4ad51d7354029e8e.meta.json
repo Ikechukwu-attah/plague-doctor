@@ -1,0 +1,12 @@
+{
+  "sourceUrl": "https://health-infobase.canada.ca/src/data/wastewater/wastewater_aggregate.csv",
+  "fetchedAt": "2026-10-31T22:30:36.856Z",
+  "lastModified": "Wed, 28 Oct 2026 16:49:48 GMT",
+  "etag": "\"01eb157fc66dd1:0\"",
+  "origin": "live",
+  "schemaVersion": "aggregate-v1",
+  "rowCount": 0,
+  "rejectedRows": 0,
+  "snapshotId": "269dfc35ced4032e4b2a8acb6c81970b5b930122199a2d1c4ad51d7354029e8e",
+  "status": "valid"
+}

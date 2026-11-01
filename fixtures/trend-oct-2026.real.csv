@@ -1,0 +1,41 @@
+Location,measureid,latestTrend,pruid,min,max,latestLevel,grouping,city,province,country,Viral_Activity_Level,weekStart
+Toronto,covN2,No Change,35,4.99539983766464,20.0621350598596,High,City,Toronto,Ontario,Canada,High,2026-10-18
+Toronto,fluA,No Change,35,0.619196803595578,3.05037155273516,Moderate,City,Toronto,Ontario,Canada,Moderate,2026-10-18
+Toronto,fluB,No Change,35,0.991959173963665,9.49521013448428,Non-detect,City,Toronto,Ontario,Canada,Non-detect,2026-10-18
+Toronto,rsv,No Change,35,0.452887777734377,4.36573208763006,Low,City,Toronto,Ontario,Canada,Moderate,2026-10-18
+Ontario,covN2,No Change,35,4.98456527625355,21.0890711952843,High,Province,,Ontario,Canada,Moderate,2026-10-18
+Ontario,fluA,Decreasing,35,0.648753822009717,3.67218559759895,Moderate,Province,,Ontario,Canada,Low,2026-10-18
+Ontario,fluB,No Change,35,1.01889213110465,8.54928692642907,Non-detect,Province,,Ontario,Canada,Non-detect,2026-10-18
+Ontario,rsv,No Change,35,0.551673446440604,4.85516692114538,Moderate,Province,,Ontario,Canada,Moderate,2026-10-18
+Halifax Halifax,covN2,No Change,12,3.2992046928274,18.4389864006676,Low,Site,Halifax,Nova Scotia,Canada,Low,2026-10-18
+Halifax Millcove,covN2,No Recent Data,12,,,,Site,Halifax,Nova Scotia,Canada,NA2,2025-08-17
+Halifax Dartmouth,covN2,No Recent Data,12,,,,Site,Halifax,Nova Scotia,Canada,NA2,2025-08-17
+Halifax Halifax,fluA,Decreasing,12,0.686758455929243,5.16570772129705,Non-detect,Site,Halifax,Nova Scotia,Canada,Non-detect,2026-10-18
+Halifax Millcove,fluA,No Recent Data,12,,,Non-detect,Site,Halifax,Nova Scotia,Canada,NA2,2025-08-17
+Halifax Dartmouth,fluA,No Recent Data,12,,,Non-detect,Site,Halifax,Nova Scotia,Canada,NA2,2025-08-17
+Halifax Halifax,fluB,No Change,12,0.271306860959082,23.4260215332051,Non-detect,Site,Halifax,Nova Scotia,Canada,Non-detect,2026-10-18
+Halifax Millcove,fluB,No Recent Data,12,,,Non-detect,Site,Halifax,Nova Scotia,Canada,NA2,2025-08-17
+Halifax Dartmouth,fluB,No Recent Data,12,,,Non-detect,Site,Halifax,Nova Scotia,Canada,NA2,2025-08-17
+Halifax Dartmouth,rsv,No Recent Data,12,,,Non-detect,Site,Halifax,Nova Scotia,Canada,NA2,2025-08-17
+Halifax Halifax,rsv,No Change,12,0.453222000970829,3.35901888560373,Non-detect,Site,Halifax,Nova Scotia,Canada,Non-detect,2026-10-18
+Halifax Millcove,rsv,No Recent Data,12,,,,Site,Halifax,Nova Scotia,Canada,NA2,2025-08-17
+Halifax,covN2,No Change,12,3.2992046928274,18.4389864006676,Low,City,Halifax,Nova Scotia,Canada,Low,2026-10-18
+Halifax,fluA,Decreasing,12,0.686758455929243,5.16570772129705,Non-detect,City,Halifax,Nova Scotia,Canada,Non-detect,2026-10-18
+Halifax,fluB,No Change,12,0.271306860959082,23.4260215332051,Non-detect,City,Halifax,Nova Scotia,Canada,Non-detect,2026-10-18
+Halifax,rsv,No Change,12,0.453222000970829,3.35901888560373,Non-detect,City,Halifax,Nova Scotia,Canada,Non-detect,2026-10-18
+Fredericton,covN2,No Change,13,0.730999581547673,35.568554575623,Moderate,Site,Fredericton,New Brunswick,Canada,Moderate,2026-10-11
+Moncton,covN2,No Change,13,3.36917248213783,47.8606125024406,Moderate,Site,Moncton,New Brunswick,Canada,Moderate,2026-10-18
+Fredericton,fluA,No Change,13,2.18808073562188,2.18808073562188,Moderate,Site,Fredericton,New Brunswick,Canada,NA1,2026-10-11
+Moncton,fluA,No Change,13,25.3297403671823,25.3297403671823,Non-detect,Site,Moncton,New Brunswick,Canada,Non-detect,2026-10-18
+Fredericton,fluB,No Change,13,0.428250978918021,0.923811197817264,Low,Site,Fredericton,New Brunswick,Canada,NA1,2026-10-11
+Moncton,fluB,No Change,13,2.93672144762821,7.81016434288464,Non-detect,Site,Moncton,New Brunswick,Canada,Non-detect,2026-10-18
+Fredericton,rsv,No Change,13,0.112700096917105,0.678108584342736,Non-detect,Site,Fredericton,New Brunswick,Canada,Non-detect,2026-10-11
+Moncton,rsv,No Change,13,0.22043429479638,1.04729156514064,Moderate,Site,Moncton,New Brunswick,Canada,NA1,2026-10-18
+Cape Breton Regional Municipality,covN2,No Recent Data,12,,,,City,Cape Breton Regional Municipality,Nova Scotia,Canada,NA2,2025-03-30
+Cape Breton Regional Municipality,fluA,No Recent Data,12,,,,City,Cape Breton Regional Municipality,Nova Scotia,Canada,NA2,2025-03-30
+Cape Breton Regional Municipality,fluB,No Recent Data,12,,,,City,Cape Breton Regional Municipality,Nova Scotia,Canada,NA2,2025-03-30
+Cape Breton Regional Municipality,rsv,No Recent Data,12,,,,City,Cape Breton Regional Municipality,Nova Scotia,Canada,NA2,2025-03-30
+Canada,covN2,No Change,,4.27885668269885,20.8588719060327,Moderate,Canada,,,Canada,Moderate,2026-10-11
+Canada,fluA,Increasing,,0.997909586133053,5.0671839762044,Moderate,Canada,,,Canada,Moderate,2026-10-11
+Canada,fluB,No Change,,1.07280954265119,10.2169640891215,Low,Canada,,,Canada,Low,2026-10-11
+Canada,rsv,No Change,,0.486397070135442,3.88983101412196,Low,Canada,,,Canada,Low,2026-10-11

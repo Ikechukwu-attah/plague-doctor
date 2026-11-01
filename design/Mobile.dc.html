@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Plague Doctor — mobile landing</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B1020}
+.mono{font-family:'JetBrains Mono',monospace}
+.disp{font-family:'Cormorant Garamond',Georgia,serif}
+.chip{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid #2A3658;background:#121A30;color:#EADFC8;font:500 14px Inter,sans-serif}
+.chip[aria-pressed="true"]{background:#F2B544;color:#0B1020;border-color:#F2B544;font-weight:600}
+.city{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding:0 14px;border-radius:10px;background:#121A30;color:#EADFC8;text-decoration:none;font-size:15px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#1C2742;font:600 13px Inter,sans-serif;color:#EADFC8;white-space:nowrap}
+.hatch{background:repeating-linear-gradient(45deg,#8C93A8 0 2px,transparent 2px 5px);border:1px solid #8C93A8;box-sizing:border-box}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0B1020; color: #EADFC8; font-family: Inter, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #1C2742;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true" fill="none" stroke="#F2B544" stroke-width="1.8" stroke-linejoin="round"><path d="M6 13c0-5 4-9 9-9s8 4 8 8l9 9-11-2c-1 4-4 7-8 7-4 0-7-4-7-9z"></path><circle cx="13" cy="12" r="2.4"></circle></svg>
+      <span class="disp" style="font-size: 24px; font-weight: 600;">Plague Doctor</span>
+    </div>
+    <button aria-label="Menu" style="width: 44px; height: 44px; border-radius: 8px; border: 1px solid #2A3658; background: transparent; color: #EADFC8;"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" stroke="currentColor" stroke-width="1.8"><path d="M2 5h14M2 9h14M2 13h14"></path></svg></button>
+  </header>
+
+  <div style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <h1 class="disp" style="margin: 0; font-size: 34px; font-weight: 600; line-height: 1.05;">What's in the water?</h1>
+    <p style="margin: 0; font-size: 14px; color: #B9AE98; line-height: 1.45;">PHAC wastewater observations. A community signal, not your personal risk.</p>
+    <div role="group" aria-label="Virus" style="display: flex; flex-wrap: wrap; gap: 6px;">
+      <button class="chip" aria-pressed="false">COVID-19</button>
+      <button class="chip" aria-pressed="true">Flu A</button>
+      <button class="chip" aria-pressed="false">Flu B</button>
+      <button class="chip" aria-pressed="false">RSV</button>
+    </div>
+    <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #B9AE98;">Find a city
+      <input type="search" placeholder="Toronto, Halifax…" style="min-height: 44px; border-radius: 8px; border: 1px solid #2A3658; background: #121A30; color: #EADFC8; padding: 0 12px; font-size: 15px;">
+    </label>
+    <div class="mono" style="font-size: 12px; color: #B9AE98;">Latest: week of Oct 18, 2026 · file Oct 28</div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <a class="city" href="Main.dc.html"><span>Toronto</span><span class="badge"><span style="color: #E9A84A;" aria-hidden="true">▲</span>Moderate →</span></a>
+      <a class="city" href="Main.dc.html"><span>Metro Vancouver</span><span class="badge"><span style="color: #E0664F;" aria-hidden="true">▲▲</span>High ↗</span></a>
+      <a class="city" href="Main.dc.html"><span>Calgary</span><span class="badge"><span style="color: #E0664F;" aria-hidden="true">▲▲</span>High →</span></a>
+      <a class="city" href="Main.dc.html"><span>Montréal</span><span class="badge"><span style="color: #7FB7A4;" aria-hidden="true">▽</span>Low →</span></a>
+      <a class="city" href="Main.dc.html"><span>Halifax</span><span class="badge"><span style="color: #8C93A8;" aria-hidden="true">○</span>Not detected ↘</span></a>
+      <a class="city" href="States.dc.html"><span style="color: #B9AE98;">Ottawa</span><span class="badge"><span class="hatch" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%;"></span>No site</span></a>
+    </div>
+    <button style="min-height: 44px; border-radius: 10px; border: 1px solid #2A3658; background: transparent; color: #EADFC8; font-size: 15px;">Show map</button>
+  </div>
+
+  <div style="padding: 12px 16px 20px; border-top: 1px solid #1C2742; background: #0B1020;">
+    <a href="Planner.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 50px; border-radius: 10px; background: #F2B544; color: #0B1020; font-weight: 600; text-decoration: none; font-size: 16px;">Plan a gathering</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

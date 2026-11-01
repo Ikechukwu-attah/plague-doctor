@@ -1,0 +1,12 @@
+{
+  "sourceUrl": "https://health-infobase.canada.ca/src/data/wastewater/wastewater_trend.csv",
+  "fetchedAt": "2026-10-31T22:30:36.336Z",
+  "lastModified": "Wed, 28 Oct 2026 16:49:48 GMT",
+  "etag": "\"01eb157fc66dd1:0\"",
+  "origin": "live",
+  "schemaVersion": "trend-oct-2026",
+  "rowCount": 0,
+  "rejectedRows": 0,
+  "snapshotId": "def872dcc26830e281122944c4c09041f1d1e3e9eff9b407c67766f214000cf6",
+  "status": "valid"
+}

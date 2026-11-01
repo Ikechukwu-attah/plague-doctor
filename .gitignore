@@ -1,0 +1,23 @@
+node_modules/
+.next/
+out/
+coverage/
+.env*
+!.env.example
+.DS_Store
+*.log
+# NOTE: .kiro/ is intentionally NOT ignored — it is a Kiroween submission requirement.
+
+# Data: raw full-size downloads (not committed — too large)
+fixtures/raw-trend.csv
+fixtures/raw-aggregate.csv
+
+# Snapshot blobs (large raw CSV copies) — metadata + normalized JSON committed
+data/snapshots/*.csv
+
+# ETag cache persists locally, not needed in repo
+data/snapshots/etag-cache.json
+
+# Generated output — rebuilt by `npm run ingest` (keeps the repo small)
+data/normalized/
+*.tsbuildinfo
