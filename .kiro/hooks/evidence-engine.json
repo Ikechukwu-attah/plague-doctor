@@ -1,0 +1,16 @@
+{
+  "hooks": [
+    {
+      "name": "EVD-9(a): Run evidence tests on save",
+      "description": "Runs the evidence test suite whenever a file in src/evidence/ is saved (EVD-9.1)",
+      "events": ["file:afterSave"],
+      "pathPatterns": ["src/evidence/**"],
+      "steps": [
+        {
+          "type": "command",
+          "command": "npx vitest run tests/evidence"
+        }
+      ]
+    }
+  ]
+}

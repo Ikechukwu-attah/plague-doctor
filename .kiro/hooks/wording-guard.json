@@ -1,0 +1,16 @@
+{
+  "hooks": [
+    {
+      "name": "EVD-9(b): Run wording guard on copy/TSX save",
+      "description": "Runs the wording-guard test whenever a copy template or TSX file is saved (EVD-9.2)",
+      "events": ["file:afterSave"],
+      "pathPatterns": ["src/evidence/copy/**", "src/**/*.tsx"],
+      "steps": [
+        {
+          "type": "command",
+          "command": "npx vitest run tests/evidence/wording-guard.test.ts"
+        }
+      ]
+    }
+  ]
+}

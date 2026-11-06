@@ -1,0 +1,325 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create `src/evidence/card-types.ts` with all new types from design §3": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747356579
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747364191
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747470459
+      }
+    ],
+    "1.2 Verify `npm run typecheck` exits 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747356729
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747558998
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747561121
+      }
+    ],
+    "2.1 Create `src/evidence/date-utils.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747356799
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747372181
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747472571
+      }
+    ],
+    "2.2 Verify `npm run typecheck` exits 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357006
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747561472
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747563716
+      }
+    ],
+    "3.1 Create `src/evidence/copy/checklist.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357224
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747374103
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747473018
+      }
+    ],
+    "3.2 Verify `npm run typecheck` exits 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357309
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747564025
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747566202
+      }
+    ],
+    "4.1 Create `src/evidence/freshness.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357393
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747568824
+      }
+    ],
+    "4.3 Verify `npm run typecheck && npm run test` exit 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357460
+      }
+    ],
+    "5.1 Create `src/evidence/coverage.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357512
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747570941
+      }
+    ],
+    "5.3 Verify `npm run typecheck && npm run test` exit 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357582
+      }
+    ],
+    "6.1 Create `src/evidence/timing.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357654
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747571363
+      }
+    ],
+    "6.3 Verify `npm run typecheck && npm run test` exit 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357715
+      }
+    ],
+    "7.1 Create `src/evidence/wording-guard.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357772
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747571671
+      }
+    ],
+    "7.3 Verify `npm run typecheck && npm run test` exit 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357830
+      }
+    ],
+    "8.1 Create `src/evidence/card.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357925
+      }
+    ],
+    "8.3 Verify `npm run typecheck && npm run test` exit 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747357988
+      }
+    ],
+    "9.1 Create `src/evidence/share.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358078
+      }
+    ],
+    "9.3 Verify `npm run typecheck && npm run test` exit 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358209
+      }
+    ],
+    "10.1 Create `src/evidence/diff.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358264
+      }
+    ],
+    "10.3 Verify `npm run typecheck && npm run test` exit 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358324
+      }
+    ],
+    "11.1 Create `tests/evidence/card-privacy.test.ts`": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358387
+      }
+    ],
+    "11.2 Verify `npm run typecheck && npm run test` exit 0": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358446
+      }
+    ],
+    "12.1 Create `.kiro/hooks/evidence-engine.json` — PostFileSave hook": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358482
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747376171
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747473717
+      }
+    ],
+    "12.2 Create `.kiro/hooks/wording-guard.json` — PostFileSave hook": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358539
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747378237
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747474175
+      }
+    ],
+    "12.3 Create `.kiro/hooks/ingestion-watch.json` — PostFileSave hook": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358586
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747380354
+      },
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747474480
+      }
+    ],
+    "12.4 Verify all 3 hook files exist in `.kiro/hooks/` with correct JSON structure": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358635
+      }
+    ],
+    "13. Final checkpoint — Ensure all tests pass": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747358695
+      }
+    ],
+    "1. New types for the evidence engine": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747561164
+      }
+    ],
+    "2. Date utilities": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747563771
+      }
+    ],
+    "3. Prevention checklist constant": [
+      {
+        "executionId": "6c9bbbc9-ec1b-433c-bb94-fc192b76f9fa",
+        "chatSessionId": "sess_9abc5905-c9af-422a-9fe8-6d7dc6fb24c4",
+        "timestamp": 1793747566254
+      }
+    ]
+  }
+}

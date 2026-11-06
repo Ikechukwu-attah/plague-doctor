@@ -1,0 +1,16 @@
+{
+  "hooks": [
+    {
+      "name": "EVD-9(c): Run ingestion tests on ingest/fixture change",
+      "description": "Runs the ingestion test suite whenever a file in src/server/ingest/ or fixtures/ is saved (EVD-9.3)",
+      "events": ["file:afterSave"],
+      "pathPatterns": ["src/server/ingest/**", "fixtures/**"],
+      "steps": [
+        {
+          "type": "command",
+          "command": "npx vitest run tests/ingest tests/properties"
+        }
+      ]
+    }
+  ]
+}
