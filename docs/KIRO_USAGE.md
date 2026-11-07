@@ -27,8 +27,30 @@ Running log of how Kiro was used to build Plague Doctor. Feeds the Devpost "How 
 | 2026-10-31 | Specs (requirements-first) | Milestone 2 `evidence-engine`: Kiro Spec agent drafted EVD-1..9 via its requirements-first sub-agent (Autopilot off). Human review found 2 conflicts (wording guard banned the required phrase "not a prediction"; too-early cards both forbade and required current levels) + 8 gaps. Kiro's detailer and shell-write attempts stalled, so the reviewer applied the 10 review edits directly and added EVD-10 (prevention checklist). | `.kiro/specs/evidence-engine/requirements.md` |
 
 | 2026-10-31 | Specs (design) | Kiro's spec sub-agent wrote `evidence-engine/design.md` (592 lines: module layout, types incl. separate NearStatement/HistoricalContext so too-early cards cannot carry current levels, Toronto-date strategy, 7 properties, real-fixture test plan). Reviewer approved with 5 adjustments (appended as §11). Kiro hit the free-plan rate limit ("using credits faster than your rate limit allows") — paused until the credit grant arrives. | `.kiro/specs/evidence-engine/design.md` |
+| 2026-11-03 | Specs (tasks) + spec-task-execution | Milestone 2 `evidence-engine` implementation. Kiro wrote `tasks.md` (13 tasks, 12-wave dependency graph) then executed it wave-by-wave via spec-task-execution sub-agents (Autopilot). Built 8 pure modules in `src/evidence/` (card-types, date-utils, freshness, coverage, timing, wording-guard, card, share, diff + copy/checklist) and 8 test files in `tests/evidence/`, all using real PHAC fixtures parsed via the ingestion parsers. Applied design §11 adjustments (human-readable dates, `isGazetteerCity` param, Sunday-on-or-before EpiWeek matching, `% chance` regex, Halifax Christmas = 2026-12-25). | `src/evidence/`, `tests/evidence/` — `npx tsc --noEmit` exit 0, `npx vitest run` 111/111 pass |
+| 2026-11-03 | Hooks | Recreated the 3 `.kiro/hooks/*.json` files in Kiro's native format (`version: v1`, `trigger: PostFileSave`, `matcher` regex, `action.command`) so they appear in the Agent Hooks panel. Earlier draft used a non-native `events`/`pathPatterns`/`steps` shape. | `.kiro/hooks/evidence-engine.json`, `wording-guard.json`, `ingestion-watch.json` |
+| 2026-11-03 | Verification | Final: `npx tsc --noEmit` exit 0; `npx vitest run` 13 files / 111 tests pass (51 ingestion + 60 evidence). All 7 required properties green: P1 (freshness ignores ingest time), P2 (NA/missing never low/not_detected), P3 (too_early = zero publisher statements), P6 (activityIndex verbatim), P8 (share text excludes attendees), P10 (diff never says increase/decrease), P11 (attendees never serialized). | `npm run test` 111 passed |
+| 2026-11-04 | Review fix (independent review) | Independent review caught an honesty bug: an Ottawa card's share text presented Ontario's provincial values under "Plague Doctor — Ottawa" with no regional label (EVD-2.10/EVD-4.7). Fixed with `regional`/`regionLocationName` on NearStatements plus an explicit "No Ottawa monitoring site — showing Ontario provincial aggregate (PHAC), not Ottawa" notice and per-line "(Ontario provincial aggregate)" labels. Also corrected the historical source URL to the aggregate CSV and labelled historical ranges as PHAC units. | `src/evidence/card.ts`, `share.ts`, `tests/evidence/` — 116 tests pass |
+
 ## Bugs caught by property-based tests
-_(record each: property, failing input, fix commit)_
+**EVD-1 P1 (freshness) + EVD-2 (coverage) — empty fixture parse via invalid snapshotId.**
+- **Property:** `EVD-1 P1: freshness never depends on ingest time — oct-2026 fixture`, which runs `fc.constantFrom(...realObservations)` over observations parsed from the real PHAC trend fixture.
+- **Failing symptom:** fast-check threw `fc.constantFrom expects at least one parameter` — the observation array was empty.
+- **Root cause:** the test's `parseTrend(...)` call passed a short placeholder snapshotId (`"test-snapshot-id"`). `StatusObservationSchema` requires a 64-char sha256 hex string, so Zod rejected every parsed row, silently yielding zero observations. The property surfaced a real validation contract that a plain unit test would have masked.
+- **Fix:** tests now pass a valid 64-char hex snapshotId (`"0".repeat(64)`). This supplies only a well-formed snapshot identifier; all observation values still come from the real PHAC fixture bytes. The same fix was applied to `coverage.test.ts`, `card.test.ts`, `share.test.ts`, `diff.test.ts`, and `card-privacy.test.ts`.
+- **Takeaway:** the schema's snapshotId length contract is now exercised by every evidence test that parses a fixture; an invalid id can no longer produce a silently-empty dataset.
+
+**Caught by independent review, not by a property — regional values shown as a city's.**
+- **Bug:** for an uncovered city (Ottawa), `buildCard` filled the per-virus statements with Ontario's provincial aggregate and `generateShareText` printed them under "Plague Doctor — Ottawa" with no regional label, which reads as Ottawa data (EVD-2.10/EVD-4.7).
+- **Why P6/P8 missed it:** P6 only checks that `activityIndex` equals the source `Viral_Activity_Level` (it did, for Ontario's row), and P8 only checks that attendee categories do not leak. Neither asserts that regional values are labelled as regional.
+- **Tests added (example-based):** `EVD-4.7` Ottawa statements are marked `regional` with `regionLocationName` Ontario, Toronto's are not; `EVD-2.10/EVD-4.7` Ottawa share text carries the notice line and every virus line says "Ontario provincial aggregate".
+- **Suggested follow-up property:** for any uncovered city, regional values never appear in share text without the region name on the same line.
 
 ## Hooks
-_(list each hook, its trigger, and a time it caught something)_
+| Hook file | Trigger | Matcher | Runs |
+|---|---|---|---|
+| `evidence-engine.json` | PostFileSave | `src/evidence/.*\.(ts\|tsx)$` | `npx vitest run tests/evidence` |
+| `wording-guard.json` | PostFileSave | `(src/evidence/copy/.*\|src/.*\.tsx)$` | `npx vitest run tests/evidence/wording-guard.test.ts` |
+| `ingestion-watch.json` | PostFileSave | `(src/server/ingest/.*\|fixtures/.*)$` | `npx vitest run tests/ingest tests/properties` |
+
+All three use Kiro's native hook schema and appear in the Agent Hooks panel.

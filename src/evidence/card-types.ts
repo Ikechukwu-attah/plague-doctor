@@ -50,6 +50,10 @@ export interface NearStatement {
   ruleId: string;
   interpretationMethod: "publisher";
   unknownReason?: UnknownReason;
+  /** true when this value is PHAC's provincial aggregate, NOT the requested city */
+  regional?: true;
+  /** Name of the region the values describe, e.g. "Ontario" (set iff regional) */
+  regionLocationName?: string;
 }
 
 // Statement variant for timingState = "too_early" | "past"

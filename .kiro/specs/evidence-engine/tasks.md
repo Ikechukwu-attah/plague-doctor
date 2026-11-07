@@ -38,59 +38,59 @@ Convert the evidence-engine design into incremental coding steps. Each task buil
     - _Requirements: EVD-10.1, EVD-10.2_
   - [x] 3.2 Verify `npm run typecheck` exits 0
 
-- [ ] 4. Freshness classifier
-  - [-] 4.1 Create `src/evidence/freshness.ts`
+- [x] 4. Freshness classifier
+  - [x] 4.1 Create `src/evidence/freshness.ts`
     - Implement `classifyFreshness(weekStart, latestTrend, activityIndex, unknownReason, today): FreshnessLabel` — `today` is required; no `new Date()` inside
     - Decision ladder (exact order): (1) `weekStart` absent/null/not `YYYY-MM-DD` → `"no_data"`; (2) `activityIndex === "unknown"` AND `unknownReason` is `"na1_new_site"` or `"na2_not_sampling"` → `"no_data"`; (3) `latestTrend === "No Recent Data"` → `"outdated"`; (4) compute `age = calendarDayDiff(toTorontoDateString(weekStart), toTorontoDateString(today))`; (5) `age ≤ 21` → `"latest_available"` · `22–35` → `"delayed"` · `> 35` → `"outdated"`
     - _Requirements: EVD-1.1, EVD-1.2, EVD-1.3, EVD-1.4, EVD-1.5, EVD-1.6, EVD-1.6a, EVD-1.7, EVD-1.9_
-  - [ ]* 4.2 Write unit and property tests for the freshness classifier
+  - [x]* 4.2 Write unit and property tests for the freshness classifier
     - Create `tests/evidence/freshness.test.ts`
     - Unit tests for all 5 decision-ladder branches; boundary values: age 21 → `"latest_available"`, 22 → `"delayed"`, 35 → `"delayed"`, 36 → `"outdated"`; DST spring-forward boundary test
     - Property P1 (fast-check, min 100 runs) over `fc.constantFrom(...realObservations)` parsed from `fixtures/trend-oct-2026.real.csv`: changing only a fake `fetchedAt` field while keeping `weekStart` and `today` constant never changes the freshness label
     - Test name for P1: `"EVD-1 P1: freshness never depends on ingest time — oct-2026 fixture"`
     - _Requirements: EVD-1.8_
-  - [~] 4.3 Verify `npm run typecheck && npm run test` exit 0
+  - [x] 4.3 Verify `npm run typecheck && npm run test` exit 0
 
-- [ ] 5. Coverage resolver
-  - [-] 5.1 Create `src/evidence/coverage.ts`
+- [x] 5. Coverage resolver
+  - [x] 5.1 Create `src/evidence/coverage.ts`
     - Implement `resolveCoverage(locationId: string, observations: StatusObservation[], isGazetteerCity: boolean, pruid?: string): CoverageResult` — `isGazetteerCity` injected by caller; module does no I/O; never throws
     - Algorithm: filter by `locationId`; any `grouping = "city"` → `city_site`; only `grouping = "site"` → `site_only`; no obs + `isGazetteerCity = true` → scan for province row by `pruid`, return `no_city_site` with `regional` or `unknownReason: "aggregate_below_coverage"`; no obs + `isGazetteerCity = false` → `unknown` (API layer returns 404); unexpected state → `unknown`
     - _Requirements: EVD-2.1, EVD-2.2, EVD-2.3, EVD-2.4, EVD-2.4a, EVD-2.5, EVD-2.6, EVD-2.8, EVD-2.9, EVD-2.10_
-  - [ ]* 5.2 Write unit tests for the coverage resolver
+  - [x]* 5.2 Write unit tests for the coverage resolver
     - Create `tests/evidence/coverage.test.ts`
     - `city_site` when a `grouping = "city"` row exists (Toronto); `site_only` when only site rows; `no_city_site` + Ontario aggregate when `locationId = "ottawa"` (Gazetteer city, no PHAC rows, province row present); `no_city_site` + `unknownReason: "aggregate_below_coverage"` when no province row; `unknown` when neither Gazetteer nor PHAC; Charlottetown alias resolves correctly
     - Use parsed observations from `fixtures/trend-oct-2026.real.csv` via `parseTrend`
     - _Requirements: EVD-2.7_
-  - [~] 5.3 Verify `npm run typecheck && npm run test` exit 0
+  - [x] 5.3 Verify `npm run typecheck && npm run test` exit 0
 
-- [ ] 6. Timing classifier
-  - [-] 6.1 Create `src/evidence/timing.ts`
+- [x] 6. Timing classifier
+  - [x] 6.1 Create `src/evidence/timing.ts`
     - Implement `classifyTiming(eventDate: string, today: Date | string): TimingState`; `diff = calendarDayDiff(toTorontoDateString(today), toTorontoDateString(eventDate))`; `diff > 21` → `"too_early"` · `diff 0–21` → `"near"` · `diff < 0` → `"past"`; no `new Date()` inside
     - _Requirements: EVD-3.1, EVD-3.2, EVD-3.3, EVD-3.4_
-  - [ ]* 6.2 Write unit and property tests for the timing classifier
+  - [x]* 6.2 Write unit and property tests for the timing classifier
     - Create `tests/evidence/timing.test.ts`
     - Boundary tests: 22 days ahead → `"too_early"`, 21 days ahead → `"near"`, diff = 0 → `"near"`, yesterday → `"past"`
     - Property P3 (fast-check, min 100 runs): FOR ALL event dates > 21 days after `today`, `classifyTiming` returns `"too_early"`; test name: `"EVD-3 P3: events beyond 21 days are always too_early"`
     - _Requirements: EVD-3.2, EVD-3.3, EVD-3.4_
-  - [~] 6.3 Verify `npm run typecheck && npm run test` exit 0
+  - [x] 6.3 Verify `npm run typecheck && npm run test` exit 0
 
-- [ ] 7. Wording guard
-  - [ ] 7.1 Create `src/evidence/wording-guard.ts`
+- [x] 7. Wording guard
+  - [x] 7.1 Create `src/evidence/wording-guard.ts`
     - Export `WordingCheckResult` interface: `{ passed: boolean; violations: string[] }`
     - Implement `checkWording(text: string): WordingCheckResult` — two-step: (1) replace allowlisted phrases with equal-length placeholders before scanning; (2) scan with whole-word `\b` regex per banned term; empty string → `{ passed: true, violations: [] }`; all violations in one pass; pure function; no logging/throwing
     - Allowlist (must NOT trigger violations): `"not a prediction"`, `"not a forecast"`, `"no-forecast"`, `"not conditions on your date"`, `"not on your event date"`, `"too early to know — not conditions on your date"`
     - Banned terms: `safe`, `unsafe`, `dangerous`, `risk-free`, `you will get sick`, `you won't get sick`, `% chance` (pattern `/\d+\s*%\s*chance/i` and `/percent\s+chance/i` — `\b` does not work before `%`), `probability of infection`, `will be high`, `will be low`, `forecast for your event`, `predict`, `prediction`, `no infections`, `virus-free`, `all clear`, `PHAC endorses`, `endorsed by PHAC`, `recommended by PHAC`
     - _Requirements: EVD-7.1, EVD-7.2, EVD-7.3, EVD-7.4, EVD-7.4a, EVD-7.5, EVD-7.6, EVD-7.7, EVD-7.8_
-  - [ ]* 7.2 Write unit tests for the wording guard
+  - [x]* 7.2 Write unit tests for the wording guard
     - Create `tests/evidence/wording-guard.test.ts`
     - Passing: empty string, `"safety instructions"` (word-boundary: "safety" ≠ "safe"), `"unpredictable weather"`, `"past observations, not a prediction"` (allowlist), `"not conditions on your date"` (allowlist)
     - Failing: `"Toronto is safe for your dinner"`, `"forecast for your event next week"`, `"50% chance of getting sick"`, `"there is a probability of infection"`, `"PHAC endorses this app"`
     - All six `PREVENTION_CHECKLIST.items` pass the guard
     - _Requirements: EVD-7.2, EVD-7.3, EVD-7.4, EVD-7.4a_
-  - [~] 7.3 Verify `npm run typecheck && npm run test` exit 0
+  - [x] 7.3 Verify `npm run typecheck && npm run test` exit 0
 
-- [ ] 8. EventCard builder
-  - [~] 8.1 Create `src/evidence/card.ts`
+- [x] 8. EventCard builder
+  - [x] 8.1 Create `src/evidence/card.ts`
     - Implement `buildCard(input: CardBuilderInput, data: CardBuilderData): EventCard` — pure function; identical inputs → identical output; no side effects
     - Call `classifyTiming(input.eventDate, input.today)` → `timingState`; derive `isGazetteerCity` and `pruid` from `data.locationEntry`; call `resolveCoverage` → coverage; call `classifyFreshness` on most-recent observation → `freshnessLabel`
     - For `"near"`: build `NearStatement[]` — 4 entries (one per pathogen); `activityIndex` verbatim from `StatusObservation`; missing obs → `activityIndex: "unknown"`, `unknownReason: "missing_row"`
@@ -100,7 +100,7 @@ Convert the evidence-engine design into incremental coding steps. Each task buil
     - `attendeeCategories` stored on `EventCard.attendeeCategories` for local rendering ONLY — never passed to any other function, never in serialized output, never logged
     - Embed `snapshotId`, `sourceUrl`, `weekStart`, `ruleId` on every statement
     - _Requirements: EVD-4.1, EVD-4.2, EVD-4.3, EVD-4.4, EVD-4.5, EVD-4.6, EVD-4.7, EVD-4.8, EVD-4.9, EVD-4.10, EVD-3.5, EVD-3.6, EVD-3.7, EVD-3.8, EVD-3.9, EVD-10.3_
-  - [ ]* 8.2 Write unit and property tests for the EventCard builder
+  - [x]* 8.2 Write unit and property tests for the EventCard builder
     - Create `tests/evidence/card.test.ts`
     - **Halifax Christmas card** (`eventDate: "2026-12-25"`, `today: "2026-10-31"`, 55 days ahead): `timingState === "too_early"`, zero statements have an `activityIndex` field, every statement is `HistoricalContext` with `label === "past observations, not a prediction"`; test name: `"EVD-4: Halifax Christmas card is too_early with only historical context"`
     - **Toronto next-Saturday** (`eventDate: "2026-11-07"`, `today: "2026-10-31"`, 7 days ahead): `timingState === "near"`, `activityIndex` values match Oct-18 fixture values verbatim; test name: `"EVD-4: Toronto next-Saturday card shows real Oct-18 values"`
@@ -110,17 +110,17 @@ Convert the evidence-engine design into incremental coding steps. Each task buil
     - Property P6 (fast-check, min 100 runs): for near cards, `statement.activityIndex` equals `StatusObservation.activityIndex` exactly; test name: `"EVD-4 P6: activityIndex always equals source Viral_Activity_Level — oct-2026 fixture"`
     - Use parsed real observations from `fixtures/trend-oct-2026.real.csv` and `fixtures/aggregate-oct-2026.real.csv`
     - _Requirements: EVD-4.1, EVD-4.3, EVD-4.4, EVD-4.9, EVD-4.10, EVD-3.7, EVD-3.8_
-  - [~] 8.3 Verify `npm run typecheck && npm run test` exit 0
+  - [x] 8.3 Verify `npm run typecheck && npm run test` exit 0
 
-- [ ] 9. Share text generator
-  - [~] 9.1 Create `src/evidence/share.ts`
+- [x] 9. Share text generator
+  - [x] 9.1 Create `src/evidence/share.ts`
     - Implement `generateShareText(card: EventCard): string` — deterministic; identical inputs → identical output
     - For `"near"`: location name, event date, per-pathogen (virus name + PHAC classification + `"as of week of {humanDate}, not on your event date"`), source URL, no-forecast caveat; render `weekStart` as human-readable e.g. `"Oct 18, 2026"`
     - For `"past"`: `"observed week of {humanDate}"`, source URL, no-forecast caveat; NO PHAC classification labels
     - For `"too_early"`: per-pathogen historical min/max context where present, `"too early to know — not conditions on your date"`, source URL, no-forecast caveat; NO `activityIndex` or trend values
     - NEVER include `attendeeCategories` values in output; does NOT call `checkWording` internally
     - _Requirements: EVD-5.1, EVD-5.2, EVD-5.3, EVD-5.4, EVD-5.5, EVD-5.6, EVD-5.7, EVD-5.8_
-  - [ ]* 9.2 Write unit and property tests for the share text generator
+  - [x]* 9.2 Write unit and property tests for the share text generator
     - Create `tests/evidence/share.test.ts`
     - `"near"` card: output contains `"as of week of Oct 18, 2026, not on your event date"` and source URL
     - `"past"` card: output contains `"observed week of"` and does NOT contain any PHAC activity level label (`"High"`, `"Moderate"`, `"Low"`, `"Not Detected"`)
@@ -129,29 +129,29 @@ Convert the evidence-engine design into incremental coding steps. Each task buil
     - Determinism: calling twice with the same card produces identical strings
     - Property P8 (fast-check, min 100 runs): attendee categories never appear as substrings in share text; test name: `"EVD-5 P8: share text never contains attendee categories"`
     - _Requirements: EVD-5.1, EVD-5.2, EVD-5.3, EVD-5.4, EVD-5.5, EVD-5.6_
-  - [~] 9.3 Verify `npm run typecheck && npm run test` exit 0
+  - [x] 9.3 Verify `npm run typecheck && npm run test` exit 0
 
-- [ ] 10. Saved-event diff engine
-  - [~] 10.1 Create `src/evidence/diff.ts`
+- [x] 10. Saved-event diff engine
+  - [x] 10.1 Create `src/evidence/diff.ts`
     - Implement `diffCards(baseline: EventCard, current: EventCard): DiffResult` — pure function; one `DiffEntry` per pathogen in either card
     - Classification priority: (1) same `weekStart` + different `snapshotId` → `"revised"` (include both snapshotIds); (2) same `snapshotId` + identical value → `"unchanged"`; (3) different `weekStart` or value → `"changed"` (description: `"newer observation: {old} → {new}"`); (4) pathogen absent from current or field null in current was present in baseline → `"newly_missing"`
     - `description` strings MUST NOT contain `"increasing"`, `"decreasing"`, `"rising"`, or `"falling"` — use `"{old} → {new}"` only
     - _Requirements: EVD-6.1, EVD-6.2, EVD-6.3, EVD-6.4, EVD-6.5, EVD-6.6, EVD-6.7, EVD-6.8, EVD-6.9_
-  - [ ]* 10.2 Write unit and property tests for the diff engine
+  - [x]* 10.2 Write unit and property tests for the diff engine
     - Create `tests/evidence/diff.test.ts`
     - Same card twice → all four pathogen entries `"unchanged"`; same `weekStart` + different `snapshotId` → `"revised"` with both snapshotIds; different `weekStart` + different value → `"changed"`, description contains `"→"`, no increase/decrease words; pathogen absent from current → `"newly_missing"`
     - Property P10 (fast-check, min 100 runs): no `DiffEntry` with `status === "newly_missing"` or `"revised"` ever contains `"increasing"`, `"decreasing"`, `"rising"`, or `"falling"` in its description; test name: `"EVD-6 P10: diff output never uses increase/decrease language for missing or revised fields"`
     - _Requirements: EVD-6.2, EVD-6.3, EVD-6.4, EVD-6.5, EVD-6.6, EVD-6.7, EVD-6.8_
-  - [~] 10.3 Verify `npm run typecheck && npm run test` exit 0
+  - [x] 10.3 Verify `npm run typecheck && npm run test` exit 0
 
-- [ ] 11. Privacy property test
-  - [~] 11.1 Create `tests/evidence/card-privacy.test.ts`
+- [x] 11. Privacy property test
+  - [x] 11.1 Create `tests/evidence/card-privacy.test.ts`
     - Property P11 path A (fast-check, min 100 runs): FOR ALL `EventCard`s with non-empty `attendeeCategories`, `JSON.stringify` of the card with the `attendeeCategories` field deleted does not contain any category value as a substring; test name: `"EVD-8 P11: attendeeCategories never appear in serialized EventCard"`
     - Property P11 path B: `generateShareText(card)` does not contain any `attendeeCategories` value as a substring (cross-referenced from Task 9.2 P8)
     - _Requirements: EVD-8.10, EVD-4.6_
-  - [~] 11.2 Verify `npm run typecheck && npm run test` exit 0
+  - [x] 11.2 Verify `npm run typecheck && npm run test` exit 0
 
-- [ ] 12. Kiro hooks
+- [x] 12. Kiro hooks
   - [x] 12.1 Create `.kiro/hooks/evidence-engine.json` — PostFileSave hook
     - Matcher: `src/evidence/**`; command: `npx vitest run tests/evidence`
     - Format: `{ "version": "v1", "hooks": [{ "name": "Run evidence tests", "trigger": "PostFileSave", "matcher": "src/evidence/**", "action": { "type": "command", "command": "npx vitest run tests/evidence" } }] }`
@@ -162,9 +162,9 @@ Convert the evidence-engine design into incremental coding steps. Each task buil
   - [x] 12.3 Create `.kiro/hooks/ingestion-watch.json` — PostFileSave hook
     - Matcher: `src/server/ingest/**`; command: `npx vitest run tests/ingest tests/properties`
     - _Requirements: EVD-9.3, EVD-9.4, EVD-9.5, EVD-9.6_
-  - [~] 12.4 Verify all 3 hook files exist in `.kiro/hooks/` with correct JSON structure
+  - [x] 12.4 Verify all 3 hook files exist in `.kiro/hooks/` with correct JSON structure
 
-- [~] 13. Final checkpoint — Ensure all tests pass
+- [x] 13. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
   - `npm run typecheck` exits 0 across all new files
   - `npm run test` exits 0 — all evidence tests + all 51 existing ingestion tests green
