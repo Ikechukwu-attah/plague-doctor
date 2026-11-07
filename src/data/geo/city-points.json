@@ -1,0 +1,374 @@
+{
+ "source": "Natural Earth 1:10m populated places (public domain)",
+ "generatedAt": "2026-11-07",
+ "viewBox": [
+  1000,
+  851
+ ],
+ "entries": {
+  "abbotsford": {
+   "lon": -122.299987,
+   "lat": 49.050377,
+   "x": 77.7,
+   "y": 643.4,
+   "place": "Abbotsford",
+   "neId": 1159143721
+  },
+  "bathurst": {
+   "lon": -65.649983,
+   "lat": 47.599974,
+   "x": 839.1,
+   "y": 646.5,
+   "place": "Bathurst",
+   "neId": 1159148931
+  },
+  "brandon": {
+   "lon": -99.949982,
+   "lat": 49.833275,
+   "x": 373.6,
+   "y": 698.6,
+   "place": "Brandon",
+   "neId": 1159150229
+  },
+  "calgary": {
+   "lon": -114.081944,
+   "lat": 51.084938,
+   "x": 194.9,
+   "y": 641.2,
+   "place": "Calgary",
+   "neId": 1159151035
+  },
+  "cape-breton-regional-municipality": {
+   "lon": -60.179981,
+   "lat": 46.066115,
+   "x": 923.4,
+   "y": 635.4,
+   "place": "Sydney",
+   "neId": 1159150267,
+   "citation": "Cape Breton Regional Municipality is not a Natural Earth place. Marker is placed at Sydney, its largest community; approximate. https://en.wikipedia.org/wiki/Cape_Breton_Regional_Municipality"
+  },
+  "charlottetown": {
+   "lon": -63.131325,
+   "lat": 46.249282,
+   "x": 884.4,
+   "y": 654.2,
+   "place": "Charlottetown",
+   "neId": 1159151075
+  },
+  "city-of-charlottetown-and-town-of-stratford": {
+   "lon": -63.131325,
+   "lat": 46.249282,
+   "x": 884.4,
+   "y": 654.2,
+   "place": "Charlottetown",
+   "neId": 1159151075,
+   "citation": "PHAC location name covers Charlottetown and Stratford. Marker is placed at Charlottetown, the first place named; approximate. https://en.wikipedia.org/wiki/Charlottetown"
+  },
+  "edmonton": {
+   "lon": -113.501928,
+   "lat": 53.551971,
+   "x": 215.9,
+   "y": 594.4,
+   "place": "Edmonton",
+   "neId": 1159151455
+  },
+  "edmundston": {
+   "lon": -68.333282,
+   "lat": 47.379419,
+   "x": 807.1,
+   "y": 667.4,
+   "place": "Edmundston",
+   "neId": 1159143933
+  },
+  "fredericton": {
+   "lon": -66.633308,
+   "lat": 45.949998,
+   "x": 842.2,
+   "y": 683.9,
+   "place": "Fredericton",
+   "neId": 1159148929
+  },
+  "halifax": {
+   "lon": -63.600005,
+   "lat": 44.650025,
+   "x": 895,
+   "y": 687.1,
+   "place": "Halifax",
+   "neId": 1159151069
+  },
+  "hamilton": {
+   "lon": -79.829996,
+   "lat": 43.249982,
+   "x": 675.6,
+   "y": 807.1,
+   "place": "Hamilton",
+   "neId": 1159147659
+  },
+  "kelowna": {
+   "lon": -119.483312,
+   "lat": 49.899989,
+   "x": 119.6,
+   "y": 641.6,
+   "place": "Kelowna",
+   "neId": 1159147643
+  },
+  "kingston": {
+   "lon": -76.483301,
+   "lat": 44.23372,
+   "x": 719.4,
+   "y": 772.6,
+   "place": "Kingston",
+   "neId": 1159143845
+  },
+  "la-ronge": {
+   "lon": -105.300017,
+   "lat": 55.100008,
+   "x": 318.2,
+   "y": 583.9,
+   "place": "La Ronge",
+   "neId": 1159131367
+  },
+  "london": {
+   "lon": -81.249987,
+   "lat": 42.969999,
+   "x": 655.5,
+   "y": 818.2,
+   "place": "London",
+   "neId": 1159131487
+  },
+  "meadow-lake": {
+   "lon": -108.434736,
+   "lat": 54.130118,
+   "x": 278.2,
+   "y": 597.2,
+   "place": "Meadow Lake",
+   "neId": 1159143665
+  },
+  "melville": {
+   "lon": -102.799989,
+   "lat": 50.933311,
+   "x": 338,
+   "y": 672.8,
+   "place": "Melville",
+   "neId": 1159131361
+  },
+  "metro-vancouver": {
+   "lon": -123.12359,
+   "lat": 49.275362,
+   "x": 69.4,
+   "y": 634.6,
+   "place": "Vancouver",
+   "neId": 1159151555,
+   "citation": "Metro Vancouver is a regional district, not a Natural Earth place. Marker is placed at Vancouver, the place named in its PHAC sites (Vancouver Iona Island, Lions Gate, Lulu Island, Annacis Island); approximate. https://en.wikipedia.org/wiki/Metro_Vancouver_Regional_District"
+  },
+  "moncton": {
+   "lon": -64.766678,
+   "lat": 46.083349,
+   "x": 865.2,
+   "y": 668.8,
+   "place": "Moncton",
+   "neId": 1159148927
+  },
+  "montreal": {
+   "lon": -73.585243,
+   "lat": 45.501945,
+   "x": 751.9,
+   "y": 733.1,
+   "place": "Montréal",
+   "neId": 1159151457
+  },
+  "moose-jaw": {
+   "lon": -105.550002,
+   "lat": 50.399984,
+   "x": 300.8,
+   "y": 679.1,
+   "place": "Moose Jaw",
+   "neId": 1159148841
+  },
+  "north-battleford": {
+   "lon": -108.283349,
+   "lat": 52.766636,
+   "x": 274.7,
+   "y": 625,
+   "place": "North Battleford",
+   "neId": 1159147637
+  },
+  "ottawa": {
+   "lon": -75.701961,
+   "lat": 45.418643,
+   "x": 722.8,
+   "y": 745.1,
+   "place": "Ottawa",
+   "neId": 1159151059
+  },
+  "peterborough": {
+   "lon": -78.333265,
+   "lat": 44.299969,
+   "x": 692,
+   "y": 779.4,
+   "place": "Peterborough",
+   "neId": 1159131477
+  },
+  "prince-albert": {
+   "lon": -105.74999,
+   "lat": 53.20002,
+   "x": 307.1,
+   "y": 621.6,
+   "place": "Prince Albert",
+   "neId": 1159147639
+  },
+  "prince-george": {
+   "lon": -122.766652,
+   "lat": 53.916669,
+   "x": 112.9,
+   "y": 549.1,
+   "place": "Prince George",
+   "neId": 1159148861
+  },
+  "quebec-city": {
+   "lon": -71.24561,
+   "lat": 46.839969,
+   "x": 773.5,
+   "y": 694.4,
+   "place": "Québec",
+   "neId": 1159151065,
+   "citation": "Gazetteer name 'Quebec City' is the Natural Earth place 'Québec' (the provincial capital city, not the province). https://en.wikipedia.org/wiki/Quebec_City"
+  },
+  "regina": {
+   "lon": -104.61701,
+   "lat": 50.450033,
+   "x": 313.2,
+   "y": 679.8,
+   "place": "Regina",
+   "neId": 1159151029
+  },
+  "saint-john": {
+   "lon": -66.076675,
+   "lat": 45.267042,
+   "x": 856,
+   "y": 693,
+   "place": "Saint John",
+   "neId": 1159143931
+  },
+  "saskatoon": {
+   "lon": -106.669985,
+   "lat": 52.170031,
+   "x": 292.3,
+   "y": 640.7,
+   "place": "Saskatoon",
+   "neId": 1159151033
+  },
+  "sherbrooke": {
+   "lon": -71.899989,
+   "lat": 45.400005,
+   "x": 776,
+   "y": 726.2,
+   "place": "Sherbrooke",
+   "neId": 1159131525
+  },
+  "st-john-s": {
+   "lon": -52.681007,
+   "lat": 47.584988,
+   "x": 992.4,
+   "y": 546.7,
+   "place": "St. John's",
+   "neId": 1159151071
+  },
+  "sudbury": {
+   "lon": -80.966645,
+   "lat": 46.49999,
+   "x": 642.3,
+   "y": 744.3,
+   "place": "Sudbury",
+   "neId": 1159148905
+  },
+  "swift-current": {
+   "lon": -107.766611,
+   "lat": 50.283738,
+   "x": 271.5,
+   "y": 676.6,
+   "place": "Swift Current",
+   "neId": 1159143653
+  },
+  "thunder-bay": {
+   "lon": -89.274975,
+   "lat": 48.44615,
+   "x": 519.5,
+   "y": 724.3,
+   "place": "Thunder Bay",
+   "neId": 1159151063
+  },
+  "toronto": {
+   "lon": -79.421967,
+   "lat": 43.701926,
+   "x": 679.3,
+   "y": 796.1,
+   "place": "Toronto",
+   "neId": 1159151557
+  },
+  "trois-rivieres": {
+   "lon": -72.549949,
+   "lat": 46.349973,
+   "x": 759.8,
+   "y": 711,
+   "place": "Trois-Rivières",
+   "neId": 1159147663
+  },
+  "vancouver": {
+   "lon": -123.12359,
+   "lat": 49.275362,
+   "x": 69.4,
+   "y": 634.6,
+   "place": "Vancouver",
+   "neId": 1159151555
+  },
+  "victoria": {
+   "lon": -123.350001,
+   "lat": 48.433283,
+   "x": 59.2,
+   "y": 649.2,
+   "place": "Victoria",
+   "neId": 1159151039
+  },
+  "weyburn": {
+   "lon": -103.850003,
+   "lat": 49.666567,
+   "x": 321.2,
+   "y": 697.2,
+   "place": "Weyburn",
+   "neId": 1159131365
+  },
+  "whitehorse": {
+   "lon": -135.049984,
+   "lat": 60.716719,
+   "x": 63.9,
+   "y": 362.8,
+   "place": "Whitehorse",
+   "neId": 1159151053
+  },
+  "winnipeg": {
+   "lon": -97.165992,
+   "lat": 49.882988,
+   "x": 410.9,
+   "y": 699.1,
+   "place": "Winnipeg",
+   "neId": 1159151025
+  },
+  "yarmouth": {
+   "lon": -66.112581,
+   "lat": 43.830795,
+   "x": 869.4,
+   "y": 720.5,
+   "place": "Yarmouth",
+   "neId": 1159148933
+  },
+  "yorkton": {
+   "lon": -102.466547,
+   "lat": 51.217066,
+   "x": 343,
+   "y": 667.4,
+   "place": "Yorkton",
+   "neId": 1159143647
+  }
+ }
+}

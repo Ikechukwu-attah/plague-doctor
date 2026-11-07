@@ -13,17 +13,16 @@ import type {
   CoverageStatus,
 } from "@/evidence/types";
 import { GAZETTEER, lookupCity } from "@/server/geo/cities";
-
-const NORMALIZED_DIR = join(process.cwd(), "data", "normalized");
+import { getNormalizedDir } from "@/server/ingest/snapshot-store";
 
 export function readTrendLatest(): StatusObservation[] {
-  const path = join(NORMALIZED_DIR, "trend-latest.json");
+  const path = join(getNormalizedDir(), "trend-latest.json");
   if (!existsSync(path)) return [];
   return JSON.parse(readFileSync(path, "utf-8")) as StatusObservation[];
 }
 
 export function readIndex(): SourceSnapshot[] {
-  const path = join(NORMALIZED_DIR, "index.json");
+  const path = join(getNormalizedDir(), "index.json");
   if (!existsSync(path)) return [];
   return JSON.parse(readFileSync(path, "utf-8")) as SourceSnapshot[];
 }
@@ -33,7 +32,7 @@ export function readHistory(
   pathogen: string
 ): MeasuredWeek[] {
   const path = join(
-    NORMALIZED_DIR,
+    getNormalizedDir(),
     "history",
     `${locationId}-${pathogen}.json`
   );

@@ -1,0 +1,208 @@
+/* Design-system components (UI-1). Tokens from globals.css only. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--ink-800);
+  border: 1px solid var(--line);
+  font-size: var(--text-14);
+  font-weight: 600;
+  color: var(--parchment);
+  white-space: nowrap;
+}
+.badgeMd {
+  font-size: var(--text-16);
+  padding: var(--space-2) var(--space-4);
+}
+.icon {
+  color: var(--level-color, var(--parchment));
+  font-size: var(--text-14);
+  line-height: 1;
+}
+.hatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--hatch);
+  border: 1px solid var(--level-unknown-stroke);
+}
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-14);
+  color: var(--parchment);
+}
+.trendGlyph {
+  font-size: var(--text-14);
+  line-height: 1;
+}
+.lantern {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-14);
+  color: var(--parchment);
+}
+.lanternSvg {
+  width: 16px;
+  height: 22px;
+  flex: none;
+}
+.clocks {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+.clock dt {
+  font-size: var(--text-12);
+  color: var(--parchment-dim);
+}
+.clock dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--text-14);
+  color: var(--parchment);
+}
+.quote {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  margin: 0;
+}
+.avatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  background: var(--ink-700);
+  border: 1px solid var(--line);
+}
+.quoteText {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-20);
+  line-height: var(--leading-display);
+  margin: 0;
+}
+.quoteName {
+  display: block;
+  margin-top: var(--space-1);
+  font-family: var(--font-ui);
+  font-style: normal;
+  font-size: var(--text-12);
+  color: var(--parchment-dim);
+}
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-panel);
+  background: var(--ink-800);
+  border: 1px solid var(--line);
+  font-size: var(--text-14);
+  color: var(--parchment);
+}
+.noticeCaution {
+  border-color: var(--lantern-delayed);
+}
+.noticeError {
+  border-color: var(--level-high);
+}
+.noticeIcon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  border: 1px solid currentColor;
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+}
+.noticeBody {
+  flex: 1;
+  min-width: 0;
+}
+.skeleton {
+  display: grid;
+  gap: var(--space-3);
+}
+.skeletonLine {
+  height: 14px;
+  border-radius: var(--radius-input);
+  background: var(--ink-700);
+}
+.skeletonRow {
+  height: 56px;
+  border-radius: var(--radius-panel);
+  background: var(--ink-700);
+}
+.skeletonCard {
+  height: 240px;
+  border-radius: var(--radius-card);
+  background: var(--ink-700);
+}
+.shimmer {
+  background-image: linear-gradient(90deg, var(--ink-700), var(--line), var(--ink-700));
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+}
+.chip,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--target-min);
+  min-width: var(--target-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--ink-800);
+  color: var(--parchment);
+  font-family: var(--font-ui);
+  font-size: var(--text-14);
+  font-weight: 600;
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] {
+  background: var(--lantern);
+  border-color: var(--lantern);
+  color: var(--ink-900);
+}
+.button {
+  border-radius: var(--radius-input);
+}
+.primary {
+  background: var(--lantern);
+  border-color: var(--lantern);
+  color: var(--ink-900);
+}
+.primary:hover:not(:disabled) {
+  background: var(--lantern-hover);
+}
+.button:disabled {
+  color: var(--level-nd);
+  background: var(--ink-800);
+  border-color: var(--line);
+  cursor: not-allowed;
+}

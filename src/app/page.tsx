@@ -1,15 +1,26 @@
-/**
- * Placeholder landing page — UI is built in a later milestone.
- * The data ingestion API routes are already live.
- */
+import { Suspense } from "react";
+import type { Metadata } from "next";
+import { LandingView } from "@/components/landing/LandingView";
+import { Skeleton } from "@/components/design-system/Skeleton";
+import { LANDING_HEADING, limitation } from "@/ui-copy/states";
+import styles from "@/components/landing/Landing.module.css";
+
+export const metadata: Metadata = {
+  title: "What's in the water? — Plague Doctor",
+  description: limitation(),
+};
+
+/** Server shell: heading and limitation line are in the first HTML; data loads in the client island. */
 export default function Home() {
   return (
-    <main>
-      <h1>Plague Doctor</h1>
-      <p>
-        Canadian wastewater respiratory-virus explorer. UI coming soon.
-        Data ingestion API is live at <code>/api/locations</code>.
-      </p>
-    </main>
+    <>
+      <header className={styles.intro}>
+        <h1>{LANDING_HEADING}</h1>
+        <p>{limitation()}</p>
+      </header>
+      <Suspense fallback={<Skeleton variant="rows" rows={6} />}>
+        <LandingView />
+      </Suspense>
+    </>
   );
 }

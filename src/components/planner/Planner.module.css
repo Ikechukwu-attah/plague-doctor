@@ -1,0 +1,196 @@
+/* Planner (UI-8). Tokens from globals.css only; every control >= --target-min. */
+.layout {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 240px 1fr;
+  }
+}
+.rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.railItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--target-min);
+  padding: var(--space-2) var(--space-3);
+  background: var(--ink-800);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  color: var(--parchment);
+  text-align: left;
+}
+.railItem[aria-current="step"] {
+  border-color: var(--lantern);
+}
+.railItem:disabled {
+  color: var(--parchment-dim);
+}
+.railMark {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+}
+.panel {
+  background: var(--ink-800);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-28);
+  margin: 0;
+}
+.heading:focus {
+  outline: none;
+}
+.heading:focus-visible {
+  outline: 3px solid var(--lantern);
+  outline-offset: 4px;
+}
+.help {
+  margin: 0;
+  color: var(--parchment-dim);
+  font-size: var(--text-14);
+}
+.input {
+  min-height: var(--target-min);
+  padding: 0 var(--space-3);
+  background: var(--ink-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  color: var(--parchment);
+  width: 100%;
+  max-width: 420px;
+}
+.fieldLabel {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  max-height: 340px;
+  overflow-y: auto;
+}
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--target-min);
+  padding: var(--space-2) var(--space-3);
+  background: var(--ink-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  color: var(--parchment);
+  text-align: left;
+}
+.option[aria-pressed="true"] {
+  border-color: var(--lantern);
+}
+.optionMeta {
+  color: var(--parchment-dim);
+  font-size: var(--text-12);
+}
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.legend {
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: var(--space-2);
+}
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--target-min);
+  padding: var(--space-2) var(--space-3);
+  background: var(--ink-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  cursor: pointer;
+}
+.choice input {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  accent-color: var(--lantern);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+.summary {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--space-2);
+}
+.summaryRow dt {
+  color: var(--parchment-dim);
+  font-size: var(--text-12);
+}
+.summaryRow dd {
+  margin: 0;
+}
+.explainer {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+}
+.explainer h3 {
+  margin: 0;
+  font-size: var(--text-16);
+}
+.explainer ul {
+  margin: 0;
+  padding-left: var(--space-5);
+  color: var(--parchment-dim);
+  font-size: var(--text-14);
+}
+.explainerCurrent {
+  color: var(--parchment);
+  font-weight: 600;
+}

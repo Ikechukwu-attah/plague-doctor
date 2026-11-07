@@ -21,3 +21,7 @@ data/snapshots/etag-cache.json
 # Generated output — rebuilt by `npm run ingest` (keeps the repo small)
 data/normalized/
 *.tsbuildinfo
+
+# Playwright output
+test-results/
+playwright-report/

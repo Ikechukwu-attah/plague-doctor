@@ -18,14 +18,21 @@ function getSnapshotsDir(): string {
   return process.env["SNAPSHOT_DIR"] ?? join(process.cwd(), "data", "snapshots");
 }
 
+/**
+ * Normalized output directory (index.json, trend-latest.json, history/).
+ * Injectable via NORMALIZED_DIR (default: data/normalized/), mirroring SNAPSHOT_DIR. (UI-18.3)
+ */
+export function getNormalizedDir(): string {
+  return process.env["NORMALIZED_DIR"] ?? join(process.cwd(), "data", "normalized");
+}
+
 function getIndexPath(): string {
-  // index.json lives in data/normalized/ — not injectable (it's shared state, not test-generated)
-  return join(process.cwd(), "data", "normalized", "index.json");
+  return join(getNormalizedDir(), "index.json");
 }
 
 function ensureDirs(): void {
   mkdirSync(getSnapshotsDir(), { recursive: true });
-  mkdirSync(join(process.cwd(), "data", "normalized"), { recursive: true });
+  mkdirSync(getNormalizedDir(), { recursive: true });
 }
 
 // ---------------------------------------------------------------------------
@@ -56,6 +63,31 @@ export function storeSnapshot(
   const csvPath = join(dir, `${snapshotId}.csv`);
 
   if (existsSync(csvPath)) {
+    // Bytes are immutable; only correct metadata (rowCount 0 from older runs)
+    // and make sure the index lists this snapshot (UI-18.5).
+    const metaPath = join(dir, `${snapshotId}.meta.json`);
+    let existing: SourceSnapshot | null = null;
+    try {
+      if (existsSync(metaPath)) {
+        existing = JSON.parse(readFileSync(metaPath, "utf-8")) as SourceSnapshot;
+      }
+    } catch {
+      existing = null;
+    }
+    if (existing && existing.status === "valid") {
+      const fixed: SourceSnapshot =
+        existing.rowCount === 0 && meta.rowCount > 0
+          ? { ...existing, rowCount: meta.rowCount, rejectedRows: meta.rejectedRows }
+          : existing;
+      if (fixed !== existing) {
+        writeFileSync(metaPath, JSON.stringify(fixed, null, 2));
+      }
+      const index = loadIndex();
+      const current = index.find((s) => s.snapshotId === snapshotId);
+      if (!current || current.rowCount !== fixed.rowCount) {
+        saveIndex([...index.filter((s) => s.snapshotId !== snapshotId), fixed]);
+      }
+    }
     return { snapshotId, isNew: false };
   }
 
@@ -67,13 +99,11 @@ export function storeSnapshot(
     JSON.stringify(snapshot, null, 2)
   );
 
-  // Only update the shared index when writing to the real store
-  if (!process.env["SNAPSHOT_DIR"]) {
-    const index = loadIndex();
-    const filtered = index.filter((s) => s.snapshotId !== snapshotId);
-    filtered.push(snapshot);
-    saveIndex(filtered);
-  }
+  // Index lives in getNormalizedDir(); tests must set NORMALIZED_DIR (UI-18.3)
+  const index = loadIndex();
+  const filtered = index.filter((s) => s.snapshotId !== snapshotId);
+  filtered.push(snapshot);
+  saveIndex(filtered);
 
   return { snapshotId, isNew: true };
 }
@@ -121,7 +151,7 @@ export function loadIndex(): SourceSnapshot[] {
 }
 
 function saveIndex(index: SourceSnapshot[]): void {
-  mkdirSync(join(process.cwd(), "data", "normalized"), { recursive: true });
+  mkdirSync(getNormalizedDir(), { recursive: true });
   writeFileSync(getIndexPath(), JSON.stringify(index, null, 2));
 }
 

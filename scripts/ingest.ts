@@ -22,6 +22,8 @@ import {
   writeRejected,
   loadLatestValidSnapshot,
   loadSnapshotBytes,
+  getNormalizedDir,
+  sha256Hex,
 } from "../src/server/ingest/snapshot-store";
 import { parseTrend } from "../src/server/ingest/parse-trend";
 import { parseAggregate } from "../src/server/ingest/parse-aggregate";
@@ -32,7 +34,7 @@ const TREND_URL =
 const AGGREGATE_URL =
   "https://health-infobase.canada.ca/src/data/wastewater/wastewater_aggregate.csv";
 
-const NORMALIZED_DIR = join(process.cwd(), "data", "normalized");
+const NORMALIZED_DIR = getNormalizedDir();
 const HISTORY_DIR = join(NORMALIZED_DIR, "history");
 
 function ensureDirs(): void {
@@ -99,22 +101,23 @@ async function ingestTrend(): Promise<{
   console.log(`[ingest] Trend schema detected: ${schema.versionId}`);
 
   const fetchedAt = new Date().toISOString();
-  const { snapshotId, isNew } = storeSnapshot(bytes, {
+  // Parse before storing so metadata carries the true row counts (UI-18.5)
+  const snapshotId = sha256Hex(bytes);
+  const parsed = parseTrend(bytes, schema.versionId, snapshotId, TREND_URL);
+  const { isNew } = storeSnapshot(bytes, {
     sourceUrl: TREND_URL,
     fetchedAt,
     lastModified,
     etag,
     origin: "live",
     schemaVersion: schema.versionId,
-    rowCount: 0, // updated after parse
-    rejectedRows: 0,
+    rowCount: parsed.observations.length,
+    rejectedRows: parsed.rejectedRows,
   });
 
   console.log(
     `[ingest] Trend snapshot ${snapshotId.slice(0, 12)}… ${isNew ? "stored (new)" : "already exists"}`
   );
-
-  const parsed = parseTrend(bytes, schema.versionId, snapshotId, TREND_URL);
   console.log(
     `[ingest] Trend parsed: ${parsed.observations.length} observations, ${parsed.rejectedRows} rejected rows`
   );
@@ -172,22 +175,22 @@ async function ingestAggregate(): Promise<{
   console.log(`[ingest] Aggregate schema detected: ${schema.versionId}`);
 
   const fetchedAt = new Date().toISOString();
-  const { snapshotId, isNew } = storeSnapshot(bytes, {
+  const snapshotId = sha256Hex(bytes);
+  const parsed = parseAggregate(bytes, snapshotId, AGGREGATE_URL);
+  const { isNew } = storeSnapshot(bytes, {
     sourceUrl: AGGREGATE_URL,
     fetchedAt,
     lastModified,
     etag,
     origin: "live",
     schemaVersion: schema.versionId,
-    rowCount: 0,
-    rejectedRows: 0,
+    rowCount: parsed.weeks.length,
+    rejectedRows: parsed.rejectedRows,
   });
 
   console.log(
     `[ingest] Aggregate snapshot ${snapshotId.slice(0, 12)}… ${isNew ? "stored" : "already exists"}`
   );
-
-  const parsed = parseAggregate(bytes, snapshotId, AGGREGATE_URL);
   console.log(
     `[ingest] Aggregate parsed: ${parsed.weeks.length} weeks, ${parsed.rejectedRows} rejected`
   );

@@ -54,3 +54,40 @@ Running log of how Kiro was used to build Plague Doctor. Feeds the Devpost "How 
 | `ingestion-watch.json` | PostFileSave | `(src/server/ingest/.*\|fixtures/.*)$` | `npx vitest run tests/ingest tests/properties` |
 
 All three use Kiro's native hook schema and appear in the Agent Hooks panel.
+
+## Milestone 3 — UI build
+
+| Date | Kiro feature | What we did | Outcome / evidence |
+|---|---|---|---|
+| Milestone 3 | Specs (requirements-first) | UI spec built requirements-first. Decisions recorded: D1 history served through a route (not shipped to the browser as bulk data); D2 map uses Natural Earth points; P1 index fix; P2 EpiYear fix. User approved clarifications C1–C24 before implementation. | `.kiro/specs/` UI spec (UI-* requirements) |
+| Milestone 3 | spec-task-execution | Tasks executed by parallel sub-agents. | See deviations below |
+
+### Final gate results
+- `tsc --noEmit`: clean
+- `vitest`: 45 files / 398 tests (116 original + 282 new)
+- `next build`: ok, `/` = 163 kB First Load JS
+- Playwright: 57 passed / 18 skipped
+
+### Real bugs caught by tests during Milestone 3
+1. **`buildHistoricalContext` ignored `epiYear`.** It took the first EpiWeek match, so past-event cards showed another year's `wAvg`. Caught by `tests/evidence/card-past-epiyear.test.ts` (UI-18.6, UI-18.7). Fix: match on epiYear + epiWeek (decision P2).
+2. **`dateToEpiWeek` used first-Sunday numbering.** MMWR/CDC week 1 is the week whose Sunday falls on or before Jan 4. The old logic was off by one in 2024 and 2025. Found by the real-history test, not by a synthetic one.
+3. **Test index pollution.** Ingestion tests wrote about 356 `example.com` entries to `data/normalized/index.json` and left `rowCount` 0 on real entries. Covered by `tests/ingest/normalized-isolation.test.ts` and `tests/ingest/index-clean.test.ts` (UI-18.3, UI-18.4, UI-18.5). Fix: isolated output dir for tests, index repaired (P1).
+4. **Playwright / axe findings:**
+   - City row `aria-label` did not match visible text (`label-content-name-mismatch`).
+   - Omen Card mono text failed contrast.
+   - Reduced-motion transition was `0.001ms` instead of `0`.
+   - Map marker hit areas overlapped. Marker spacing relies on the WCAG 2.5.8 equivalent-list exception (every city is also reachable from the list). This is documented, not a pass on target size.
+5. **d3-geo winding bug in `build-geometry`.** RFC 7946 counter-clockwise rings made d3-geo treat them as the whole sphere, which collapsed the projection. Fixed by rewinding the rings.
+6. **`checkWording` flagged "endorsed by PHAC".** That forced a reworded non-endorsement statement. The comparison text "does not mean no infections" was also reworded (C10).
+
+### Deviations and process notes
+- Parallel sub-agents corrupted several files written through shell heredocs. Those files were rewritten with file tools. `DesignSystem.module.css` had to be rewritten.
+- `ingest` ran twice in task 1.3. This deviated from the plan.
+- The live PHAC schema is `trend-dec-2025`. Fixtures are `oct-2026`. Both are handled by the schema registry.
+
+### Manual / unverified
+- Lighthouse LCP not measured.
+- Screen-reader pass not done.
+- Visual fidelity against `design/*.dc.html` not verified.
+- Wikipedia citations for 3 approximate city overrides not fetched.
+- PHAC reuse-licence wording not confirmed.

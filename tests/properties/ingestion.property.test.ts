@@ -35,10 +35,12 @@ let tmpSnapshotDir: string;
 beforeAll(() => {
   tmpSnapshotDir = mkdtempSync(join(tmpdir(), "plague-prop-"));
   process.env["SNAPSHOT_DIR"] = tmpSnapshotDir;
+  process.env["NORMALIZED_DIR"] = join(tmpSnapshotDir, "normalized");
 });
 
 afterAll(() => {
   delete process.env["SNAPSHOT_DIR"];
+  delete process.env["NORMALIZED_DIR"];
   try { rmSync(tmpSnapshotDir, { recursive: true, force: true }); } catch { /* best-effort */ }
 });
 

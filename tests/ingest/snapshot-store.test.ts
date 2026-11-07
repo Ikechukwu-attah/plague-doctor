@@ -16,11 +16,13 @@ beforeEach(() => {
   // Create a fresh isolated directory for each test
   tmpDir = mkdtempSync(join(tmpdir(), "plague-test-"));
   process.env["SNAPSHOT_DIR"] = tmpDir;
+  process.env["NORMALIZED_DIR"] = join(tmpDir, "normalized");
 });
 
 afterEach(() => {
   // Clean up the temp directory after each test
   delete process.env["SNAPSHOT_DIR"];
+  delete process.env["NORMALIZED_DIR"];
   try {
     rmSync(tmpDir, { recursive: true, force: true });
   } catch {

@@ -1,0 +1,226 @@
+/*
+ * Plague Doctor design tokens and base styles (UI-1.1, 1.2, 1.3, 1.11, 3.12, 3.13, 13.5, 13.6).
+ * Source of truth: docs/BUILD_PLAN.md §5A and design/Tokens.dc.html.
+ * No Tailwind (K8): CSS custom properties plus CSS Modules.
+ */
+
+:root {
+  /* Surfaces */
+  --ink-900: #0b1020;
+  --ink-800: #121a30;
+  --ink-700: #1c2742;
+  --line: #2a3658;
+  --parchment: #eadfc8;
+  --parchment-dim: #b9ae98;
+
+  /* Lantern: focus, primary action, freshness only */
+  --lantern: #f2b544;
+  --lantern-hover: #ffd27a;
+  --lantern-delayed: #b88a2e;
+  /* Fog hue (density varies, hue does not) */
+  --fog-teal: #5fd3bc;
+  /* Replay frame and watermark only */
+  --replay: #b79cff;
+
+  /* PHAC Viral_Activity_Level colours: always paired with icon + word */
+  --level-high: #e0664f;
+  --level-moderate: #e9a84a;
+  --level-low: #7fb7a4;
+  --level-nd: #8c93a8;
+  /* Unknown: hatched, never a plain fill */
+  --level-unknown: #5a6178;
+  --level-unknown-stroke: #8c93a8;
+  --hatch: repeating-linear-gradient(
+    45deg,
+    var(--level-unknown-stroke) 0 2px,
+    transparent 2px 5px
+  );
+
+  /* Omen Card paper variant */
+  --paper-ink: #0b1020;
+  --paper-glyph-dark: #9a6512;
+
+  /* Type families (set by next/font in layout.tsx, with fallbacks) */
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-ui: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Type scale (C5): 12 / 14 / 16 / 20 / 28 / 40 */
+  --text-12: 0.75rem;
+  --text-14: 0.875rem;
+  --text-16: 1rem;
+  --text-20: 1.25rem;
+  --text-28: 1.75rem;
+  --text-40: 2.5rem;
+  --leading-body: 1.5;
+  --leading-display: 1.15;
+
+  /* Spacing: 4-px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Radii (C6): 6 inputs, 12 panels, 20 Omen Card, pill for chips */
+  --radius-input: 6px;
+  --radius-panel: 12px;
+  --radius-card: 20px;
+  --radius-pill: 999px;
+
+  /* Targets and focus */
+  --target-min: 44px;
+  --focus-ring-width: 3px;
+  --focus-ring: var(--focus-ring-width) solid var(--lantern);
+  --focus-ring-offset: 2px;
+
+  /* Motion */
+  --fog-drift-duration: 16s; /* 12-20 s loop */
+  --fog-density-ease: 600ms ease;
+  --card-transition: 200ms ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ink-900);
+  color: var(--parchment);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--ink-900);
+  color: var(--parchment);
+  font-family: var(--font-ui);
+  font-size: var(--text-16);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: var(--leading-display);
+  margin: 0;
+}
+h1 {
+  font-size: var(--text-40);
+}
+h2 {
+  font-size: var(--text-28);
+}
+h3 {
+  font-size: var(--text-20);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--lantern);
+}
+a:hover {
+  color: var(--lantern-hover);
+}
+
+code,
+kbd,
+samp,
+.mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+/* Every interactive element: visible 3 px lantern focus ring (UI-13.5) */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  min-height: var(--target-min);
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Utilities */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hatched {
+  background: var(--hatch);
+  border: 1px solid var(--level-unknown-stroke);
+}
+
+/* Fog drift (UI-3.12, 3.13): slow loop, density eases over 600 ms */
+@keyframes pd-fog-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(6px, -4px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+.fog-drift {
+  animation: pd-fog-drift var(--fog-drift-duration) ease-in-out infinite;
+  transition: opacity var(--fog-density-ease), transform var(--fog-density-ease);
+}
+
+/* Reduced motion: static fog, instant transitions (UI-13.6) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation: none !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  .fog-drift {
+    animation: none;
+    transition: none;
+  }
+}

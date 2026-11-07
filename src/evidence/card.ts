@@ -122,12 +122,15 @@ function buildNearStatement(
 function buildHistoricalContext(
   pathogen: Pathogen,
   epiWeek: number,
+  epiYear: number,
   history: MeasuredWeek[],
   locationId: string,
   includeMeasured: boolean,
   fallbackSnapshotId: string,
   fallbackSourceUrl: string,
 ): HistoricalContext {
+  // Band source: first row for this EpiWeek (any year). histMin/histMax are
+  // PHAC's per-EpiWeek extremes, so they are the same across years.
   const week = history.find(
     (w) =>
       w.locationId === locationId &&
@@ -168,8 +171,17 @@ function buildHistoricalContext(
   };
 
   if (includeMeasured) {
-    ctx.wAvg = week.wAvg;
-    ctx.weekStart = week.weekStart;
+    // Measured value only from the event's own EpiYear + EpiWeek row; never
+    // borrow another year's w_avg. Absent row stays a gap.
+    const own = history.find(
+      (w) =>
+        w.locationId === locationId &&
+        w.pathogen === pathogen &&
+        w.epiYear === epiYear &&
+        w.epiWeek === epiWeek,
+    );
+    ctx.wAvg = own ? own.wAvg : null;
+    ctx.weekStart = own ? own.weekStart : undefined;
   }
 
   return ctx;
@@ -262,12 +274,13 @@ export function buildCard(
       buildNearStatement(p, chosenRows, input.today, regionName),
     );
   } else {
-    const { epiWeek } = dateToEpiWeek(input.eventDate);
+    const { epiWeek, epiYear } = dateToEpiWeek(input.eventDate);
     const includeMeasured = timingState === "past";
     statements = PATHOGENS.map((p) =>
       buildHistoricalContext(
         p,
         epiWeek,
+        epiYear,
         data.history,
         locationEntry.locationId,
         includeMeasured,

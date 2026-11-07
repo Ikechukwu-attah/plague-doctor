@@ -93,46 +93,38 @@ export function dateToEpiWeek(date: string): {
     day: "2-digit",
   }).format(sunday);
 
-  // Compute epiWeek number: the epi year starts on the first Sunday of the year
-  // (ISO 8601 week-date logic adapted for Sunday-start weeks)
-  const year = parseInt(weekStart.slice(0, 4), 10);
-
-  // Jan 1 of the epiYear — find the first Sunday of that year
-  function firstSundayOfYear(y: number): Date {
-    const jan1 = new Date(`${y}-01-01T12:00:00Z`);
-    const jan1Str = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "America/Toronto",
-      weekday: "short",
-    }).format(jan1);
-    const jan1Dow = DOW_MAP[jan1Str] ?? 0;
-    const offset = jan1Dow === 0 ? 0 : 7 - jan1Dow;
-    return new Date(jan1.getTime() + offset * 86_400_000);
-  }
-
-  // Determine which epi year this Sunday belongs to
-  // (the last week of a year may straddle into Jan of the next year)
-  let epiYear = year;
-  let firstSunday = firstSundayOfYear(epiYear);
-
-  if (sundayMs < firstSunday.getTime()) {
-    // This Sunday is in the previous epi year's last week
-    epiYear = year - 1;
-    firstSunday = firstSundayOfYear(epiYear);
-  } else {
-    // Check if this Sunday is in the next epi year
-    const nextFirstSunday = firstSundayOfYear(epiYear + 1);
-    if (sundayMs >= nextFirstSunday.getTime()) {
-      epiYear = year + 1;
-      firstSunday = nextFirstSunday;
-    }
-  }
-
+  // MMWR / CDC EpiWeek convention (used by PHAC): week 1 is the first
+  // Sunday-start week with at least four days in the calendar year, i.e. the
+  // Sunday on or before Jan 4. Year and week come from the week's Sunday.
+  const DAY = 86_400_000;
+  const week1Start = (y: number): number => {
+    const jan4 = Date.UTC(y, 0, 4, 12);
+    return jan4 - new Date(jan4).getUTCDay() * DAY;
+  };
+  const sundayUtc = Date.UTC(
+    parseInt(weekStart.slice(0, 4), 10),
+    parseInt(weekStart.slice(5, 7), 10) - 1,
+    parseInt(weekStart.slice(8, 10), 10),
+    12,
+  );
+  let epiYear = parseInt(weekStart.slice(0, 4), 10);
+  if (sundayUtc >= week1Start(epiYear + 1)) epiYear += 1;
+  else if (sundayUtc < week1Start(epiYear)) epiYear -= 1;
   const weekNumber =
-    Math.round((sundayMs - firstSunday.getTime()) / (7 * 86_400_000)) + 1;
+    Math.round((sundayUtc - week1Start(epiYear)) / (7 * DAY)) + 1;
 
   return {
     epiYear,
     epiWeek: weekNumber,
     weekStart,
   };
+}
+
+/**
+ * Add whole calendar days to a YYYY-MM-DD date. Noon-UTC anchoring keeps the
+ * result independent of DST and of the process time zone.
+ */
+export function addDaysIso(isoDate: string, days: number): string {
+  const ms = new Date(`${isoDate}T12:00:00Z`).getTime() + days * 86_400_000;
+  return new Date(ms).toISOString().slice(0, 10);
 }
