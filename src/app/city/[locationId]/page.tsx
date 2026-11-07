@@ -1,5 +1,6 @@
 import { PathogenSchema } from "@/evidence/schemas";
 import { CityDetail } from "@/components/city/CityDetail";
+import { PageContainer } from "@/components/shell/PageContainer";
 
 export default async function CityPage({
   params,
@@ -12,10 +13,12 @@ export default async function CityPage({
   const sp = await searchParams;
   const parsed = PathogenSchema.safeParse(Array.isArray(sp.virus) ? sp.virus[0] : sp.virus);
   return (
-    <CityDetail
-      locationId={decodeURIComponent(locationId)}
-      variant="page"
-      {...(parsed.success ? { virus: parsed.data } : {})}
-    />
+    <PageContainer variant="city">
+      <CityDetail
+        locationId={decodeURIComponent(locationId)}
+        variant="page"
+        {...(parsed.success ? { virus: parsed.data } : {})}
+      />
+    </PageContainer>
   );
 }

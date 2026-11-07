@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageContainer } from "@/components/shell/PageContainer";
 import { MethodsLive } from "@/components/methods/MethodsLive";
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function MethodsPage() {
-  return <MethodsLive />;
+  return (
+    <PageContainer>
+      <MethodsLive />
+    </PageContainer>
+  );
 }

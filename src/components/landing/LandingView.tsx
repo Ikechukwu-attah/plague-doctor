@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Pathogen } from "@/evidence/types";
 import { useApi } from "@/lib/api/provider";
@@ -20,8 +21,22 @@ import { detailsLabel } from "@/ui-copy/landing";
 import { useAnnounceOnChange } from "@/components/design-system/LiveRegionProvider";
 import { VIRUS_LABEL } from "@/ui-copy/levels";
 import { RETRY, loadFailed, stateAnnouncement } from "@/ui-copy/states";
-import { DetailSurface, useDetailMode } from "./DetailSurface";
+import { useDetailMode } from "./detail-mode";
 import { LandingScreen } from "./LandingScreen";
+import styles from "./Landing.module.css";
+
+/* Task 15.7: map (outlines, fog, markers) and detail surface load after the list is interactive. */
+const LazyCanadaMap = dynamic(() => import("./CanadaMap").then((m) => m.CanadaMap), {
+  ssr: false,
+  loading: () => (
+    <div className={styles.mapWrap} aria-busy="true">
+      <div className={styles.mapBox} />
+    </div>
+  ),
+});
+const LazyDetailSurface = dynamic(() => import("./DetailSurface").then((m) => m.DetailSurface), {
+  ssr: false,
+});
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -156,6 +171,7 @@ export function LandingView() {
 
   return (
     <LandingScreen
+      mapComponent={LazyCanadaMap}
       virus={virus}
       onVirus={(v: Pathogen) => update({ virus: v })}
       phase={phase}
@@ -206,7 +222,7 @@ export function LandingView() {
       {...(selected && detailMode !== "page"
         ? {
             detail: (
-              <DetailSurface
+              <LazyDetailSurface
                 key={selected}
                 locationId={selected}
                 label={detailsLabel({ place: selectedName })}

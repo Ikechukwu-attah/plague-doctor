@@ -14,6 +14,8 @@ const cormorant = localFont({
   ],
   variable: "--font-cormorant",
   display: "swap",
+  // Task 15.7: only Inter (the limitation line, the LCP element) is preloaded; display type swaps in.
+  preload: false,
   fallback: ["Georgia", "Times New Roman", "serif"],
 });
 const inter = localFont({
@@ -26,6 +28,8 @@ const jetbrains = localFont({
   src: [{ path: "./fonts/JetBrainsMono-500.woff2", weight: "500", style: "normal" }],
   variable: "--font-jetbrains",
   display: "swap",
+  // Mono is used only for dates and IDs below the fold; do not preload it for the first paint.
+  preload: false,
   fallback: ["ui-monospace", "Menlo", "monospace"],
 });
 

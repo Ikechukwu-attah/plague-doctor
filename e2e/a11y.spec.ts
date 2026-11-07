@@ -61,6 +61,25 @@ test.describe("axe: no serious or critical violations (UI-13.1, UI-17.7)", () =>
     await expectNoSeriousViolations(page);
   });
 
+  test("provenance triggers on card and city (UI-7.1, UI-13.5)", async ({ page }) => {
+    for (const url of [cardUrl(cityId, NEAR_DATE), `/city/${encodeURIComponent(cityId)}`]) {
+      await page.goto(url);
+      const trigger = page.locator('button[aria-haspopup="dialog"]').first();
+      await expect(trigger).toBeVisible();
+      await expect(trigger.locator("[data-prov-glyph]")).toHaveText("i");
+      const box = await trigger.boundingBox();
+      expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+      await page.waitForLoadState("networkidle");
+      const res = await new AxeBuilder({ page })
+        .include('button[aria-haspopup="dialog"]')
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+        .analyze();
+      const blocking = res.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      expect(blocking.map((v) => v.id)).toEqual([]);
+    }
+  });
+
   test("Behind the mask", async ({ page }) => {
     await page.goto("/methods");
     await expect(page.getByRole("heading", { level: 1, name: "Behind the mask" })).toBeVisible();

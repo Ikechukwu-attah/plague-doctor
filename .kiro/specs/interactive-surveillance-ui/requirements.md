@@ -134,7 +134,7 @@ This spec covers Milestone 3 of Plague Doctor: the user interface. It delivers f
 6. WHEN the user chooses the provincial aggregate, THE City_Page SHALL display the PHAC province row's values labelled as the province and SHALL NOT label them with the city's name.
 7. IF coverage is `no_city_site` and no provincial aggregate exists, THEN THE City_Page SHALL show "aggregate not published (coverage below PHAC threshold)" and SHALL NOT show any values.
 8. THE City_Page SHALL NOT display values from any location other than the requested location or its PHAC province aggregate.
-9. WHERE the viewport is 640 px to 1023 px wide, THE City_Page SHALL appear as a bottom sheet; WHERE the viewport is 1024 px or wider, THE City_Page SHALL appear as a 400 px right drawer on the Landing_Page.
+9. WHERE the viewport is 768 px to 1023 px wide, THE City_Page SHALL appear as a bottom sheet; WHERE the viewport is 1024 px or wider, THE City_Page SHALL appear as a 400 px right drawer on the Landing_Page; WHERE the viewport is narrower than 768 px, activating a city SHALL navigate to the full City_Page route. THE drawer and the sheet SHALL each present exactly one close control and SHALL be positioned fixed or sticky outside the document flow.
 10. WHILE the status request is pending, THE City_Page SHALL render skeleton rows for all four viruses.
 11. IF the location identifier is unknown (API 404), THEN THE City_Page SHALL render a not-found message and a link to the Landing_Page.
 12. WHEN the freshness label is `outdated`, THE City_Page SHALL show the original "week of {date}", the "Outdated" lantern and history only, and SHALL NOT make a current-activity claim.

@@ -1,0 +1,19 @@
+/* Shared page column: centred, ~1100px, 16px gutter on mobile. */
+.container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+  min-width: 0;
+}
+.city {
+  /* Reserve roughly the loaded city page height so the footer does not jump when data replaces the loading state. */
+  min-height: 140vh;
+  max-width: 880px;
+}
+@media (min-width: 768px) {
+  .container {
+    padding: var(--space-8) var(--space-6);
+  }
+}

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Locator } from "@playwright/test";
 import { NEAR_DATE, cardUrl, fetchLocations, pickCity, pinClock } from "./helpers";
 import { SKIP_TO_CONTENT } from "../src/ui-copy/states";
-import { CLOSE_DETAILS } from "../src/ui-copy/landing";
+import { CITY_CLOSE } from "../src/ui-copy/city";
 
 // Viewports are set inside each test, so one project is enough.
 test.beforeEach(async ({ page }, testInfo) => {
@@ -54,7 +54,7 @@ test.describe("keyboard (UI-13.2, UI-13.4, UI-4.7, UI-7.5)", () => {
     await page.keyboard.press("Enter");
     const drawer = page.locator('aside[data-variant="drawer"]');
     await expect(drawer).toBeVisible();
-    await expect(drawer.getByRole("button", { name: CLOSE_DETAILS })).toBeVisible();
+    await expect(drawer.getByRole("button", { name: CITY_CLOSE, exact: true })).toHaveCount(1);
     await page.keyboard.press("Escape");
     await expect(drawer).toBeHidden();
     await expect(row).toBeFocused();
@@ -145,14 +145,46 @@ test.describe("targets and viewports (UI-13.3, UI-4.8, UI-5.9, UI-8.12)", () => 
       await row.click();
     };
 
-    await open(1440);
-    await expect(page.locator("aside[data-variant]")).toHaveAttribute("data-variant", "drawer");
+    const surface = page.locator("aside[data-variant]");
+    const expectFixedSingleClose = async () => {
+      await expect(surface).toBeVisible();
+      expect(await surface.evaluate((el) => getComputedStyle(el).position)).toBe("fixed");
+      await expect(surface.getByRole("button", { name: /close/i })).toHaveCount(1);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      );
+      expect(overflow).toBe(true);
+    };
 
-    await open(800);
-    await expect(page.locator("aside[data-variant]")).toHaveAttribute("data-variant", "sheet");
+    await open(1440);
+    await expect(surface).toHaveAttribute("data-variant", "drawer");
+    await expectFixedSingleClose();
+    const box = await surface.boundingBox();
+    expect(Math.round(box?.width ?? 0)).toBe(400);
+    expect(Math.round((box?.x ?? 0) + (box?.width ?? 0))).toBe(1440);
+
+    await open(900);
+    await expect(surface).toHaveAttribute("data-variant", "sheet");
+    await expectFixedSingleClose();
 
     await open(390);
     await expect(page).toHaveURL(new RegExp(`/city/${city.locationId}`));
     await expect(page.locator("aside[data-variant]")).toHaveCount(0);
   });
+});
+
+test("landing map fits the viewport, list scrolls internally, drawer leaves the nav reachable (task 15.4)", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const map = page.locator("div[role=group][data-map]");
+  await expect(map).toBeVisible();
+  const box = await map.boundingBox();
+  expect(box?.height ?? 9999).toBeLessThanOrEqual(900);
+  const dims = await page.locator("ul[class*=rows]").evaluate((el) => ({ c: el.clientHeight, s: el.scrollHeight }));
+  expect(dims.s).toBeGreaterThan(dims.c);
+  await page.locator("button[data-location-id]").first().click({ force: true });
+  await expect(page.locator("aside[data-variant=drawer]")).toBeVisible();
+  const nav = await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Plan a gathering" }).boundingBox();
+  const drawer = await page.locator("aside[data-variant=drawer]").boundingBox();
+  expect((nav?.y ?? 0) + (nav?.height ?? 0)).toBeLessThanOrEqual(drawer?.y ?? 0);
 });

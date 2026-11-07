@@ -19,7 +19,7 @@ test.describe("smoke: landing → city → plan → card (UI-17.6, UI-9.1, UI-9.
 
     // City detail: a drawer/sheet on wide screens, the city page on narrow ones.
     await row.click();
-    const wide = (page.viewportSize()?.width ?? 0) >= 640;
+    const wide = (page.viewportSize()?.width ?? 0) >= 768;
     if (wide) {
       await expect(page.locator("aside[data-variant]")).toBeVisible();
       await expect(page.locator("aside[data-variant]").getByRole("heading", { level: 2, name: city.locationName })).toBeVisible();
@@ -27,6 +27,7 @@ test.describe("smoke: landing → city → plan → card (UI-17.6, UI-9.1, UI-9.
       await expect(page).toHaveURL(new RegExp(`/city/${city.locationId}`));
       await expect(page.getByRole("heading", { level: 1, name: city.locationName })).toBeVisible();
     }
+
 
     // Planner → Card.
     await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Plan a gathering" }).click();

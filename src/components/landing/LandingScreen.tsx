@@ -1,11 +1,11 @@
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
+import type { CanadaMapProps } from "./CanadaMap";
 import type { Pathogen } from "@/evidence/types";
 import type { FreshnessLabel } from "@/evidence/card-types";
 import type { LandingRow } from "@/lib/view/landing-rows";
 import type { ThreeClocksModel } from "@/lib/view/three-clocks";
 import { Skeleton } from "@/components/design-system/Skeleton";
 import { VirusChips } from "./VirusChips";
-import { CanadaMap } from "./CanadaMap";
 import { CityList } from "./CityList";
 import { Legend } from "./Legend";
 import { StaleBanner } from "./StaleBanner";
@@ -43,11 +43,17 @@ export interface LandingScreenProps {
   clocks: ThreeClocksModel;
   freshness?: FreshnessLabel;
   detail?: ReactNode;
+  /**
+   * The map component. Injected so the route can code-split it (SVG outlines, fog and markers
+   * are not needed for the first paint, and the mobile layout hides them by default).
+   */
+  mapComponent?: ComponentType<CanadaMapProps>;
 }
 
 /** Presentational landing page: every state (loading, error, stale, empty, success) is a prop combination. */
 export function LandingScreen(p: LandingScreenProps) {
   const showMap = p.wide ? p.view === "map" : p.mapShown;
+  const MapComponent = p.mapComponent;
   return (
     <div className={styles.page}>
       {p.staleWeek ? <StaleBanner week={p.staleWeek} action={p.staleAction} /> : null}
@@ -67,9 +73,9 @@ export function LandingScreen(p: LandingScreenProps) {
       {p.phase === "ready" ? (
         <>
           <div className={styles.body} data-map={showMap ? "true" : "false"}>
-            {showMap ? (
+            {showMap && MapComponent ? (
               <div className={styles.mapCol}>
-                <CanadaMap
+                <MapComponent
                   rows={p.rows}
                   virus={p.virus}
                   {...(p.week ? { week: p.week } : {})}

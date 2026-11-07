@@ -87,10 +87,22 @@ export const CONFIRM_CAPTION_SETTING = "Setting";
 export const CONFIRM_CAPTION_WHO = "Who may attend (optional)";
 export const CONFIRM_WHO_NONE = "Not specified";
 export const CONFIRM_WHO_SKIPPED = "Skipped";
+export const STEP_SUMMARY_WHO_SPECIFIED = "Specified";
 
 export const LATEST_WEEK_UNAVAILABLE =
   "The latest sample week for this place could not be loaded. Your card will still be built from what is available.";
 
 export function dateLabel(s: { date: string }): string {
   return formatDisplayDate(s.date);
+}
+
+/** Stepper one-line summaries for completed steps (design/Planner.dc.html). */
+export function stepSummaryWhen(s: { date: string; days: number }): string {
+  return `${formatDisplayDate(s.date)} · ${daysAway({ days: s.days })}`;
+}
+
+export function stepSummaryWho(s: { categories: readonly string[]; skipped: boolean }): string {
+  // Category names are never shown in the stepper; they appear on the Confirm step only.
+  if (s.categories.length > 0) return STEP_SUMMARY_WHO_SPECIFIED;
+  return s.skipped ? CONFIRM_WHO_SKIPPED : CONFIRM_WHO_NONE;
 }

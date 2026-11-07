@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
   // Server-side only — never expose ingest logic to the browser bundle
   outputFileTracingRoot: path.resolve(__dirname),
   serverExternalPackages: ["csv-parse"],
+  // Task 15.7: ~9 KB of CSS is inlined instead of two render-blocking requests (style-src allows inline).
+  experimental: { inlineCss: true },
   async headers() {
     if (!isProd) return [];
     return [

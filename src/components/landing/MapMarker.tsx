@@ -13,7 +13,7 @@ export function markerPosition(p: { x: number; y: number }): { left: string; top
 }
 
 /** Shape + glyph + word; colour is never the only signal. */
-export function MapMarker(props: { row: LandingRow; selected?: boolean; onOpen: (locationId: string) => void }) {
+export function MapMarker(props: { row: LandingRow; selected?: boolean; labelSide?: "right" | "left" | undefined; onOpen: (locationId: string) => void }) {
   const { row, selected } = props;
   if (!row.point) return null;
   const pos = markerPosition(row.point);
@@ -24,6 +24,9 @@ export function MapMarker(props: { row: LandingRow; selected?: boolean; onOpen: 
     : b.activity === "not_detected"
       ? `${styles.dot} ${styles.dotNd}`
       : styles.dot;
+  const labelCls = [styles.markerLabel, props.labelSide ? styles.labelOn : "", props.labelSide === "left" ? styles.labelLeft : ""]
+    .filter(Boolean)
+    .join(" ");
   const style = { ...pos, ...(b.kind === "level" ? { "--level-color": b.cssVar } : {}) } as CSSProperties;
   const word = row.noSite ? null : b.word;
   const glyph = !unknown && row.trend !== "unknown" ? trendGlyphModel(row.trend).glyph : null;
@@ -31,7 +34,9 @@ export function MapMarker(props: { row: LandingRow; selected?: boolean; onOpen: 
   return (
     <button
       type="button"
-      className={selected ? `${styles.marker} ${styles.selected}` : styles.marker}
+      className={[styles.marker, selected ? styles.selected : "", props.labelSide ? styles.markerLabelled : ""]
+        .filter(Boolean)
+        .join(" ")}
       style={style}
       aria-label={name}
       aria-current={selected ? "true" : undefined}
@@ -39,7 +44,7 @@ export function MapMarker(props: { row: LandingRow; selected?: boolean; onOpen: 
       onClick={() => props.onOpen(row.location.locationId)}
     >
       <span className={dotCls} aria-hidden="true" />
-      <span className={styles.markerLabel} aria-hidden="true">
+      <span className={labelCls} aria-hidden="true" data-label={props.labelSide}>
         {b.kind === "level" ? <span className={styles.markerIcon}>{b.icon}</span> : null}
         {row.location.locationName}
         {word ? ` · ${word}` : ""}

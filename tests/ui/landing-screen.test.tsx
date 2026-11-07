@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { Suspense } from "react";
 import { buildLandingRows } from "../../src/lib/view/landing-rows";
 import { deriveLandingStatus, staleWeekFor } from "../../src/lib/view/landing-status";
+import { CanadaMap } from "../../src/components/landing/CanadaMap";
 import { LandingScreen } from "../../src/components/landing/LandingScreen";
 import type { LandingScreenProps } from "../../src/components/landing/LandingScreen";
 import { TREND_SOURCE_URL } from "../../src/evidence/copy/sources";
@@ -56,6 +57,7 @@ const base: LandingScreenProps = {
   onView: () => {},
   mapShown: false,
   onToggleMap: () => {},
+  mapComponent: CanadaMap,
   onOpen: () => {},
   clocks: {},
 };

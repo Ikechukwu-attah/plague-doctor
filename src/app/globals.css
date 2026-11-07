@@ -40,6 +40,15 @@
   --paper-ink: #0b1020;
   --paper-glyph-dark: #9a6512;
 
+  /* Provenance trigger "i": glyph and ring, chosen by surface (UI-7.1, UI-13.5).
+     Default is the dark shell; .paper surfaces override the two properties. */
+  --prov-glyph: var(--prov-glyph-dark);
+  --prov-ring: var(--prov-ring-dark);
+  --prov-glyph-dark: #eadfc8; /* on ink-800 */
+  --prov-ring-dark: #b9ae98; /* on ink-800 */
+  --prov-glyph-paper: #0b1020; /* on parchment */
+  --prov-ring-paper: #0b1020; /* on parchment */
+
   /* Type families (set by next/font in layout.tsx, with fallbacks) */
   --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
   --font-ui: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -72,6 +81,8 @@
 
   /* Targets and focus */
   --target-min: 44px;
+  /* Site header block height (Shell.module.css fixes the header to this); drawer top and map height maths use it */
+  --header-height: 77px;
   --focus-ring-width: 3px;
   --focus-ring: var(--focus-ring-width) solid var(--lantern);
   --focus-ring-offset: 2px;
@@ -82,6 +93,12 @@
   --card-transition: 200ms ease;
 }
 
+@media (max-width: 639px) {
+  /* Header wraps (brand above nav) on narrow screens; the token follows. */
+  :root {
+    --header-height: 132px;
+  }
+}
 *,
 *::before,
 *::after {

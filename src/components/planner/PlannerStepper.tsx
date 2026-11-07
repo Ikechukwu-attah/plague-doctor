@@ -34,6 +34,7 @@ import { WhenStep } from "./WhenStep";
 import { WhereStep, type LocationsView } from "./WhereStep";
 import { WhoStep } from "./WhoStep";
 import { canAdvance, canEnterStep, isStepComplete } from "./step-access";
+import { stepSummary } from "./step-summary";
 import styles from "./Planner.module.css";
 
 function init(): PlannerState {
@@ -109,6 +110,7 @@ export function PlannerStepper() {
             const enterable = canEnterStep(state, step);
             const current = state.step === step;
             const done = isStepComplete(state, step);
+            const summary = stepSummary(state, step, now);
             return (
               <li key={step}>
                 <button
@@ -118,10 +120,13 @@ export function PlannerStepper() {
                   aria-current={current ? "step" : undefined}
                   onClick={() => dispatch({ type: "goto", step })}
                 >
-                  <span className={styles.railMark} aria-hidden="true">
+                  <span className={styles.railMark} data-done={done ? "true" : undefined} aria-hidden="true">
                     {done ? "\u2713" : i + 1}
                   </span>
-                  <span>{STEP_NAV_LABELS[step]}</span>
+                  <span className={styles.railText}>
+                    <span className={styles.railLabel}>{STEP_NAV_LABELS[step]}</span>
+                    {summary !== undefined ? <span className={styles.railSummary}>{summary}</span> : null}
+                  </span>
                   <span className="visually-hidden">
                     {current ? STEP_CURRENT : done ? STEP_DONE : !enterable ? STEP_LOCKED : ""}
                   </span>

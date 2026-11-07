@@ -699,6 +699,192 @@
         "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
         "timestamp": 1794037616503
       }
+    ],
+    "15.1 Provenance trigger visibility and contrast": [
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073915805
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073922033
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794074206216
+      }
+    ],
+    "15.2 City detail surface: drawer, sheet and single close control": [
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073915994
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794074210337
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794075091154
+      }
+    ],
+    "15.3 Shared PageContainer": [
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073916060
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073922216
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794074206439
+      }
+    ],
+    "15.4 Landing map fits the viewport; labels and fog": [
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073916142
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794075208672
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794078624122
+      }
+    ],
+    "15.5 Planner stepper with completed-step summaries": [
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073916212
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073922377
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794074206532
+      }
+    ],
+    "15.6 Bird icon on the Omen Card and favicon": [
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073916294
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794074210728
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794075091400
+      }
+    ],
+    "15.7 Landing LCP and performance": [
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073916348
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794078625179
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794080849479
+      }
+    ],
+    "15.8 Re-verify and report before/after": [
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794073916464
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794080849294
+      },
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794082845629
+      }
+    ],
+    "15. Visual fidelity and performance fixes (post-verification)": [
+      {
+        "executionId": "ff19b2f2-d4dd-4ac2-bebf-49912302f48a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794082845728
+      }
+    ],
+    "16.1 Planner Who step summary follows the spec": [
+      {
+        "executionId": "5e03f3fe-d8f7-4f06-a765-dde5565183ff",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794083004755
+      },
+      {
+        "executionId": "5e03f3fe-d8f7-4f06-a765-dde5565183ff",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794083090109
+      }
+    ],
+    "16.2 Data attribution line": [
+      {
+        "executionId": "5e03f3fe-d8f7-4f06-a765-dde5565183ff",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794083005213
+      },
+      {
+        "executionId": "5e03f3fe-d8f7-4f06-a765-dde5565183ff",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794083090183
+      }
+    ],
+    "16.3 Delete scratch files and verify": [
+      {
+        "executionId": "5e03f3fe-d8f7-4f06-a765-dde5565183ff",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794083093958
+      },
+      {
+        "executionId": "5e03f3fe-d8f7-4f06-a765-dde5565183ff",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794083127732
+      }
+    ],
+    "16. Follow-ups": [
+      {
+        "executionId": "5e03f3fe-d8f7-4f06-a765-dde5565183ff",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794083128045
+      }
     ]
   }
 }

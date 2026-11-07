@@ -82,7 +82,7 @@ export function buildLandingRows(input: {
         ...(pt ? { point: { x: pt.x, y: pt.y } } : {}),
         markerLabel: noSite
           ? `${location.locationName}, no monitoring site`
-          : `${location.locationName}, ${virus}: no data`,
+          : `${location.locationName}, no data, ${virus}`,
       };
     }
 
@@ -96,8 +96,9 @@ export function buildLandingRows(input: {
     const level = levelLabel(obs.activityIndex);
     const label =
       obs.activityIndex === "unknown"
-        ? `${location.locationName}, ${virus}: no data, ${weekOf(obs.weekStart)}`
-        : `${location.locationName}, ${virus}: ${level}, ${trendLabel(obs.trend)}, ${weekOf(obs.weekStart)}`;
+        ? `${location.locationName}, no data, ${virus}, ${weekOf(obs.weekStart)}`
+        : // WCAG 2.5.3: the name starts with the visible map label ("{name} · {level}").
+          `${location.locationName}, ${level}, ${virus}, ${trendLabel(obs.trend)}, ${weekOf(obs.weekStart)}`;
     return {
       location,
       observation: obs,

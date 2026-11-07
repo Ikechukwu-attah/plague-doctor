@@ -91,3 +91,81 @@ All three use Kiro's native hook schema and appear in the Agent Hooks panel.
 - Visual fidelity against `design/*.dc.html` not verified.
 - Wikipedia citations for 3 approximate city overrides not fetched.
 - PHAC reuse-licence wording not confirmed.
+
+## Task 15.7 — Landing LCP and performance
+
+Tooling: Lighthouse 12.8.2, mobile defaults (simulated slow 4G, 4x CPU), against `next start` on a production build. Single runs vary by up to ~25 perf points on this machine (one run in five often lands a 1.5-2 s TBT spike from background load), so after-numbers are medians of 5 runs.
+
+### Before
+- Reported baseline: `/` perf 49, a11y 100, LCP 5.5 s (limitation `<p>`, TTFB ~0.6 s, render delay ~4.9 s), CLS 0.013, TBT 1750 ms, First Load JS 163 kB.
+- Reproduced on the same commit (2 runs): perf 85-86, LCP 3.0-3.1 s, TBT 330-360 ms, CLS 0.057-0.068, First Load JS 164 kB. Render-blocking CSS: 2 files (6.6 KB, 3.0 KB), ~510 ms.
+
+### Diagnosis (from the saved trace and audits)
+- **The paragraph was never late in the browser.** In the trace, observed FCP = observed LCP ≈ 0.2 s. The h1 and limitation line were already in the server HTML (`src/app/page.tsx` is a server component, outside the Suspense boundary). The 3-5 s "render delay" is Lighthouse's *simulated* LCP. Lantern charges every request that starts before the observed LCP, simulated on slow 4G + 4x CPU. That covers the 2 render-blocking CSS files, 4 preloaded fonts (~117 KB), and every initial script chunk, including the 163 kB of route JS.
+- **What was in that JS:** `LandingView` and everything below it were in the route's initial chunks: `CanadaMap`, 36 KB of projected province paths, `FogLayer`, `MapMarker`, `DetailSurface` → `CityDetail`, and Zod (~57 KB raw). Zod got in through the root layout: `ApiProvider` → `lib/api/client.ts`, so it loaded on every route. Script evaluation was ~700 ms, with long tasks of 165-190 ms in the shared chunks during hydration.
+- **The LCP element in the reproduction was the footer `<p>`**, not the hero. While the data island showed a short skeleton, the footer sat high on the page as the largest text block. When the rows arrived it moved down, which caused the 0.057 CLS.
+- **The fog is not a cost.** It is pure CSS animation on ~50 spans, which is compositor-only after paint. No polling, intervals or refetch loops exist (`grep setInterval|refetch` is empty).
+
+### Fixes
+1. `LandingIsland` (client) loads `LandingView` with `next/dynamic` (`ssr:false`). In parallel it loads the Zod-backed API client (`lib/api/client-impl.ts`), so the four reads are not one chunk later. The h1 and limitation line stay as plain server markup in `page.tsx`, outside any client wrapper or Suspense fallback. The text is unchanged.
+2. `CanadaMap` (outlines, fog, markers) and `DetailSurface` (→ `CityDetail`) are `next/dynamic` chunks inside the island. `LandingScreen` takes the map as a `mapComponent` prop, so the presentational tests still render it statically. `CITY_LIST_ID` and `useDetailMode` moved to tiny modules (`landing-ids.ts`, `detail-mode.ts`), so the list and the view no longer pull in the map or detail chunks.
+3. `lib/api/client.ts` is now a type-only facade that imports `client-impl` on the first request. Zod is gone from the root layout and from every route's first load.
+4. `experimental.inlineCss`: the two render-blocking stylesheets are inlined. CSP already allows `style-src 'unsafe-inline'`.
+5. Only Inter (the LCP paragraph's font) is preloaded. Cormorant and JetBrains Mono keep `display: swap` with `preload: false`. Dropping the Inter preload as well made FCP worse (1.4 s), so it stays.
+6. The island's pending state reserves `70dvh`, so the footer is no longer the LCP candidate and does not jump when the rows arrive.
+
+### After (`/`, median of 5)
+| metric | before (reported) | before (reproduced) | after |
+|---|---|---|---|
+| Performance | 49 | 85-86 | **92** (85-95) |
+| LCP | 5.5 s | 3.0-3.1 s | **2.4 s** (2.4-2.5) |
+| TBT | 1750 ms | 330-360 ms | **280 ms** (190-500) |
+| CLS | 0.013 | 0.057-0.068 | **0.01** |
+| Render-blocking CSS | 2 files | 2 files, ~510 ms | **0** |
+| LCP element | limitation `<p>` | footer `<p>` | limitation `<p>` |
+| First Load JS `/` | 163 kB | 164 kB | **108 kB** |
+
+Other routes (2 runs each, informational; 15.8 does the full pass): `/plan` 87-92 / LCP 2.9-3.0 s; `/methods` 85-92 / LCP 2.5-2.7 s (First Load JS 126 → 111 kB); `/city/toronto` 80-87 / LCP 2.6-2.8 s (First Load JS 137 → 123 kB). **`/city/toronto` shows CLS 0.168:** the site footer shifts when the city data replaces the loading state. This is not caused by 15.7, but it needs fixing in 15.8.
+
+What is left in the simulated LCP is mostly the 103 kB of JS that Next shares across all routes (React + router), which every route requests before first paint.
+
+### Real bugs found while doing this
+1. **A11y bug hidden by timeouts: map marker label-in-name (WCAG 2.5.3).** Before this task, the axe "landing page" test always timed out on `networkidle` under parallel load, so it never got to run axe. Once it ran, axe reported `label-content-name-mismatch` (serious) on every labelled map marker. The visible label "Calgary · Moderate" was not contained in the accessible name "Calgary, fluA: Moderate, …". Fix in `lib/view/landing-rows.ts`: names now start with the visible text ("Calgary, Moderate, fluA, stable, week of …"; unknown: "X, no data, fluA, week of …"). No data semantics changed.
+2. **The `networkidle` timeouts were load, not an endless request.** On an idle server `networkidle` settles in under 1 s (`/` 0.9 s, `/plan` 1.2 s). The Playwright trace of a failure showed static chunks taking 4.5 s and `/api/observations` 5.5 s, because several workers share one `next start` process. Nothing polls. `expect.timeout` was raised to 10 s in `playwright.config.ts` for data-dependent assertions.
+
+### Tests added
+- `tests/ui/landing-ssr.test.tsx`: the server markup contains the h1 and the unchanged limitation line before the loading placeholder. `page.tsx` has no `"use client"`, and the hero is not inside a client wrapper or Suspense. The island, map and detail surface are loaded with `next/dynamic`.
+- `e2e/landing-ssr.spec.ts`: with JavaScript disabled, the h1 and limitation line are visible.
+
+## Task 15.8 — Re-verification, before/after
+
+Lighthouse 12.8.2, mobile defaults, median of 3 runs, production build (`next start`). Before = numbers recorded before group 15.
+
+| Route | Perf | A11y | Best-practices | LCP | CLS | TBT |
+|---|---|---|---|---|---|---|
+| `/` before | 49 | 100 | 96 | 5.5 s | 0.013 | 1750 ms |
+| `/` after | 93 | 100 | 100 | 2.39 s | 0.010 | 252 ms |
+| `/plan` before | 78 | 100 | 96 | 3.2 s | 0 | 600 ms |
+| `/plan` after | 95 | 100 | 100 | 2.74 s | 0 | 125 ms |
+| `/methods` before | 89 | 100 | 96 | 3.0 s | 0 | 260 ms |
+| `/methods` after | 94 | 100 | 100 | 2.38 s | 0 | 226 ms |
+| `/city/toronto` before | 86 | 100 | 96 | 3.6 s | 0 | 220 ms |
+| `/city/toronto` after | 90 | 100 | 100 | 2.55 s | 0.000 | 322 ms |
+
+Run-to-run spread on `/` was 89 to 93 across two passes, so treat the LCP figures (2.4 to 2.5 s) as at the 2.5 s target, not clearly under it. The 0.168 CLS seen earlier on `/city/toronto` is fixed by reserving height on the city page container (`PageContainer` `city` variant, `min-height: 140vh`); it is a blunt reservation, not a measured skeleton height. Best-practices 100 on all four routes means the favicon 404 console error is gone (no `favicon.ico` route was needed).
+
+| Check | Baseline | Now |
+|---|---|---|
+| vitest | 45 files / 398 tests | 51 files / 429 tests |
+| Playwright (incl. axe) | 57 passed / 18 skipped | 64 passed / 20 skipped (skips are the project-conditional cases, no new exceptions) |
+| `tsc --noEmit`, `npm run build` | pass | pass; First Load JS `/` 108 kB, `/city/[id]` 123 kB, `/plan` 136 kB |
+
+Defects found in the screenshot pass and fixed: the drawer left a 77 px gap under a scrolled, non-sticky header (header now sticky at ≥ 1024 px); the provenance `i` stretched to a full-width pill in the mobile card grid (`justify-self: start`); no space between the planner intro and the stepper.
+
+### Real bugs found in group 15
+
+1. Provenance glyph colour equalled the paper colour on the parchment card, so the `i` was invisible. Fixed with per-surface tokens and a contrast test.
+2. `.drawer` had no `position`, so it sat in document flow and shifted the map and list. Now `position: fixed`.
+3. The fog `span` was `display: inline`, giving it zero size, so no glow rendered. Now a block layer.
+4. Map marker visible label inside the accessible name (WCAG 2.5.3 Label in Name, axe serious). The `networkidle` timeouts had hidden it, and those timeouts were server load, not polling.
+5. Footer layout shift on the city page when data replaced the loading state (CLS 0.168).

@@ -229,6 +229,75 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - Report in the final reply: what was built, gate results (tsc, vitest, build, Playwright), First Load JS size, bugs found and fixed, and what was not verified (visual fidelity, LCP, assistive technology, PHAC reuse-licence wording)
     - _Requirements: 17.10, 17.11_
 
+- [x] 15. Visual fidelity and performance fixes (post-verification)
+  - Constraints for the whole group: do not touch `src/evidence/**` or the wording guard (`checkWording`); share text output stays unchanged; do not touch licence text; keep all existing tests green (baseline: vitest 45 files / 398 tests, Playwright 57 passed / 18 skipped); use file-write tools only for edits (no sed/awk/echo redirection); no hardcoded cities, sites or coverage; no invented data; no new health claims (honesty copy is kept as is).
+  - Breakpoint decision (supersedes the 640–1023 sheet range in 6.2): drawer ≥ 1024 px, bottom sheet 768–1023 px, navigate to `/city/{id}` below 768 px. The "Show map" collapse below 640 px (UI-4.8) is unchanged. `requirements.md` UI-5.9 and `design.md` are already updated to match.
+  - [x] 15.1 Provenance trigger visibility and contrast
+    - In `src/components/city/ProvenanceTrigger` render a visible "i" glyph (text or SVG, not colour alone) with an accessible name, on both the parchment card (`Card.module.css`) and dark surfaces (`City.module.css`); glyph and ring ≥ 4.5:1 against their own background, 44 px hit target preserved, lantern focus ring kept
+    - Use CSS tokens so the parchment and dark variants are chosen by surface, not by duplicated components
+    - Add `tests/ui/provenance-trigger.test.tsx`: markup test (glyph present, `aria-label`, `button` type, both surface variants) and a contrast test computing ratios from the token hex values (≥ 4.5:1 on parchment and on dark)
+    - Extend `e2e/a11y.spec.ts` with an axe check scoped to the card (`/card?…`) and city (`/city/toronto`) triggers, failing on serious/critical
+    - _Requirements: UI-7.1, UI-7.3, UI-1.2, UI-13.1, UI-13.5, UI-13.6_
+  - [x] 15.2 City detail surface: drawer, sheet and single close control
+    - In `src/components/landing/DetailSurface` and `src/components/city/CityDetail`: ≥ 1024 px fixed 400 px right-hand drawer; 768–1023 px bottom sheet; below 768 px navigate to `/city/{id}` (update the `useMediaQuery` thresholds and the row/marker activation logic)
+    - Position `fixed`/`sticky` so the surface is never in document flow (no layout shift of the map or list when opened); scroll inside the surface; Escape closes, focus moves to the heading on open and returns to the opener on close
+    - Exactly one close control: remove the duplicate X/Close button so only a single labelled close button remains in drawer and sheet variants (the page variant has none)
+    - Add `tests/ui/detail-surface.test.tsx` (variant chosen per width including 767/768/1023/1024, one close control in markup, fixed/sticky class) and Playwright cases in `e2e/keyboard-and-viewport.spec.ts` for 1440, 900 and 390 px (surface position fixed, single `Close` button, focus return, no horizontal scroll)
+    - _Requirements: UI-5.9, UI-4.8, UI-5.10, UI-13.2, UI-13.3, UI-13.4_
+  - [x] 15.3 Shared PageContainer
+    - Create `src/components/shell/PageContainer.tsx` (+ module CSS): content centred, max width about 1100 px, 16 px gutter on mobile, optional `variant="city"` for the city page; renders a plain wrapper (no landmark change; `main#content` stays in the layout)
+    - Replace ad hoc wrapper layout in `src/app/plan/page.tsx`, `src/app/card/page.tsx`, `src/app/methods/page.tsx` and `src/app/city/[locationId]/page.tsx`; remove the now-unused per-page container CSS
+    - Add `tests/ui/page-container.test.tsx` (class/props, variants, each route's markup uses it) and keep Playwright no-horizontal-scroll checks at 390 px green
+    - _Requirements: UI-1.1, UI-1.3, UI-13.2, UI-8.12, UI-9.1, UI-11.1_
+  - [x] 15.4 Landing map fits the viewport; labels and fog
+    - In `LandingView`/`CanadaMap`/`CityList` and their CSS: map height bounded to the viewport (e.g. `max-height: calc(100dvh - header - controls)` with the SVG `preserveAspectRatio` kept), no 850 px-tall map; the city list scrolls inside its own column (`overflow-y: auto`, bounded height) and the page itself does not grow with the list
+    - Read `design/Main.dc.html` to determine which markers the comp labels and how many; implement a data-derived label rule, not a hardcoded name list: always label the selected city, plus the top N locations (N taken from the comp) ranked by population from `src/data/geo/city-points.json` (build-time attribute), with a collision check so labels never overlap, and ties/unknowns resolved by `locationId` order; labels are text next to the marker and never replace the accessible name
+    - Verify the fog glows render visibly: check the `FogLayer` blur/opacity/z-order and that glows sit behind markers and are not clipped by the bounded container; record the screenshot check at 1440 and 390 px
+    - Add `tests/ui/landing-map.test.tsx` (label set = selected + top N, derived from supplied points, stable under shuffle; no label for cities without a point; fog layer present per level), and a Playwright check for map height ≤ viewport and an internally scrolling list at 1440×900
+    - _Requirements: UI-3.1, UI-3.4, UI-3.5, UI-3.6, UI-3.11, UI-3.12, UI-4.1, UI-4.5, UI-13.2, UI-13.7_
+  - [x] 15.5 Planner stepper with completed-step summaries
+    - Per `design/Planner.dc.html`, show a check mark and a one-line summary on each completed step in `PlannerStepper` (place; date plus days away via `explainTiming`; setting); summaries come from `ui-copy` templates and the planner view model; the Who step shows nothing that reveals attendee categories
+    - Keep the stepper an ordered list with `aria-current` on the active step; the check mark is a glyph with a text alternative, not colour alone
+    - Add `tests/ui/planner-stepper.test.tsx` (check and summary appear only for completed steps; summary text for place/date/setting; no attendee content; wording guard on summaries) and extend the planner Playwright case
+    - _Requirements: UI-8.1, UI-8.3, UI-8.4, UI-8.5, UI-8.7, UI-13.3, UI-14.5_
+  - [x] 15.6 Bird icon on the Omen Card and favicon
+    - Extract the bird glyph from the logo in the `design/*.dc.html` comps into `src/components/design-system/BirdIcon.tsx` (inline SVG, `aria-hidden`, `currentColor`) and show it in the `OmenCard` header
+    - Add `src/app/icon.svg` from the same glyph so Next serves the favicon, and ensure no request for `/favicon.ico` returns 404 (add `src/app/favicon.ico` only if the Next icon route does not satisfy the request)
+    - Add `tests/ui/bird-icon.test.tsx` (card header markup contains the icon; `src/app/icon.svg` exists, is valid SVG and uses the same path data as `BirdIcon`) and a Playwright check that `/icon.svg` and the favicon request return 200 with no 404 on `/`
+    - _Requirements: UI-1.1, UI-1.2, UI-9.1, UI-13.1_
+  - [x] 15.7 Landing LCP and performance
+    - Diagnose first, before changing code: run a production build, a Lighthouse mobile run on `/` with a saved trace, and a bundle analysis; identify the real cause of the 4.9 s render delay on the limitation `<p>` (render-blocking CSS, font loading, hydration and TBT from `LandingView`, long tasks); record the findings and the before numbers in `docs/KIRO_USAGE.md`
+    - Make the `h1` and limitation line fully server-rendered with no client dependency (no client wrapper or Suspense fallback around them), keeping the limitation text unchanged
+    - Defer non-critical client work until after first paint: code-split `CanadaMap` and `DetailSurface` with `next/dynamic`, render fog and the city list after first paint (e.g. `useEffect`/idle callback or `startTransition`), avoid blocking CSS and font swaps that delay the paragraph (`font-display: swap`, preload only the font used by the LCP element)
+    - Targets on `/` (Lighthouse mobile): performance ≥ 80, LCP < 2.5 s; First Load JS for `/` must not exceed the 163 kB baseline; no honesty copy removed
+    - Add `tests/ui/landing-ssr.test.tsx` (server markup of `/` contains the `h1` and limitation line without client-only code) and a Playwright check that the limitation line is visible before hydration (JavaScript disabled)
+    - _Requirements: UI-16.1, UI-16.2, UI-16.3, UI-2.1, UI-12.1, UI-1.12_
+    - Findings (details and tables in `docs/KIRO_USAGE.md` § Task 15.7): observed LCP = FCP ≈ 0.2 s in the trace. The "render delay" is Lighthouse's simulated cost of everything requested before first paint: 2 render-blocking CSS files, 4 preloaded fonts, and 163 kB of route JS (map, province paths, detail surface, CityDetail, and Zod pulled into the root layout via ApiProvider). Fixed with a lazy island plus lazy map and detail, a Zod-free client facade, inlined CSS, an Inter-only preload, and a reserved-height pending state. `/` median: perf 92, LCP 2.4 s, TBT 280 ms, CLS 0.01, First Load JS 108 kB. Also fixed: map marker label-in-name (axe serious), which the networkidle timeouts had been masking (those timeouts came from server load, not polling).
+  - [x] 15.8 Re-verify and report before/after
+    - Run `npx tsc --noEmit`, `npx vitest run`, `npm run build` (read First Load JS), `npx playwright test` including axe, and Lighthouse (mobile) on `/`, `/plan`, `/methods` and `/city/toronto`
+    - Capture screenshots at 1440 px and 390 px and compare them with `design/Main.dc.html`, `design/Planner.dc.html`, `design/OmenCard.dc.html`, `design/Mobile.dc.html` and `design/States.dc.html` (390 px for the Mobile and States comps); list remaining differences honestly
+    - Report before/after: Lighthouse `/` perf 49 / a11y 100 / LCP 5.5 s / TBT 1750 ms; `/plan` 78 / LCP 3.2 s; `/methods` 89 / LCP 3.0 s; `/city/toronto` 86 / LCP 3.6 s; vitest 45 files / 398 tests; Playwright 57 passed / 18 skipped; First Load JS `/` 163 kB; add the table and any bugs found to `docs/KIRO_USAGE.md`
+    - Confirm `src/evidence/**`, the wording guard, share text and licence text are unchanged (`git diff --stat` shows no changes to them)
+    - _Requirements: UI-1.1, UI-3.1, UI-5.9, UI-13.1, UI-13.2, UI-13.5, UI-16.1, UI-16.2, UI-17.6, UI-17.7, UI-17.10_
+
+- [x] 16. Follow-ups
+  - Constraints for the whole group: no other work; do not touch `src/evidence/**` or the wording guard (`checkWording`); do not change any other licence or `EDUCATIONAL_STATEMENT` text.
+  - [x] 16.1 Planner Who step summary follows the spec
+    - The completed Who step in the stepper shows only "Specified" or "Skipped", never category names; categories appear on the Confirm step only
+    - Update `stepSummaryWho` in `src/ui-copy/planner.ts`, `tests/ui/planner-stepper.test.tsx`, and any other tests or e2e specs that expect category text in the stepper
+    - Add a test that no attendee category string appears in the stepper markup
+    - _Requirements: UI-8.7, UI-15.1_
+  - [x] 16.2 Data attribution line
+    - Add the template via `src/ui-copy` (checked by the wording guard in tests) with this exact text: "Data: Wastewater monitoring dashboard: Respiratory virus activity, Public Health Agency of Canada. Reproduced from health-infobase.canada.ca/wastewater; not an official version and not affiliated with PHAC."
+    - Link "health-infobase.canada.ca/wastewater" to `https://health-infobase.canada.ca/wastewater/`
+    - Show it in the site footer (`src/components/shell`) and in the `/methods` Sources section
+    - Add tests for presence on both, the link target, and wording-guard cleanliness; if `checkWording` rejects the exact text, report it instead of altering the guard or the text
+    - _Requirements: UI-11.1, UI-11.7, UI-14.5_
+  - [x] 16.3 Delete scratch files and verify
+    - Delete `.lh-report.cjs` and `.lh-trace.cjs` in the repo root and any temp or scratch files such as `e2e/zz-shots.tmp.ts`
+    - Run `npx tsc --noEmit` and `npx vitest run`, and report the counts
+    - _Requirements: UI-17.10_
+
 ## Notes
 
 - Tests are not marked optional: the repo rule requires tests with every evidence-engine or ingestion change, and the design's 22 properties are the acceptance gate.
@@ -255,7 +324,14 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     { "id": 10, "tasks": ["14.2"] },
     { "id": 11, "tasks": ["14.3"] },
     { "id": 12, "tasks": ["14.4"] },
-    { "id": 13, "tasks": ["14.5"] }
+    { "id": 13, "tasks": ["14.5"] },
+    { "id": 14, "tasks": ["15.1", "15.3", "15.5"] },
+    { "id": 15, "tasks": ["15.2", "15.6"] },
+    { "id": 16, "tasks": ["15.4"] },
+    { "id": 17, "tasks": ["15.7"] },
+    { "id": 18, "tasks": ["15.8"] },
+    { "id": 19, "tasks": ["16.1", "16.2"] },
+    { "id": 20, "tasks": ["16.3"] }
   ]
 }
 ```

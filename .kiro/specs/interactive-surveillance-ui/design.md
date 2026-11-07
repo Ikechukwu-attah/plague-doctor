@@ -245,7 +245,7 @@ flowchart TD
   Landing --> CityList --> CityRow
   Landing --> Legend
   Landing --> FreshnessFooter --> ThreeClocks
-  Landing --> DetailSurface["DetailSurface: drawer ≥1024 / sheet 640–1023"] --> CityDetail
+  Landing --> DetailSurface["DetailSurface: drawer ≥1024 / sheet 768–1023"] --> CityDetail
 
   CityDetail --> CoverageNotice
   CityDetail --> VirusRow --> LevelBadge & TrendGlyph & FreshnessLantern & ProvenanceTrigger
@@ -366,7 +366,7 @@ Radii for low/moderate/high are the comp values (76/124/180).
 | `Legend` | All five `LevelBadge` variants, including hatched "No data", and the sentence "Fog = PHAC activity index for the selected virus. Never personal risk." |
 | `StaleBanner` | Shown when any request fails but last-good data exists, when the latest PHAC trend snapshot entry in `/api/snapshots` has `status: "rejected"` and is newer than the matched valid one, or when the latest sample week is `outdated`. Text: "Showing last verified data from week of {date}". |
 | `FreshnessFooter` | `ThreeClocks` from `buildThreeClocks`. |
-| `DetailSurface` | `variant: "drawer" \| "sheet"` chosen by `useMediaQuery`. Drawer = 400 px right `aside`; sheet = bottom sheet. Below 640 px marker/row activation navigates to `/city/{id}` instead. Non-modal landmark with close button, `Escape` closes, focus moves to its heading on open and returns to the opener on close. |
+| `DetailSurface` | `variant: "drawer" \| "sheet"` chosen by `useMediaQuery`. Drawer = 400 px right `aside`; sheet = bottom sheet. Below 768 px marker/row activation navigates to `/city/{id}` instead. Fixed/sticky, outside document flow, with exactly one close button; `Escape` closes, focus moves to its heading on open and returns to the opener on close. |
 
 ### City detail (`src/components/city/`, UI-5, UI-6, UI-7)
 

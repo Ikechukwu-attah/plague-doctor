@@ -41,6 +41,26 @@ export const LIMITS: readonly string[] = [
 export const EDUCATIONAL_STATEMENT =
   "Plague Doctor is an educational project that uses data published by the Public Health Agency of Canada. It is not affiliated with the Public Health Agency of Canada or the Government of Canada, and implies no endorsement by either.";
 
+/** Data attribution (UI-11.1, UI-11.7): parts so the link can be rendered inline. */
+export interface DataAttributionParts {
+  before: string;
+  linkText: string;
+  href: string;
+  after: string;
+}
+
+export const DATA_ATTRIBUTION: DataAttributionParts = {
+  before:
+    "Data: Wastewater monitoring dashboard: Respiratory virus activity, Public Health Agency of Canada. Reproduced from ",
+  linkText: "health-infobase.canada.ca/wastewater",
+  href: "https://health-infobase.canada.ca/wastewater/",
+  after: "; not an official version and not affiliated with PHAC.",
+};
+
+export function dataAttributionText(p: DataAttributionParts = DATA_ATTRIBUTION): string {
+  return `${p.before}${p.linkText}${p.after}`;
+}
+
 export const MISSING_VS_ZERO =
   "Missing data is not zero, and Not detected is not the absence of disease.";
 

@@ -1,5 +1,6 @@
 /* Planner (UI-8). Tokens from globals.css only; every control >= --target-min. */
 .layout {
+  margin-top: var(--space-6);
   display: grid;
   gap: var(--space-6);
   grid-template-columns: 1fr;
@@ -46,6 +47,28 @@
   border: 1px solid var(--line);
   font-family: var(--font-mono);
   font-size: var(--text-12);
+}
+.railItem {
+  align-items: flex-start;
+}
+.railText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.railLabel {
+  font-weight: 600;
+}
+.railSummary {
+  font-size: var(--text-14);
+  color: var(--parchment-dim);
+  overflow-wrap: anywhere;
+}
+.railItem:not(:disabled) .railMark[data-done="true"],
+.railMark[data-done="true"] {
+  background: var(--ink-700);
+  color: var(--lantern);
+  border-color: var(--lantern);
 }
 .panel {
   background: var(--ink-800);

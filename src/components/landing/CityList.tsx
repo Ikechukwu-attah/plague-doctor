@@ -8,7 +8,7 @@ import { NO_MONITORING_SITE } from "@/ui-copy/coverage";
 import { NO_LOCATIONS, NO_MATCHING_LOCATIONS } from "@/ui-copy/states";
 import { weekOf } from "@/ui-copy/timing";
 import { CITY_LIST_LABEL, FIND_CITY_LABEL, FIND_CITY_PLACEHOLDER, SEARCHING } from "@/ui-copy/landing";
-import { CITY_LIST_ID } from "./CanadaMap";
+import { CITY_LIST_ID } from "./landing-ids";
 import styles from "./Landing.module.css";
 
 export interface CityRowProps {

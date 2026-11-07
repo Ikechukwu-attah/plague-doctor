@@ -9,7 +9,7 @@ import {
   createdAt,
   notDetectedNote,
 } from "@/ui-copy/card";
-import { Notice } from "@/components/design-system";
+import { BirdIcon, Notice } from "@/components/design-system";
 import { ChecklistBlock } from "./ChecklistBlock";
 import { HistoricalStatementRow } from "./HistoricalStatementRow";
 import { VirusStatementRow } from "./VirusStatementRow";
@@ -22,12 +22,15 @@ export function OmenCard({ view }: { view: CardView }) {
     view.timing === "near" && view.rows.some((r) => r.badge.kind === "level" && r.badge.activity === "not_detected");
   return (
     <article className={styles.paper} aria-label={OMEN_CARD_LABEL} data-timing={view.timing}>
-      <div>
-        <div className={styles.eyebrow}>{OMEN_CARD_LABEL}</div>
-        <h1 className={styles.title}>{header.title}</h1>
-        <div className={styles.meta}>
-          {header.place} · <span>{formatDisplayDate(header.eventDate)}</span> · {header.setting}
+      <div className={styles.headerRow}>
+        <div>
+          <div className={styles.eyebrow}>{OMEN_CARD_LABEL}</div>
+          <h1 className={styles.title}>{header.title}</h1>
+          <div className={styles.meta}>
+            {header.place} · <span>{formatDisplayDate(header.eventDate)}</span> · {header.setting}
+          </div>
         </div>
+        <BirdIcon size={56} strokeWidth={1.4} className={styles.bird} />
       </div>
 
       {view.timing === "near" ? (

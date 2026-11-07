@@ -140,7 +140,7 @@ describe("UI-11.1 to 11.11 MethodsView markup", () => {
     expect(ready).toContain(`Latest snapshot ID: ${FIXTURE_SNAPSHOT_ID}`);
     expect(ready).toContain("This snapshot lists 5 locations, 1 of them");
     const html = renderToStaticMarkup(<MethodsView clocks={clocks} coverage={null} />);
-    expect((html.match(/href="https:\/\/health-infobase/g) ?? []).length).toBe(5);
+    expect((html.match(/href="https:\/\/health-infobase/g) ?? []).length).toBe(6); // 5 sources + the attribution line link (16.2)
     expect(html).toContain("reduce-spread");
   });
 

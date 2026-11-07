@@ -1,4 +1,6 @@
 "use client";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { selectMapLabels } from "@/lib/view/map-labels";
 import type { Pathogen } from "@/evidence/types";
 import type { LandingRow } from "@/lib/view/landing-rows";
 import { fogSpec } from "@/lib/view/fog";
@@ -8,9 +10,10 @@ import type { MapCounts } from "@/ui-copy/landing";
 import { FogLayer } from "./FogLayer";
 import type { FogItem } from "./FogLayer";
 import { MapMarker, MAP_H, MAP_W } from "./MapMarker";
+import { CITY_LIST_ID } from "./landing-ids";
 import styles from "./Landing.module.css";
 
-export const CITY_LIST_ID = "city-list";
+export { CITY_LIST_ID };
 
 const OUTLINES = (provinces as { provinces: Array<{ pruid: string; d: string }> }).provinces;
 
@@ -55,11 +58,29 @@ export function CanadaMap({ rows, virus, week, selectedId, onOpen }: CanadaMapPr
     left: (r.point!.x / MAP_W) * 100,
     top: (r.point!.y / MAP_H) * 100,
   }));
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const [size, setSize] = useState({ width: 640, height: 545 });
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (w > 0 && h > 0) setSize((s) => (s.width === w && s.height === h ? s : { width: w, height: h }));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const labels = useMemo(
+    () => new Map(selectMapLabels(placed, selectedId, size, MAP_W, MAP_H).map((l) => [l.id, l.side])),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rows, selectedId, size],
+  );
   const labelArgs = week ? { virus, week } : { virus };
   return (
     <div className={styles.mapWrap}>
       <SkipMapLink />
-      <div role="group" aria-label={mapLabel(labelArgs)} className={styles.mapBox} data-map="">
+      <div ref={boxRef} role="group" aria-label={mapLabel(labelArgs)} className={styles.mapBox} data-map="">
         <p className="visually-hidden">{mapTextAlternative({ ...labelArgs, counts: countRows(rows) })}</p>
         <svg
           className={styles.outlines}
@@ -74,7 +95,7 @@ export function CanadaMap({ rows, virus, week, selectedId, onOpen }: CanadaMapPr
         </svg>
         <FogLayer items={fog} />
         {placed.map((r) => (
-          <MapMarker key={r.location.locationId} row={r} selected={r.location.locationId === selectedId} onOpen={onOpen} />
+          <MapMarker key={r.location.locationId} row={r} selected={r.location.locationId === selectedId} labelSide={labels.get(r.location.locationId)} onOpen={onOpen} />
         ))}
       </div>
     </div>

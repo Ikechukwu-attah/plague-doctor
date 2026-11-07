@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { LandingView } from "@/components/landing/LandingView";
-import { Skeleton } from "@/components/design-system/Skeleton";
+import { LandingIsland, LandingPending } from "@/components/landing/LandingIsland";
 import { LANDING_HEADING, limitation } from "@/ui-copy/states";
 import styles from "@/components/landing/Landing.module.css";
 
@@ -18,8 +17,8 @@ export default function Home() {
         <h1>{LANDING_HEADING}</h1>
         <p>{limitation()}</p>
       </header>
-      <Suspense fallback={<Skeleton variant="rows" rows={6} />}>
-        <LandingView />
+      <Suspense fallback={<LandingPending />}>
+        <LandingIsland />
       </Suspense>
     </>
   );

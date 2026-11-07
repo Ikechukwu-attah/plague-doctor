@@ -24,7 +24,7 @@ export function ProvenanceTrigger({ model }: { model: ProvenanceModel }) {
         aria-label={provenanceOpenFor({ statement: model.statement })}
         onClick={() => dialogRef.current?.showModal()}
       >
-        <span aria-hidden="true">i</span>
+        <span aria-hidden="true" data-prov-glyph="">i</span>
         <span className="visually-hidden">{PROVENANCE_OPEN}</span>
       </button>
       <dialog

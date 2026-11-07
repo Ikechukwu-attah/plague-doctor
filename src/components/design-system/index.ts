@@ -6,6 +6,7 @@ export { GuideQuote } from "./GuideQuote";
 export type { GuideQuoteModel } from "./GuideQuote";
 export { Notice } from "./Notice";
 export { Skeleton } from "./Skeleton";
+export { BirdIcon } from "./BirdIcon";
 export { Chip } from "./Chip";
 export { Button } from "./Button";
 export { VisuallyHidden } from "./VisuallyHidden";
