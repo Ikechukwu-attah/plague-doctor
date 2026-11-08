@@ -25,3 +25,4 @@ data/normalized/
 # Playwright output
 test-results/
 playwright-report/
+.vercel
