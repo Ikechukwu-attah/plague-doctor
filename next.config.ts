@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
   // Server-side only — never expose ingest logic to the browser bundle
   outputFileTracingRoot: path.resolve(__dirname),
   serverExternalPackages: ["csv-parse"],
+  // The API routes read data/normalized/** via a runtime path (process.cwd()),
+  // which file tracing cannot see. Bundle it explicitly so deployed functions have it.
+  outputFileTracingIncludes: {
+    "/api/**": ["./data/normalized/**/*"],
+  },
   // Task 15.7: ~9 KB of CSS is inlined instead of two render-blocking requests (style-src allows inline).
   experimental: { inlineCss: true },
   async headers() {

@@ -1,0 +1,10 @@
+node_modules
+.next
+test-results
+playwright-report
+coverage
+data/normalized
+data/snapshots/*.csv
+data/snapshots/etag-cache.json
+fixtures/raw-*.csv
+.env*
