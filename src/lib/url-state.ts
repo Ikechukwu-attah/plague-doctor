@@ -39,6 +39,8 @@ export const LandingUrlSchema = z.object({
   city: SlugSchema.optional().catch(undefined),
   view: z.enum(["map", "list"]).optional().catch(undefined),
   discontinued: z.enum(["1"]).optional().catch(undefined),
+  /** Only the non-default value is ever written (UI-19.15). */
+  sort: z.enum(["activity"]).optional().catch(undefined),
 });
 
 export const CardUrlSchema = z
@@ -61,6 +63,8 @@ export interface LandingState {
   city?: string;
   view?: "map" | "list";
   discontinued?: boolean;
+  /** Absent means A–Z. */
+  sort?: "activity" | undefined;
 }
 
 export interface CardParams {
@@ -98,11 +102,13 @@ export function parseLandingUrl(input: UrlInput): LandingState {
     city: r.city,
     view: r.view,
     discontinued: r.discontinued,
+    sort: r.sort,
   });
   const state: LandingState = { virus: p.virus };
   if (p.city !== undefined) state.city = p.city;
   if (p.view !== undefined) state.view = p.view;
   if (p.discontinued === "1") state.discontinued = true;
+  if (p.sort === "activity") state.sort = "activity";
   return state;
 }
 
@@ -113,6 +119,7 @@ export function serializeLandingUrl(s: LandingState): string {
   if (s.city) sp.set("city", s.city);
   if (s.view) sp.set("view", s.view);
   if (s.discontinued) sp.set("discontinued", "1");
+  if (s.sort === "activity") sp.set("sort", "activity");
   return sp.toString();
 }
 

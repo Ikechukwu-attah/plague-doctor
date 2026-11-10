@@ -169,3 +169,48 @@ Defects found in the screenshot pass and fixed: the drawer left a 77 px gap unde
 3. The fog `span` was `display: inline`, giving it zero size, so no glow rendered. Now a block layer.
 4. Map marker visible label inside the accessible name (WCAG 2.5.3 Label in Name, axe serious). The `networkidle` timeouts had hidden it, and those timeouts were server load, not polling.
 5. Footer layout shift on the city page when data replaced the loading state (CLS 0.168).
+
+## Milestone 4
+
+### What was added to the spec
+Requirement 19 (review fixes and Costume Contest polish) plus task group 17 (items 17.1 to 17.13) and group 18 (follow-ups 18.1 to 18.5). Numbering note: `docs/MILESTONE_4_REVIEW_FIXES.md` calls the new group "group 16", but 16 ("Follow-ups") already existed, so it was recorded as group 17.
+
+### Bugs found and fixed (with tests)
+1. Map hit-target overlap: markers' 44 px boxes overlapped, so clicks went to the wrong place (for example Toronto opened london). Verified with `document.elementFromPoint` on the live site. Fixed by clustering (17.1). Tests: `tests/ui/map-clusters.test.ts`, `e2e/marker-hit.spec.ts` (1440 px and 390 px).
+2. Card created date used `toISOString()` (UTC), so an evening in Toronto showed the next day. First fix used the Toronto calendar (17.2), then corrected to the viewer's local calendar date (18.2, `localDateParts` in `src/lib/clock.ts`). Tests: `tests/ui/card-created-date.test.tsx` (Toronto 2026-11-07T23:30-05:00 and Vancouver 22:30-08:00 both "Nov 7, 2026"), Property 24, `clock-scan`.
+3. The 404 page had no padding. Now inside `PageContainer` (17.3). Tests: `tests/ui/page-container.test.tsx`, 390 px no-overflow check extended to `/nope`.
+4. Vancouver showed "No monitoring site" although PHAC covers it as Metro Vancouver. Added a reviewed regional-site table with a citation per row (17.4). Only Vancouver could be verified from PHAC's own location and site names. Peel and Cape Breton were not added because the evidence was not verifiable. Tests: `tests/ui/regional-site.test.tsx`, `e2e/regional-site.spec.ts`.
+5. Planner accepted a six-digit year. Now `min`/`max` and a validation message (17.5). Tests: `tests/ui/planner.test.ts`, `e2e/planner-date.spec.ts`.
+6. The closed provenance `<dialog>` rendered its definitions into the DOM (about 16 copies per city page), which failed UI-12.6 in `tests/ui/screen-states.test.tsx`. The body now mounts only while open (18.1). Tests: `tests/ui/provenance-trigger.test.tsx`, UI-12.6 unchanged.
+7. Build check found a per-route `og:image` override: a route-level `openGraph` object replaced the root one and dropped the image. Fixed in 18.3. Tests: `e2e/social-and-download.spec.ts`, `tests/ui/card-image.test.ts`.
+
+### Before / after
+Lighthouse mobile, median of 3, `/`:
+| Run | Perf | LCP | CLS | TBT | First Load JS |
+|---|---|---|---|---|---|
+| Before M4 | 89 / 91 / 92 | 2.38 / 2.37 / 2.50 s | 0 to 0.01 | 391 / 324 / 257 ms | 108 kB |
+| After M4 | 95 / 95 / 96 (median 95) | 2.35 / 2.39 / 2.31 s (median 2.35 s) | 0.01 / 0.01 / 0.01 | 183 / 209 / 153 ms (median 183 ms) | 109 kB |
+
+Lighthouse 12.8.2, mobile defaults, performance category only, production build without the test clock. Gate (perf 90 or above, LCP 2.5 s or below) passed.
+
+Unit tests at audit time: `tsc --noEmit` clean, vitest 59 files / 494 tests passing.
+
+### Final gate counts (task 18.5)
+- `npx tsc --noEmit`: 0 errors.
+- `npx vitest run`: 59 files / 494 tests passed, 0 failed.
+- `npm run build`: no errors; First Load JS `/` 109 kB (shared 105 kB), `/methods` 112 kB, `/city/[locationId]` 127 kB, `/plan` 139 kB, `/card` 147 kB.
+- `npx playwright test` (desktop, mobile, reduced-motion): 99 passed, 24 skipped, 0 failed after one fix.
+- Defect caught by the full run: `e2e/marker-hit.spec.ts` (cluster chooser) assumed the map stays on screen after choosing a place. Below 768 px (UI-5.9) the app navigates to `/city/{id}`, so the mobile project failed. The test now asserts the city page URL and heading below 768 px and the map marker at 768 px and up. App code unchanged.
+- `git diff --stat -- src/evidence` empty.
+
+### Deviations and process notes
+- The orchestrator's three parallel sub-agents were interrupted mid-run in M4 and task statuses were reset. Statuses were then reconciled against the code and tests (18.4).
+- One e2e edit (`e2e/keyboard-and-viewport.spec.ts`) was made with a python one-liner instead of the file tools.
+- Spec group numbering: doc "group 16" is group 17 here.
+- The PNG card download was feasible (client-side SVG to canvas, no new dependency) and shipped in 18.3.
+
+### Skipped / not done (audit of 17.6 to 17.12)
+- 17.7 Bigger map and quieter markers: not implemented. No "Show places without data" toggle or URL parameter; markers for places without data are not hidden; desktop layout is still the 2fr / 1fr grid.
+- 17.9 Living fog bound to the PHAC level: not complete. The legend sentence "Fog shows PHAC's activity level. It is not your risk." is absent from `src/`; the existing drift and Property 4 tests pass, but the transform/opacity-only and CSS-variable rework and its tests were not done.
+- 17.11 Mask-lift reveal and lantern-and-fog skeleton: not implemented. No `MaskReveal.tsx` or `LanternSkeleton.tsx`.
+- 17.13 Done-means verification is pending in 18.5 (full build, Playwright, Lighthouse after numbers).

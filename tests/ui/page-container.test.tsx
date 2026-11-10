@@ -29,6 +29,8 @@ describe("PageContainer (UI-1.1, UI-13.2)", () => {
       "src/app/card/page.tsx",
       "src/app/methods/page.tsx",
       "src/app/city/[locationId]/page.tsx",
+      "src/app/not-found.tsx",
+      "src/app/error.tsx",
     ]) {
       const src = readFileSync(join(process.cwd(), f), "utf8");
       expect(src, f).toContain("<PageContainer");

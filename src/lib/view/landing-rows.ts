@@ -1,12 +1,12 @@
 /** Landing row view models (UI-3.3, UI-3.6, UI-3.8, UI-3.9, UI-4.1, UI-4.4, C19, C23). */
 import type {
   Direction,
-  LocationEntry,
   Pathogen,
   StatusObservation,
   UnknownReason,
 } from "@/evidence/types";
 import type { FreshnessLabel } from "@/evidence/card-types";
+import type { ApiLocationEntry } from "@/lib/api/location-types";
 import cityPoints from "@/data/geo/city-points.json";
 import { levelBadgeModel, type LevelBadgeModel } from "./level";
 import { freshnessFor } from "./freshness";
@@ -14,7 +14,9 @@ import { levelLabel, trendLabel, virusLabel } from "@/ui-copy/levels";
 import { weekOf } from "@/ui-copy/timing";
 
 export interface LandingRow {
-  location: LocationEntry;
+  location: ApiLocationEntry;
+  /** UI-19.10: the map already draws the regional location's own marker at this point. */
+  duplicateMarker?: boolean;
   observation?: StatusObservation;
   badge: LevelBadgeModel;
   trend: Direction;
@@ -36,7 +38,7 @@ export type PointTable = Readonly<Record<string, { x: number; y: number }>>;
 const POINTS: PointTable = (cityPoints as { entries: PointTable }).entries;
 
 export function buildLandingRows(input: {
-  locations: LocationEntry[];
+  locations: ApiLocationEntry[];
   observations: StatusObservation[];
   virus: Pathogen;
   today: Date | string;
@@ -62,11 +64,16 @@ export function buildLandingRows(input: {
     if (!obsById.has(o.locationId)) obsById.set(o.locationId, o);
   }
 
+  const listedIds = new Set(listed.map((l) => l.locationId));
   const rows = listed.map((location): LandingRow => {
-    const obs = obsById.get(location.locationId);
+    const regional = location.coverage === "regional_site" ? location.regional : undefined;
+    // A regional site shows the PHAC regional location's values and point (no invented coordinates).
+    const sourceId = regional?.targetLocationId ?? location.locationId;
+    const dup = regional && listedIds.has(regional.targetLocationId) ? { duplicateMarker: true } : {};
+    const obs = obsById.get(sourceId);
     const noSite = location.coverage === "no_city_site";
-    const pt = Object.prototype.hasOwnProperty.call(points, location.locationId)
-      ? points[location.locationId]
+    const pt = Object.prototype.hasOwnProperty.call(points, sourceId)
+      ? points[sourceId]
       : undefined;
     const virus = virusLabel(input.virus);
 
@@ -79,6 +86,7 @@ export function buildLandingRows(input: {
         freshness: "no_data",
         noSite,
         stopped: false,
+        ...dup,
         ...(pt ? { point: { x: pt.x, y: pt.y } } : {}),
         markerLabel: noSite
           ? `${location.locationName}, no monitoring site`
@@ -109,6 +117,7 @@ export function buildLandingRows(input: {
       ...(f.ageDays !== undefined ? { ageDays: f.ageDays } : {}),
       noSite,
       stopped,
+      ...dup,
       ...(stopped && obs.unknownReason ? { stoppedReason: obs.unknownReason } : {}),
       ...(stoppedText ? { stoppedText } : {}),
       ...(pt ? { point: { x: pt.x, y: pt.y } } : {}),

@@ -87,6 +87,7 @@ export function LandingView() {
       const next: LandingState = { ...state, ...patch };
       if (next.city === undefined) delete next.city;
       if (next.discontinued !== true) delete next.discontinued;
+      if (next.sort === undefined) delete next.sort;
       router.replace(`${pathname}?${serializeLandingUrl(next)}`, { scroll: false });
     },
     [state, router, pathname],
@@ -207,6 +208,8 @@ export function LandingView() {
             ),
           }
         : {})}
+      sort={state.sort === "activity" ? "activity" : "az"}
+      onSort={(s) => update({ sort: s === "activity" ? "activity" : undefined })}
       showDiscontinued={showDiscontinued}
       onDiscontinued={(checked) => update({ discontinued: checked })}
       wide={wide}

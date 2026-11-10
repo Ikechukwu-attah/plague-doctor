@@ -1,6 +1,6 @@
 "use client";
 import { useId, useState } from "react";
-import type { LocationEntry } from "@/evidence/types";
+import type { ApiLocationEntry as LocationEntry } from "@/lib/api/location-types";
 import type { PlannerState } from "@/lib/view/planner";
 import { Button, Notice, Skeleton } from "@/components/design-system";
 import {
@@ -16,6 +16,7 @@ import {
   WHERE_SEARCH_HELP,
   WHERE_SEARCH_LABEL,
   NO_MONITORING_SITE,
+  REGIONAL_SITE_LABEL,
   noAggregate,
   noCitySite,
   noCoverageHeading,
@@ -45,6 +46,8 @@ function coverageWord(c: LocationEntry["coverage"]): string {
       return WHERE_COVERAGE_PROVINCE;
     case "national":
       return WHERE_COVERAGE_NATIONAL;
+    case "regional_site":
+      return REGIONAL_SITE_LABEL;
   }
 }
 

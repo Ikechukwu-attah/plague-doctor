@@ -5,6 +5,7 @@ import { useApi } from "@/lib/api/provider";
 import { describeApiError } from "@/lib/api/errors";
 import { useResource } from "@/lib/hooks/use-resource";
 import { useToday } from "@/lib/clock";
+import { toTorontoDateString } from "@/evidence/date-utils";
 import { clearAttendees, getAttendees, setAttendees } from "@/lib/attendees-memory";
 import {
   PLANNER_STEP_ORDER,
@@ -195,7 +196,7 @@ function StepBody(props: {
           today={props.today}
           {...(props.latestWeek !== undefined ? { latestWeek: props.latestWeek } : {})}
           latestWeekFailed={props.latestWeekFailed}
-          onChange={(date) => dispatch({ type: "setWhen", date })}
+          onChange={(date) => dispatch({ type: "setWhen", date, today: toTorontoDateString(props.today) })}
         />
       );
     case "setting":

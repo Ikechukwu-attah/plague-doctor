@@ -1,5 +1,6 @@
 import type { CardView } from "@/lib/view/card-view";
 import { formatDisplayDate } from "@/evidence/date-utils";
+import { createdLocalDate } from "@/lib/clock";
 import {
   ATTENDEES_ON_SCREEN_NOTE,
   HISTORICAL_BAND_NOTE,
@@ -9,7 +10,8 @@ import {
   createdAt,
   notDetectedNote,
 } from "@/ui-copy/card";
-import { BirdIcon, Notice } from "@/components/design-system";
+import { Notice } from "@/components/design-system";
+import { WaxSeal } from "./WaxSeal";
 import { ChecklistBlock } from "./ChecklistBlock";
 import { HistoricalStatementRow } from "./HistoricalStatementRow";
 import { VirusStatementRow } from "./VirusStatementRow";
@@ -30,7 +32,7 @@ export function OmenCard({ view }: { view: CardView }) {
             {header.place} · <span>{formatDisplayDate(header.eventDate)}</span> · {header.setting}
           </div>
         </div>
-        <BirdIcon size={56} strokeWidth={1.4} className={styles.bird} />
+        <WaxSeal />
       </div>
 
       {view.timing === "near" ? (
@@ -91,7 +93,7 @@ export function OmenCard({ view }: { view: CardView }) {
         </span>
         <span>
           {header.snapshotId ? `snapshot ${header.snapshotId.slice(0, 12)} · ` : ""}
-          {createdAt({ date: header.createdAt.slice(0, 10) })}
+          {createdAt({ date: createdLocalDate(header.createdAt) })}
         </span>
       </div>
     </article>

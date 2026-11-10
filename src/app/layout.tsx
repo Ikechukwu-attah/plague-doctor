@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { AppShell } from "@/components/shell";
+import { socialMetadata } from "@/lib/social-metadata";
+import { SOCIAL_DEFAULT_DESCRIPTION, SOCIAL_DEFAULT_TITLE } from "@/ui-copy/social";
 import "./globals.css";
 
 /*
@@ -33,10 +35,12 @@ const jetbrains = localFont({
   fallback: ["ui-monospace", "Menlo", "monospace"],
 });
 
+// Fallback origin for absolute og:image URLs (a canonical site address, never fetched).
+const SITE_ORIGIN = "https://plague-doctor.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Plague Doctor — Canadian Wastewater Respiratory Virus Explorer",
-  description:
-    "Educational public-health surveillance and event-planning app. Data: PHAC National Wastewater Monitoring.",
+  metadataBase: new URL(SITE_ORIGIN),
+  ...socialMetadata({ title: SOCIAL_DEFAULT_TITLE, description: SOCIAL_DEFAULT_DESCRIPTION }),
 };
 
 export const viewport: Viewport = {

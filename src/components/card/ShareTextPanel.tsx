@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Button } from "@/components/design-system";
 import { useAnnounce } from "@/components/design-system/LiveRegionProvider";
 import {
@@ -14,7 +14,7 @@ import {
 import styles from "./Card.module.css";
 
 /** Shows exactly `text` (generateShareText output) and copies that same string. */
-export function ShareTextPanel({ text }: { text: string }) {
+export function ShareTextPanel({ text, children }: { text: string; children?: ReactNode }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   const announce = useAnnounce();
 
@@ -39,6 +39,7 @@ export function ShareTextPanel({ text }: { text: string }) {
         <Button variant="primary" onClick={() => void copy()}>
           {COPY_SHARE_TEXT}
         </Button>
+        {children}
       </div>
       {state === "copied" ? <p className={styles.muted}>{COPIED_CONFIRMATION}</p> : null}
       {state === "failed" ? (

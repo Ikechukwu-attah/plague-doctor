@@ -2,10 +2,12 @@
  * Planner view model (UI-8.1, 8.3, 8.4, 8.5, 8.7, 8.11). Pure; no I/O.
  * Attendee categories live only in `state.attendees` and never reach `buildCardUrl`.
  */
-import type { CoverageStatus, TimingState } from "@/evidence/card-types";
+import type { TimingState } from "@/evidence/card-types";
+import type { ApiCoverage } from "@/lib/api/location-types";
 import { calendarDayDiff, toTorontoDateString } from "@/evidence/date-utils";
 import { classifyTiming } from "@/evidence/timing";
 import { isRealDate } from "@/lib/url-state";
+import { validatePlannerDate } from "@/lib/view/date-range";
 import { timingRule, tooEarly } from "@/ui-copy/timing";
 import {
   ATTENDEE_CATEGORIES,
@@ -23,7 +25,7 @@ export const PLANNER_STEP_ORDER: readonly PlannerStep[] = ["where", "when", "set
 
 export interface PlannerState {
   step: PlannerStep;
-  where?: { locationId: string; label: string; coverage?: CoverageStatus };
+  where?: { locationId: string; label: string; coverage?: ApiCoverage };
   when?: string;
   venue?: VenueId;
   kind?: KindId;
@@ -33,7 +35,7 @@ export interface PlannerState {
 
 export type PlannerAction =
   | { type: "setWhere"; where: NonNullable<PlannerState["where"]> }
-  | { type: "setWhen"; date: string }
+  | { type: "setWhen"; date: string; today?: string }
   | { type: "setSetting"; venue: VenueId; kind: KindId }
   | { type: "toggleAttendee"; category: AttendeeCategory }
   | { type: "skipWho" }
@@ -57,7 +59,14 @@ export function plannerReducer(s: PlannerState, a: PlannerAction): PlannerState 
     case "setWhere":
       return a.where.locationId.length > 0 ? { ...s, where: a.where } : s;
     case "setWhen":
-      return isRealDate(a.date) ? { ...s, when: a.date } : s;
+    {
+      // With `today`, the date must also be inside [today, today + 365 days].
+      // An invalid date is treated as missing, so the step cannot stay complete.
+      const ok = a.today !== undefined ? validatePlannerDate(a.date, a.today).ok : isRealDate(a.date);
+      if (ok) return { ...s, when: a.date };
+      const { when: _dropped, ...rest } = s;
+      return rest;
+    }
     case "setSetting":
       return isVenueId(a.venue) && isKindId(a.kind) ? { ...s, venue: a.venue, kind: a.kind } : s;
     case "toggleAttendee": {

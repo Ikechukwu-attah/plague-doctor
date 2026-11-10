@@ -32,21 +32,21 @@ export function VirusRow({ row, place, locationId, grouping }: VirusRowProps) {
           <dt>{CITY_HEADLINE_LABEL}</dt>
           <dd>
             <LevelBadge activity={s.activityIndex} {...(s.unknownReason ? { reason: s.unknownReason } : {})} size="md" />
-            <ProvenanceTrigger model={provenanceFor(s, "Viral_Activity_Level", ctx)} />
+            <ProvenanceTrigger model={provenanceFor(s, "Viral_Activity_Level", ctx)} explain />
           </dd>
         </div>
         <div className={styles.field}>
           <dt>{CITY_SIGNAL_LABEL}</dt>
           <dd>
             <LevelBadge activity={s.signalLevel} />
-            <ProvenanceTrigger model={provenanceFor(s, "latestLevel", ctx)} />
+            <ProvenanceTrigger model={provenanceFor(s, "latestLevel", ctx)} explain />
           </dd>
         </div>
         <div className={styles.field}>
           <dt>{CITY_TREND_LABEL}</dt>
           <dd>
             <TrendGlyph trend={s.trend} />
-            <ProvenanceTrigger model={provenanceFor(s, "latestTrend", ctx)} />
+            <ProvenanceTrigger model={provenanceFor(s, "latestTrend", ctx)} explain />
           </dd>
         </div>
       </dl>
@@ -54,7 +54,7 @@ export function VirusRow({ row, place, locationId, grouping }: VirusRowProps) {
       {s.weekStart ? (
         <p className={styles.observed}>
           <span className={styles.mono}>{cityObservedLine({ week: s.weekStart })}</span>
-          <ProvenanceTrigger model={provenanceFor(s, "weekStart", ctx)} />
+          <ProvenanceTrigger model={provenanceFor(s, "weekStart", ctx)} explain />
           {row.ageDays !== undefined ? <span className={styles.muted}>{ageText({ days: row.ageDays })}</span> : null}
         </p>
       ) : null}

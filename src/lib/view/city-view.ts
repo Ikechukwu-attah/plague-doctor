@@ -8,11 +8,11 @@ import type { CoverageStatus, LocationEntry, Pathogen, StatusObservation } from 
 import type { NearStatement } from "@/evidence/card-types";
 import { buildCard } from "@/evidence/card";
 import { toTorontoDateString } from "@/evidence/date-utils";
-import type { StatusResponse } from "@/lib/api/schemas";
+import type { StatusResponse, ApiCoverage, ApiLocationEntry } from "@/lib/api/schemas";
 import { levelBadgeModel, type LevelBadgeModel } from "./level";
 import { trendGlyphModel, type TrendGlyphModel } from "./trend";
 import { lanternModel, freshnessFor, type LanternModel } from "./freshness";
-import { regionalLabel } from "@/ui-copy/coverage";
+import { regionalLabel, regionalCoverageSentence } from "@/ui-copy/coverage";
 import { unknownReason, UNKNOWN_NO_REASON } from "@/ui-copy/unknown-reasons";
 
 export interface CityVirusRow {
@@ -42,13 +42,23 @@ export type CityCoverageNotice =
       aggregateLabel?: string;
     };
 
+/** UI-19.9: a reviewed PHAC regional location stands in for the city; values are the region's. */
+export interface CityRegionalSite {
+  targetLocationId: string;
+  targetName: string;
+  /** "{City} is covered by PHAC's {Region} site (… plants)." Built from snapshot data. */
+  sentence: string;
+  citation: string;
+}
+
 export interface CityView {
-  location: LocationEntry;
-  coverage: CoverageStatus;
+  location: ApiLocationEntry;
+  coverage: ApiCoverage;
   /** Four rows in fixed order; empty when no value may be shown (offer only, or no aggregate). */
   rows: CityVirusRow[];
   notice: CityCoverageNotice;
   showingRegional: boolean;
+  regionalSite?: CityRegionalSite;
   /** Name of the region the shown values describe; never the city name. */
   regionName?: string;
   sites: Array<{ locationId: string; locationName: string }>;
@@ -66,10 +76,24 @@ export function buildCityView(input: {
   siteObservations?: StatusObservation[];
 }): CityView {
   const { status, envelope, today } = input;
-  const location = status.location as LocationEntry;
+  const location = status.location;
+  const regionalInfo = location.coverage === "regional_site" ? location.regional : undefined;
   const todayIso = toTorontoDateString(today);
-
-  const own = status.observations.filter((o) => o.locationId === location.locationId);
+  const sourceId = regionalInfo?.targetLocationId ?? location.locationId;
+  const own = status.observations.filter((o) => o.locationId === sourceId);
+  // The evidence engine only knows its own coverage values: build the card from the PHAC regional
+  // location as an ordinary city_site, and carry the regional label in this view model.
+  const cardLocation: LocationEntry = regionalInfo
+    ? {
+        locationId: regionalInfo.targetLocationId,
+        locationName: regionalInfo.targetName,
+        city: regionalInfo.targetName,
+        province: location.province,
+        pruid: location.pruid,
+        grouping: "city",
+        coverage: "city_site",
+      }
+    : (location as LocationEntry);
   const agg = status.provinceAggregate;
   const aggObs = agg ? agg.observations.filter((o) => o.locationId === agg.location.locationId) : [];
   const isNoCitySite = location.coverage === "no_city_site" && own.length === 0;
@@ -78,7 +102,7 @@ export function buildCityView(input: {
 
   const card = buildCard(
     {
-      locationId: location.locationId,
+      locationId: cardLocation.locationId,
       eventDate: todayIso,
       setting: "",
       attendeeCategories: [],
@@ -88,11 +112,11 @@ export function buildCityView(input: {
     {
       observations: showingRegional ? [...own, ...aggObs] : own,
       history: [],
-      locationEntry: location,
+      locationEntry: cardLocation,
     },
   );
 
-  const regionName = showingRegional && agg ? agg.location.locationName : undefined;
+  const regionName = regionalInfo ? regionalInfo.targetName : showingRegional && agg ? agg.location.locationName : undefined;
 
   const valuesShown = !isNoCitySite || showingRegional;
   const rows: CityVirusRow[] = valuesShown
@@ -138,10 +162,24 @@ export function buildCityView(input: {
 
   return {
     location,
-    coverage: card.coverageType,
+    coverage: regionalInfo ? "regional_site" : card.coverageType,
     rows,
     notice,
     showingRegional,
+    ...(regionalInfo
+      ? {
+          regionalSite: {
+            targetLocationId: regionalInfo.targetLocationId,
+            targetName: regionalInfo.targetName,
+            sentence: regionalCoverageSentence({
+              place: location.locationName,
+              region: regionalInfo.targetName,
+              siteNames: regionalInfo.siteNames,
+            }),
+            citation: regionalInfo.citation,
+          },
+        }
+      : {}),
     ...(regionName ? { regionName } : {}),
     sites,
     snapshotId: envelope.snapshotId,

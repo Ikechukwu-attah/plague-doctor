@@ -107,6 +107,17 @@ describe("UI-8.4 UI-8.5 WhenStep", () => {
     expect(text).toContain("not on your event date");
   });
 
+  it("UI-19.12 UI-19.13 sets min = today and max = today + 365 on the input; message is wording-clean", () => {
+    const html = renderToStaticMarkup(<WhenStep value="2026-11-07" today={TODAY} onChange={noop} />);
+    expect(html).toContain('min="2026-11-02"');
+    expect(html).toContain('max="2027-11-02"');
+    expect(html).not.toContain('role="alert"');
+    const bad = renderToStaticMarkup(<WhenStep value="2020-01-01" today={TODAY} onChange={noop} />);
+    const msg = copy.whenOutOfRange({ min: "2026-11-02", max: "2027-11-02" });
+    expect(textOf(bad)).toContain(msg);
+    clean(msg);
+  });
+
   it("no date selected shows only the three rules", () => {
     const text = textOf(renderToStaticMarkup(<WhenStep value={undefined} today={TODAY} onChange={noop} />));
     expect(text).toContain(copy.TIMING_TOO_EARLY_ITEM);

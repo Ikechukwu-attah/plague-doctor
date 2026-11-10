@@ -6,7 +6,7 @@ This spec covers Milestone 3 of Plague Doctor: the user interface. It delivers f
 
 **Spec:** interactive-surveillance-ui
 **Prefix:** UI-
-**Scope:** Next.js App Router pages, components, client state, tests. Includes one additive read-only route `GET /api/history` (decision D1), the injectable normalized-index path and index cleanup (P1), and the past-card EpiYear fix in `buildCard` (P2). Excludes any other ingestion or API changes, any other evidence-engine logic changes, Wayback replay (F11), PNG export (F12), LLM parsing (F13), city comparison, notifications and French UI.
+**Scope:** Next.js App Router pages, components, client state, tests. Includes one additive read-only route `GET /api/history` (decision D1), the injectable normalized-index path and index cleanup (P1), and the past-card EpiYear fix in `buildCard` (P2). Excludes any other ingestion or API changes, any other evidence-engine logic changes, Wayback replay (F11), PNG export (F12, except the client-side card image in Requirement 19), LLM parsing (F13), city comparison, notifications and French UI.
 **Source of truth:** `docs/BUILD_PLAN.md` v2.2 (§4, §5, §5A, §6, §8), `docs/MILESTONE_3_KIRO_PROMPT.md`, `design/*.dc.html` (Main, Planner, OmenCard, States, Mobile, Tokens) and all files in `.kiro/steering/`.
 
 ---
@@ -350,3 +350,49 @@ This spec covers Milestone 3 of Plague Doctor: the user interface. It delivers f
 5. THE file `data/normalized/index.json` SHALL contain no entries whose `sourceUrl` is on `example.com`, and every real entry SHALL carry the true `rowCount` of its parsed file.
 6. WHEN `buildCard` builds a `past` card, THE Evidence_Engine SHALL take the measured `wAvg` and `weekStart` from the `MeasuredWeek` whose `epiYear` and `epiWeek` both match the event date, and SHALL use an `epiWeek`-only match solely for the `histMin` and `histMax` band.
 7. THE Test_Suite SHALL include a test over real history files showing that a past card for a date in a given year uses that year's `wAvg`.
+
+### Requirement 19: Review fixes and Costume Contest polish (Milestone 4)
+
+**User Story:** As a visitor, I want the map, dates, coverage labels and Omen Card to be correct, clear and atmospheric, so that the app is trustworthy and memorable without ever implying a forecast or a personal risk.
+
+Source: `docs/MILESTONE_4_REVIEW_FIXES.md` (doc items 16.1 to 16.12 map to criteria below). This requirement reverses the earlier exclusion of PNG export (F12) only to the extent of 19.31 and 19.32. It adds no forecast, risk score, "safe" verdict or personalised number; the Evidence_Engine (`src/evidence/**`), the Wording_Guard, share text output and licence or attribution text are unchanged. All new user-facing text comes from `src/ui-copy/**` and passes the Wording_Guard. All dates come from the clock module.
+
+#### Acceptance Criteria
+
+1. WHEN two or more Canada_Map marker hit targets overlap at the current rendered map size, THE Canada_Map SHALL replace them with one cluster marker whose accessible name states the number of places (for example "4 places").
+2. WHEN a cluster marker is activated, THE UI SHALL open a chooser listing the clustered places using the same row component as the City_List, and selecting a row SHALL open that place.
+3. THE Canada_Map SHALL keep every marker and cluster hit target at 44 CSS pixels or larger.
+4. THE Test_Suite SHALL include a Playwright test, at desktop and Viewport_390, asserting that for every visible marker or cluster `document.elementFromPoint` at its centre returns that same element.
+5. WHEN the Omen_Card shows its "Card created" date, THE Omen_Card SHALL derive it from the viewer's local calendar date (the calendar date in the viewer's own time zone, not `America/Toronto`) through a helper in the clock module, and SHALL NOT use `toISOString()` or `toTorontoIso`.
+6. THE Test_Suite SHALL assert that a fixed clock of 2026-11-07T23:30-05:00 viewed in the Toronto time zone yields "Nov 7, 2026", and that a fixed clock of 2026-11-07T22:30-08:00 viewed in the Vancouver time zone yields "Nov 7, 2026" as the created date.
+7. THE not-found page SHALL render inside PageContainer, and THE Test_Suite SHALL extend the Viewport_390 no-horizontal-overflow test to `/nope`.
+8. WHEN a city has an entry in the reviewed regional-site table, THE UI SHALL resolve that city to the listed PHAC location and show that location's PHAC values.
+9. THE regional-site table SHALL live outside `src/evidence/**`, SHALL map a city to a PHAC location only where PHAC's own location name or site list covers that city, and SHALL carry a source citation on every row.
+10. WHEN a city resolves through the regional-site table, THE City_Page and the City_List row SHALL show a "Regional site" label, name the PHAC location, and offer an "i" that explains that the site's catchment is not the city boundary.
+11. WHEN a city has no row in the table and no city site, THE UI SHALL keep "No monitoring site" and the provincial-aggregate offer, and SHALL NOT substitute another location's values.
+12. THE Planner date input SHALL set `min` to today and `max` to today plus 365 days, both computed in `America/Toronto` calendar dates from the clock module.
+13. IF the entered date is outside that range, THEN THE Planner SHALL show an inline validation message from `src/ui-copy`, SHALL keep Confirm disabled, and SHALL accept no year beyond four digits.
+14. THE Test_Suite SHALL include a unit test and an end-to-end test for the date range, including a six-digit year.
+15. THE City_List SHALL offer a sort control with "A–Z" (default) and "Highest activity first".
+16. WHEN "Highest activity first" is selected, THE City_List SHALL order rows by PHAC `Viral_Activity_Level` only, with unknown, no-data and not-monitored rows last and ties ordered A–Z, and SHALL compute no new score.
+17. THE selected sort SHALL be stored in a public URL parameter and SHALL round-trip through the URL builders.
+18. ON desktop, THE Canada_Map SHALL use most of the content width and the City_List a narrower column.
+19. THE Canada_Map SHALL hide markers for locations without data or without a monitoring site by default, and a toggle "Show places without data" SHALL show them; THE City_List SHALL be unchanged by the toggle.
+20. THE City_Page "i" explanation SHALL cover what High, Moderate and Low mean as PHAC categories, how PHAC defines the trend and its window, why cities can have different sample weeks, the NA1 and NA2 and missing-week meanings, and the phrase "community signal, not personal chance", using only PHAC-sourced definitions already in `src/evidence/copy/**` and the methods copy.
+21. THE City_Page SHALL show the last 8 to 12 PHAC weeks with missing weeks marked as missing and never interpolated.
+22. THE Fog_Layer SHALL drift slowly using compositor-friendly CSS only, with density and opacity following the PHAC `activityIndex` (a higher level is thicker) and with unknown remaining hatched and never the lowest density.
+23. THE legend SHALL state "Fog shows PHAC's activity level. It is not your risk."
+24. WHILE Reduced_Motion is active, THE Fog_Layer SHALL be static.
+25. THE Omen_Card SHALL be styled as an old omen card with parchment, an ornate border, a wax seal carrying the bird glyph, and the PHAC level shown as the card's "arcana".
+26. THE Omen_Card SHALL show exactly one fixed plague-doctor voice line per PHAC level, defined in `src/ui-copy/card.ts`, that describes the signal and never the risk, and that contains none of "safe", "danger", "you will", a percentage, or any other Wording_Guard banned phrase.
+27. THE share text output SHALL be unchanged by the Omen_Card restyle.
+28. WHEN the Methods_Page ("Behind the Mask") is first viewed, THE UI SHALL play a mask-lift reveal of about 600 ms, and WHILE Reduced_Motion is active it SHALL skip the reveal.
+29. THE loading states SHALL use a lantern-and-fog skeleton in place of grey bars, with the same reserved heights as before so that layout shift stays near 0.
+30. THE UI SHALL set Open Graph and Twitter metadata on all routes and a static `opengraph-image` showing the bird glyph, the title and the line "Wastewater signals, not forecasts", with no live data.
+31. THE Omen_Card SHALL offer "Download card as image" that renders a PNG client-side from the same share data, with no external service and no new dependency over about 10 KB gzipped.
+32. IF a client-side PNG render within those limits is not feasible, THEN THE project SHALL skip it, SHALL NOT add a dependency or service, and SHALL report the item as not done.
+33. THE project SHALL keep Lighthouse mobile median on `/` at performance 90 or above with LCP no worse than 2.5 s, and SHALL report before and after values.
+34. THE project SHALL update `docs/KIRO_USAGE.md` with what was found and fixed and SHALL report anything not done.
+35. WHILE a Provenance_Dialog is closed, THE UI SHALL keep its explanation body, definitions and level words out of the DOM and SHALL mount that body only while the dialog is open.
+36. WHEN a Provenance_Dialog is opened and then closed by Escape or its close control, THE UI SHALL unmount the body and return focus to the control that opened it.
+37. THE Test_Suite SHALL assert that a City_Page with the dialogs closed contains no repeated definition text and that a No-data card contains no PHAC level word (UI-12.6), without weakening the existing assertion.

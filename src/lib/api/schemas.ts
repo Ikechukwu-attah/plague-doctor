@@ -10,6 +10,8 @@ import {
   SourceSnapshotSchema,
 } from "@/evidence/schemas";
 import type { LocationEntry, SourceSnapshot } from "@/evidence/types";
+import type { ApiLocationEntry } from "./location-types";
+export type { ApiCoverage, ApiLocationEntry, RegionalSiteInfo } from "./location-types";
 
 export { StatusObservationSchema, MeasuredWeekSchema, SourceSnapshotSchema };
 
@@ -21,7 +23,22 @@ export const CoverageStatusSchema = z.enum([
   "national",
 ]);
 
-export const LocationEntrySchema: z.ZodType<LocationEntry> = z.lazy(() =>
+const ApiCoverageSchema = z.enum([
+  "city_site",
+  "site_only",
+  "no_city_site",
+  "province_aggregate",
+  "national",
+  "regional_site",
+]);
+const RegionalSiteInfoSchema = z.object({
+  targetLocationId: z.string().min(1),
+  targetName: z.string(),
+  citation: z.string().min(1),
+  siteNames: z.array(z.string()),
+});
+/** Evidence-shaped entry (used for provincial aggregates). */
+const BaseLocationEntrySchema: z.ZodType<LocationEntry> = z.lazy(() =>
   z.object({
     locationId: z.string().min(1),
     locationName: z.string(),
@@ -30,9 +47,20 @@ export const LocationEntrySchema: z.ZodType<LocationEntry> = z.lazy(() =>
     pruid: z.string(),
     grouping: z.enum(["site", "city", "province", "national"]),
     coverage: CoverageStatusSchema,
-    provinceAggregate: LocationEntrySchema.optional(),
+    provinceAggregate: BaseLocationEntrySchema.optional(),
   }),
 );
+export const LocationEntrySchema: z.ZodType<ApiLocationEntry> = z.object({
+  locationId: z.string().min(1),
+  locationName: z.string(),
+  city: z.string(),
+  province: z.string(),
+  pruid: z.string(),
+  grouping: z.enum(["site", "city", "province", "national"]),
+  coverage: ApiCoverageSchema,
+  provinceAggregate: BaseLocationEntrySchema.optional(),
+  regional: RegionalSiteInfoSchema.optional(),
+});
 
 /** Envelope fields (snapshotId may be "" when no data exists). */
 export const EnvelopeMetaSchema = z.object({

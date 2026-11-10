@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/design-system/Button";
+import { PageContainer } from "@/components/shell/PageContainer";
 import { Notice } from "@/components/design-system/Notice";
 import { BACK_TO_MAP, ERROR_HEADING, RETRY, errorArea, routeError } from "@/ui-copy/states";
 
@@ -9,7 +10,7 @@ import { BACK_TO_MAP, ERROR_HEADING, RETRY, errorArea, routeError } from "@/ui-c
 export default function RouteError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const area = errorArea(usePathname());
   return (
-    <div>
+    <PageContainer>
       <h1>{ERROR_HEADING}</h1>
       <Notice tone="error" action={<Button onClick={reset}>{RETRY}</Button>}>
         {routeError({ area })}
@@ -17,6 +18,6 @@ export default function RouteError({ reset }: { error: Error & { digest?: string
       <p>
         <Link href="/">{BACK_TO_MAP}</Link>
       </p>
-    </div>
+    </PageContainer>
   );
 }

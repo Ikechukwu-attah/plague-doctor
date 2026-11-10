@@ -1,9 +1,20 @@
 import type { ProvenanceModel } from "@/lib/view/provenance";
 import { PROVENANCE_ATTRIBUTION, PROVENANCE_FIELDS, PROVENANCE_TITLE } from "@/ui-copy/city";
+import { topicsForField } from "@/ui-copy/status-explanations";
+import { StatusTopics } from "./StatusExplainer";
 import styles from "./City.module.css";
 
 /** Dialog body: every provenance field, IDs in monospace, classifications attributed to PHAC. */
-export function ProvenanceDialogBody({ model, titleId }: { model: ProvenanceModel; titleId: string }) {
+export function ProvenanceDialogBody({
+  model,
+  titleId,
+  explain = false,
+}: {
+  model: ProvenanceModel;
+  titleId: string;
+  /** City page only: append the "About this status" topics for this field (UI-19.20). */
+  explain?: boolean;
+}) {
   return (
     <>
       <h2 id={titleId} className={styles.dialogTitle}>
@@ -30,6 +41,7 @@ export function ProvenanceDialogBody({ model, titleId }: { model: ProvenanceMode
           </a>
         </dd>
       </dl>
+      {explain ? <StatusTopics topics={topicsForField(model.field)} level="h3" /> : null}
       <p className={styles.dialogNote}>{PROVENANCE_ATTRIBUTION}</p>
     </>
   );

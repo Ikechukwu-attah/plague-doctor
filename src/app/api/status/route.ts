@@ -21,6 +21,7 @@ import type {
   StatusObservation,
   LocationEntry,
 } from "@/evidence/types";
+import type { ApiLocationEntry } from "@/lib/api/location-types";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ const QuerySchema = z.object({
 });
 
 interface StatusResponse {
-  location: LocationEntry;
+  location: ApiLocationEntry;
   coverage: string;
   observations: StatusObservation[];
   provinceAggregate?: {
@@ -63,9 +64,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const observations = allObservations.filter(
-    (o) => o.locationId === locationId
-  );
+  // A regional site returns the PHAC regional location's own rows (UI-19.8).
+  const sourceId = location.regional?.targetLocationId ?? locationId;
+  const observations = allObservations.filter((o) => o.locationId === sourceId);
 
   const response: StatusResponse = {
     location,
@@ -73,8 +74,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     observations,
   };
 
-  // For no_city_site: attach province aggregate observations
-  if (location.coverage === "no_city_site" && location.provinceAggregate) {
+  // no_city_site, and regional_site (keeps the card flow unchanged): attach province aggregate
+  if (
+    (location.coverage === "no_city_site" || location.coverage === "regional_site") &&
+    location.provinceAggregate
+  ) {
     const provId = location.provinceAggregate.locationId;
     const provObs = allObservations.filter((o) => o.locationId === provId);
     response.provinceAggregate = {

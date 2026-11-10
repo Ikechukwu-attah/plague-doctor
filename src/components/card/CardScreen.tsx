@@ -9,7 +9,7 @@ import type { EventCard } from "@/evidence/card-types";
 import type { MeasuredWeek, Pathogen } from "@/evidence/types";
 import { useApi } from "@/lib/api/provider";
 import { describeApiError } from "@/lib/api/errors";
-import { useClock, useToday } from "@/lib/clock";
+import { toLocalIso, useClock, useToday } from "@/lib/clock";
 import { useAttendees } from "@/lib/attendees-memory";
 import { useHydrated } from "@/lib/hooks/use-hydrated";
 import { useResource } from "@/lib/hooks/use-resource";
@@ -34,6 +34,7 @@ import { NOT_FOUND, loadFailed, stateAnnouncement } from "@/ui-copy/states";
 import { PLAN_A_GATHERING } from "@/ui-copy/landing";
 import { ChangeDiff } from "./ChangeDiff";
 import { ChecklistBlock } from "./ChecklistBlock";
+import { DownloadCardImage } from "./DownloadCardImage";
 import { OmenCard } from "./OmenCard";
 import { SavedEventsPanel } from "./SavedEventsPanel";
 import { ShareTextPanel } from "./ShareTextPanel";
@@ -154,13 +155,14 @@ export function CardScreen() {
         eventDate: target.eventDate,
         setting: target.setting,
         attendeeCategories: [...target.attendees],
-        createdAt: now.toISOString(),
+        createdAt: toLocalIso(now),
         today: now,
       },
       {
         observations: [...own, ...aggObs],
         history: history.state === "success" ? history.data : [],
-        locationEntry: loc,
+        // The evidence engine has no regional_site coverage: cards keep the existing no_city_site path.
+        locationEntry: { ...loc, coverage: loc.coverage === "regional_site" ? "no_city_site" : loc.coverage },
       },
     );
   }, [target, status, history, needsHistory, now]);
@@ -224,7 +226,9 @@ export function CardScreen() {
         {noNewer ? <p className={styles.muted}>{NO_NEWER_SNAPSHOT}</p> : null}
       </div>
       <aside className={styles.aside}>
-        <ShareTextPanel text={generateShareText(display)} />
+        <ShareTextPanel text={generateShareText(display)}>
+          <DownloadCardImage view={view} locationId={display.locationId} />
+        </ShareTextPanel>
         {showDiff && diff ? <ChangeDiff view={diff} /> : null}
         {hydrated ? (
           <SavedEventsPanel

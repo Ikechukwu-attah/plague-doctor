@@ -10,7 +10,8 @@ import { CityList } from "./CityList";
 import { Legend } from "./Legend";
 import { StaleBanner } from "./StaleBanner";
 import { FreshnessFooter } from "./FreshnessFooter";
-import { DiscontinuedToggle, MapToggle, ViewSwitch } from "./Controls";
+import { DiscontinuedToggle, MapToggle, SortControl, ViewSwitch } from "./Controls";
+import { sortRows, type ListSort } from "@/lib/view/sort-rows";
 import styles from "./Landing.module.css";
 
 export interface LandingScreenProps {
@@ -28,6 +29,9 @@ export interface LandingScreenProps {
   onQuery: (q: string) => void;
   searching?: boolean;
   searchError?: ReactNode;
+  /** City list order only; the map keeps its own order. */
+  sort?: ListSort;
+  onSort?: (sort: ListSort) => void;
   showDiscontinued: boolean;
   onDiscontinued: (checked: boolean) => void;
   /** True at 640 px and up. */
@@ -63,6 +67,7 @@ export function LandingScreen(p: LandingScreenProps) {
         <DiscontinuedToggle checked={p.showDiscontinued} onChange={p.onDiscontinued} />
         {p.phase === "ready" ? (
           <>
+            {p.onSort ? <SortControl value={p.sort ?? "az"} onChange={p.onSort} /> : null}
             <ViewSwitch view={p.view} count={p.rows.length} onChange={p.onView} />
             <MapToggle mapShown={p.mapShown} onToggle={p.onToggleMap} />
           </>
@@ -87,7 +92,7 @@ export function LandingScreen(p: LandingScreenProps) {
             <div className={styles.mapCol}>
               {p.searchError}
               <CityList
-                rows={p.rows}
+                rows={sortRows(p.rows, p.sort ?? "az")}
                 query={p.query}
                 onQuery={p.onQuery}
                 onOpen={p.onOpen}

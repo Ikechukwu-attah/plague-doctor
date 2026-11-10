@@ -8,7 +8,7 @@ export { CityList, CityRow } from "./CityList";
 export { Legend } from "./Legend";
 export { StaleBanner } from "./StaleBanner";
 export { FreshnessFooter } from "./FreshnessFooter";
-export { DiscontinuedToggle, MapToggle, ViewSwitch } from "./Controls";
+export { DiscontinuedToggle, MapToggle, SortControl, ViewSwitch } from "./Controls";
 export { DetailSurface, detailModeForWidth, useDetailMode } from "./DetailSurface";
 export type { DetailMode, DetailSurfaceProps } from "./DetailSurface";
 export { LandingScreen } from "./LandingScreen";

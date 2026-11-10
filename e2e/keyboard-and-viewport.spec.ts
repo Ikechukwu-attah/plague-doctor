@@ -74,6 +74,29 @@ test.describe("keyboard (UI-13.2, UI-13.4, UI-4.7, UI-7.5)", () => {
     await expect(trigger).toBeFocused();
   });
 
+  test("the provenance body mounts only while open and the definitions appear at most once", async ({ page, request }) => {
+    const city = pickCity(await fetchLocations(request));
+    await page.goto(`/city/${encodeURIComponent(city.locationId)}`);
+    // The page's own StatusExplainer shows the definitions once; dialogs add none while closed.
+    const heading = page.getByText("What High, Moderate and Low mean");
+    const definitions = page.locator("dialog").getByText("What High, Moderate and Low mean");
+    await expect(heading).toHaveCount(1);
+    await expect(definitions).toHaveCount(0);
+    await expect(page.locator("dialog[open]")).toHaveCount(0);
+    const trigger = page.locator("li[data-pathogen]").first().locator('button[aria-haspopup="dialog"]').first();
+    await trigger.click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText("Source file");
+    expect(await heading.count()).toBeLessThanOrEqual(2);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText("Source file")).toHaveCount(0);
+    await expect(definitions).toHaveCount(0);
+    await expect(heading).toHaveCount(1);
+    await expect(trigger).toBeFocused();
+  });
+
   test("the planner can be completed with the keyboard alone", async ({ page, request }) => {
     const city = pickCity(await fetchLocations(request));
     await page.goto("/plan");
@@ -123,10 +146,17 @@ test.describe("targets and viewports (UI-13.3, UI-4.8, UI-5.9, UI-8.12)", () => 
       "/plan",
       cardUrl(city.locationId, NEAR_DATE),
       "/methods",
+      "/nope",
     ];
     for (const route of routes) {
       await page.goto(route);
       await page.waitForLoadState("networkidle");
+      if (route === "/nope") {
+        const h1 = page.getByRole("heading", { level: 1 });
+        await expect(h1).toHaveCount(1);
+        const box = await h1.boundingBox();
+        expect(box?.x ?? 0, "404 content left padding").toBeGreaterThanOrEqual(16);
+      }
       const overflow = await page.evaluate(() => ({
         scroll: document.documentElement.scrollWidth,
         client: document.documentElement.clientWidth,

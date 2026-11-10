@@ -20,6 +20,29 @@ export const OPEN_FULL_PAGE = "Open full page";
 export const SELECTED = "selected";
 export const SEARCHING = "Searching…";
 
+export const SORT_LABEL = "Sort list";
+export const SORT_AZ = "A–Z";
+export const SORT_ACTIVITY = "Highest activity first";
+export const SORT_ACTIVITY_NOTE = "Ordered by PHAC's activity level. Places without data come last.";
+
+/** Live-region message after the list order changes. */
+export function sortAnnouncement(s: { sort: "az" | "activity" }): string {
+  return `City list sorted ${s.sort === "activity" ? "by highest activity first" : "A to Z"}`;
+}
+
+export const CLUSTER_CLOSE = "Close list";
+export const CLUSTER_HINT = "These places are too close together to tell apart on the map at this size.";
+
+/** Accessible name of a cluster marker. */
+export function clusterLabel(s: { count: number; selected?: boolean }): string {
+  return s.selected ? `${s.count} places, includes the ${SELECTED} place` : `${s.count} places`;
+}
+
+/** Accessible name of the chooser opened by a cluster marker. */
+export function clusterChooserLabel(s: { count: number }): string {
+  return `${s.count} places on the map`;
+}
+
 export function browseAsList(s: { count: number }): string {
   return `Browse as list · ${s.count}`;
 }

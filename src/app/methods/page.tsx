@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { PageContainer } from "@/components/shell/PageContainer";
 import { MethodsLive } from "@/components/methods/MethodsLive";
+import { socialMetadata } from "@/lib/social-metadata";
+import { SOCIAL_METHODS } from "@/ui-copy/social";
 
-export const metadata: Metadata = {
-  title: "Behind the mask — Plague Doctor",
-  description: "Sources, definitions and limits of the PHAC wastewater data shown in Plague Doctor.",
-};
+export const metadata: Metadata = socialMetadata(SOCIAL_METHODS);
 
 export default function MethodsPage() {
   return (

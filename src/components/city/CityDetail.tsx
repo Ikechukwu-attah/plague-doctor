@@ -34,8 +34,12 @@ import {
 } from "@/ui-copy/city";
 import { CoverageNotice } from "./CoverageNotice";
 import { SitesList } from "./SitesList";
+import { RegionalSiteBadge } from "./RegionalSiteBadge";
 import { TimelineChart, PLOT } from "./TimelineChart";
 import { VirusRow } from "./VirusRow";
+import { StatusExplainer } from "./StatusExplainer";
+import { RecentWeeks } from "./RecentWeeks";
+import { buildRecentWeeks } from "./recent-weeks";
 import styles from "./City.module.css";
 
 export interface CityDetailProps {
@@ -85,7 +89,9 @@ export function CityDetail({ locationId, variant, virus: initialVirus, onClose }
   const historyLocationId =
     view === null
       ? null
-      : view.showingRegional
+      : view.regionalSite
+        ? view.regionalSite.targetLocationId
+        : view.showingRegional
         ? aggregateId
         : view.notice.kind === "no_city_site"
           ? null
@@ -170,6 +176,7 @@ export function CityDetail({ locationId, variant, virus: initialVirus, onClose }
     locationName: place,
     size: PLOT,
   });
+  const recent = buildRecentWeeks(weeks);
   const Heading = variant === "page" ? "h1" : "h2";
 
   return (
@@ -184,6 +191,12 @@ export function CityDetail({ locationId, variant, virus: initialVirus, onClose }
         {closeControl}
       </header>
 
+      {view.regionalSite ? (
+        <div className={styles.coverage} data-regional-site="">
+          <RegionalSiteBadge region={view.regionalSite.targetName} />
+          <p>{view.regionalSite.sentence}</p>
+        </div>
+      ) : null}
       <CoverageNotice
         notice={view.notice}
         showingRegional={view.showingRegional}
@@ -205,10 +218,11 @@ export function CityDetail({ locationId, variant, virus: initialVirus, onClose }
                 row={row}
                 place={place}
                 locationId={historyLocationId ?? view.location.locationId}
-                grouping={view.showingRegional ? "province" : view.location.grouping}
+                grouping={view.regionalSite ? "city" : view.showingRegional ? "province" : view.location.grouping}
               />
             ))}
           </ul>
+          <StatusExplainer />
         </section>
       ) : null}
 
@@ -238,7 +252,8 @@ export function CityDetail({ locationId, variant, virus: initialVirus, onClose }
             </Notice>
           ) : (
             <>
-              <TimelineChart model={timeline} virus={virus} place={place} />
+              <TimelineChart model={timeline} virus={virus} place={place} recentSummary={recent.summary} />
+              <RecentWeeks model={recent} />
               <p className={styles.muted}>{allHistory ? TIMELINE_WINDOW_ALL : TIMELINE_WINDOW_DEFAULT}</p>
               <Button onClick={() => setAllHistory((x) => !x)}>
                 {allHistory ? TIMELINE_SHOW_RECENT : SHOW_ALL_HISTORY}

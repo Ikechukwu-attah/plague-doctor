@@ -121,7 +121,7 @@ describe("UI-5 city markup", () => {
 });
 
 describe("UI-7 provenance trigger", () => {
-  it("UI-7.1 UI-7.3 renders a native dialog with every provenance field in monospace", () => {
+  it("UI-7.1 UI-7.3 renders a closed native dialog whose body is not mounted until opened", () => {
     const view = buildCityView({ status: statusFor("toronto"), envelope, showRegional: false, today: "2026-10-22" });
     const stmt = view.rows[0]!.statement;
     const model = provenanceFor(stmt, "Viral_Activity_Level", {
@@ -134,9 +134,10 @@ describe("UI-7 provenance trigger", () => {
     expect(html).not.toMatch(/<dialog[^>]*\sopen/);
     expect(html).toContain('aria-haspopup="dialog"');
     const text = textOf(html);
-    for (const part of [model.snapshotId, model.ruleId, model.locationId, model.sourceUrl, "Published by PHAC"]) {
-      expect(text).toContain(part);
+    for (const part of [model.snapshotId, model.ruleId, model.sourceUrl, "Published by PHAC", "Close"]) {
+      expect(text).not.toContain(part);
     }
+    expect(html).not.toContain("aria-labelledby");
   });
 });
 

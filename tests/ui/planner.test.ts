@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
 import { classifyTiming } from "@/evidence/timing";
-import { calendarDayDiff, toTorontoDateString } from "@/evidence/date-utils";
+import { addDaysIso, calendarDayDiff, toTorontoDateString } from "@/evidence/date-utils";
+import { plannerDateRange, validatePlannerDate } from "@/lib/view/date-range";
 import {
   PLANNER_STEP_ORDER,
   explainTiming,
@@ -49,6 +50,67 @@ describe("Property 12: timing explanation matches the engine (UI-8.4, UI-8.5)", 
     expect(explainTiming("2026-11-21", "2026-10-31").state).toBe("near");
     expect(explainTiming("2026-11-22", "2026-10-31").state).toBe("too_early");
     expect(explainTiming("2026-10-30", "2026-10-31").state).toBe("past");
+  });
+});
+
+describe("Property 26: planner date range validation matches the clock (UI-19.12, UI-19.13, UI-19.14)", () => {
+  const offsetDate = fc
+    .tuple(isoDateArb, fc.integer({ min: -400, max: 800 }))
+    .map(([d, n]) => ({ today: d, candidate: addDaysIso(d, n) }));
+  const wild = fc.tuple(isoDateArb, fc.oneof(
+    fc.string({ maxLength: 14 }),
+    fc.stringMatching(/^\d{5,6}-\d{2}-\d{2}$/),
+    fc.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+  )).map(([today, candidate]) => ({ today, candidate }));
+
+  function oracle(candidate: string, today: string): boolean {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(candidate)) return false;
+    const d = new Date(`${candidate}T12:00:00Z`);
+    if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== candidate) return false;
+    const diff = calendarDayDiff(today, candidate);
+    return diff >= 0 && diff <= 365;
+  }
+
+  it("ok iff a real four-digit-year date in [today, today + 365]; min/max are the range ends", () => {
+    fc.assert(
+      fc.property(fc.oneof(offsetDate, wild), ({ today, candidate }) => {
+        expect(validatePlannerDate(candidate, today).ok).toBe(oracle(candidate, today));
+        const r = plannerDateRange(today);
+        expect(r.min).toBe(today);
+        expect(calendarDayDiff(r.min, r.max)).toBe(365);
+      }),
+      { numRuns: 300 },
+    );
+  });
+
+  it("the reducer never keeps an invalid date and treats it as missing", () => {
+    fc.assert(
+      fc.property(fc.oneof(offsetDate, wild), ({ today, candidate }) => {
+        const withDate = plannerReducer(initialPlannerState, { type: "setWhen", date: addDaysIso(today, 3), today });
+        expect(withDate.when).toBeDefined();
+        const s = plannerReducer(withDate, { type: "setWhen", date: candidate, today });
+        if (oracle(candidate, today)) expect(s.when).toBe(candidate);
+        else {
+          expect(s.when).toBeUndefined();
+          expect(missingSteps(s)).toContain("when");
+        }
+      }),
+      { numRuns: 300 },
+    );
+  });
+
+  it("examples: six-digit year, today, today + 365, today + 366, yesterday", () => {
+    const today = "2026-11-02";
+    expect(validatePlannerDate("275760-01-01", today)).toEqual({ ok: false, reason: "not_a_date" });
+    expect(validatePlannerDate("2026-11-02", today).ok).toBe(true);
+    expect(validatePlannerDate("2027-11-02", today).ok).toBe(true);
+    expect(validatePlannerDate("2027-11-03", today)).toEqual({ ok: false, reason: "out_of_range" });
+    expect(validatePlannerDate("2026-11-01", today)).toEqual({ ok: false, reason: "out_of_range" });
+    expect(plannerDateRange(today)).toEqual({ min: "2026-11-02", max: "2027-11-02" });
+  });
+
+  it("uses the Toronto calendar day for a Date", () => {
+    expect(plannerDateRange(new Date("2026-11-03T02:00:00Z")).min).toBe("2026-11-02");
   });
 });
 

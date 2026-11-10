@@ -409,6 +409,7 @@ describe("UI-12 route error boundary and not-found", () => {
     expect(typeof ErrorBoundary).toBe("function");
     const nf = renderToStaticMarkup(<NotFound />);
     expect(h1s(nf)).toBe(1);
+    expect(nf).toContain("<div");
     expect(textOf(nf)).toContain(PAGE_NOT_FOUND);
     expect(nf).toContain('href="/"');
   });

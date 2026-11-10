@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { PlannerStepper } from "@/components/planner";
 import { PageContainer } from "@/components/shell/PageContainer";
-import { PLANNER_HEADING, PLANNER_INTRO } from "@/ui-copy";
+import { socialMetadata } from "@/lib/social-metadata";
+import { PLANNER_HEADING, PLANNER_INTRO, SOCIAL_PLAN } from "@/ui-copy";
 
-export const metadata: Metadata = { title: `${PLANNER_HEADING} | Plague Doctor` };
+export const metadata: Metadata = socialMetadata(SOCIAL_PLAN);
 
 export default function PlanPage() {
   return (

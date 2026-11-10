@@ -60,6 +60,9 @@ export const NO_COVERAGE_CHECKLIST_NOTE =
 
 export const WHEN_LABEL = "Date of your gathering";
 export const WHEN_HELP = "Choose a calendar date.";
+export function whenOutOfRange(s: { min: string; max: string }): string {
+  return `Enter a real date from ${formatDisplayDate(s.min)} to ${formatDisplayDate(s.max)}.`;
+}
 export const TIMING_HEADING = "How timing changes your card";
 export const TIMING_TOO_EARLY_ITEM = "More than 21 days away: too early to know. Past observations only, labelled as past.";
 export const TIMING_NEAR_ITEM = "0 to 21 days away: latest observed activity, with its sample week.";

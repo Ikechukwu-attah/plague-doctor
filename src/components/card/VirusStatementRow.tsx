@@ -2,6 +2,7 @@ import { LevelBadge, TrendGlyph } from "@/components/design-system";
 import { ProvenanceTrigger } from "@/components/city/ProvenanceTrigger";
 import type { NearRowView } from "@/lib/view/card-view";
 import type { Direction } from "@/evidence/types";
+import { cardVoiceLine } from "@/ui-copy/card";
 import { virusLabel } from "@/ui-copy/levels";
 import { weekOf } from "@/ui-copy/timing";
 import styles from "./Card.module.css";
@@ -29,6 +30,9 @@ export function VirusStatementRow({ row }: { row: NearRowView }) {
         <span data-lantern={row.lantern.brightness}>{row.lantern.text}</span>
       </span>
       <ProvenanceTrigger model={row.provenance} />
+      <span className={styles.voice} data-voice={activity}>
+        {cardVoiceLine(activity)}
+      </span>
     </li>
   );
 }

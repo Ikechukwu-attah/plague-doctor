@@ -14,7 +14,8 @@ import {
   latestMeta,
   deriveLocations,
 } from "@/server/normalized-data";
-import type { ApiEnvelope, LocationEntry } from "@/evidence/types";
+import type { ApiEnvelope } from "@/evidence/types";
+import type { ApiLocationEntry } from "@/lib/api/location-types";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const meta = latestMeta(observations);
   const locations = deriveLocations(observations, search);
 
-  const envelope: ApiEnvelope<LocationEntry[]> = {
+  const envelope: ApiEnvelope<ApiLocationEntry[]> = {
     snapshotId: meta.snapshotId,
     sampleWeek: meta.sampleWeek,
     sourceUrl: meta.sourceUrl,

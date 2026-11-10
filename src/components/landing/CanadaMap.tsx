@@ -10,6 +10,9 @@ import type { MapCounts } from "@/ui-copy/landing";
 import { FogLayer } from "./FogLayer";
 import type { FogItem } from "./FogLayer";
 import { MapMarker, MAP_H, MAP_W } from "./MapMarker";
+import { ClusterMarker } from "./ClusterMarker";
+import { ClusterChooser } from "./ClusterChooser";
+import { clusterMarkers } from "@/lib/view/marker-clusters";
 import { CITY_LIST_ID } from "./landing-ids";
 import styles from "./Landing.module.css";
 
@@ -19,11 +22,12 @@ const OUTLINES = (provinces as { provinces: Array<{ pruid: string; d: string }> 
 
 export function countRows(rows: LandingRow[]): MapCounts {
   const counts: MapCounts = {
-    total: rows.length,
+    total: rows.filter((r) => !r.duplicateMarker).length,
     byActivity: { high: 0, moderate: 0, low: 0, not_detected: 0, unknown: 0 },
     noSite: 0,
   };
   for (const r of rows) {
+    if (r.duplicateMarker) continue;
     if (r.noSite) counts.noSite += 1;
     else counts.byActivity[r.badge.kind === "level" ? r.badge.activity : "unknown"] += 1;
   }
@@ -50,7 +54,7 @@ export interface CanadaMapProps {
 /** Decorative outlines + absolutely positioned markers (left = x/w, top = y/h). Ordered west to east. */
 export function CanadaMap({ rows, virus, week, selectedId, onOpen }: CanadaMapProps) {
   const placed = rows
-    .filter((r) => r.point)
+    .filter((r) => r.point && !r.duplicateMarker)
     .sort((a, b) => a.point!.x - b.point!.x || a.location.locationId.localeCompare(b.location.locationId));
   const fog: FogItem[] = placed.map((r) => ({
     id: r.location.locationId,
@@ -60,22 +64,51 @@ export function CanadaMap({ rows, virus, week, selectedId, onOpen }: CanadaMapPr
   }));
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [size, setSize] = useState({ width: 640, height: 545 });
+  const [measured, setMeasured] = useState(false);
   useEffect(() => {
     const el = boxRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(() => {
       const w = el.clientWidth;
       const h = el.clientHeight;
-      if (w > 0 && h > 0) setSize((s) => (s.width === w && s.height === h ? s : { width: w, height: h }));
+      if (w > 0 && h > 0) {
+        setSize((s) => (s.width === w && s.height === h ? s : { width: w, height: h }));
+        setMeasured(true);
+      }
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const labels = useMemo(
-    () => new Map(selectMapLabels(placed, selectedId, size, MAP_W, MAP_H).map((l) => [l.id, l.side])),
+  // Clustering needs the real rendered size; before the first measurement every marker is rendered.
+  const items = useMemo(
+    () =>
+      measured
+        ? clusterMarkers(
+            placed.map((r) => ({ id: r.location.locationId, fx: r.point!.x / MAP_W, fy: r.point!.y / MAP_H })),
+            size,
+          )
+        : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, selectedId, size],
+    [rows, size, measured],
   );
+  const byId = new Map(placed.map((r) => [r.location.locationId, r]));
+  const singles = items ? items.filter((i) => i.kind === "marker").map((i) => byId.get(i.id)!) : placed;
+  const labels = useMemo(
+    () => new Map(selectMapLabels(singles, selectedId, size, MAP_W, MAP_H).map((l) => [l.id, l.side])),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items, rows, selectedId, size],
+  );
+  const [openCluster, setOpenCluster] = useState<string | null>(null);
+  const open = items?.find((i) => i.kind === "cluster" && i.id === openCluster) ?? null;
+  function closeChooser(returnFocus: boolean) {
+    const id = openCluster;
+    setOpenCluster(null);
+    if (returnFocus && id) {
+      requestAnimationFrame(() => {
+        boxRef.current?.querySelector<HTMLElement>(`[data-cluster-id="${CSS.escape(id)}"]`)?.focus();
+      });
+    }
+  }
   const labelArgs = week ? { virus, week } : { virus };
   return (
     <div className={styles.mapWrap}>
@@ -94,10 +127,38 @@ export function CanadaMap({ rows, virus, week, selectedId, onOpen }: CanadaMapPr
           ))}
         </svg>
         <FogLayer items={fog} />
-        {placed.map((r) => (
-          <MapMarker key={r.location.locationId} row={r} selected={r.location.locationId === selectedId} labelSide={labels.get(r.location.locationId)} onOpen={onOpen} />
-        ))}
+        {items
+          ? items.map((i) =>
+              i.kind === "marker" ? (
+                <MapMarker key={i.id} row={byId.get(i.id)!} selected={i.id === selectedId} labelSide={labels.get(i.id)} onOpen={onOpen} />
+              ) : (
+                <ClusterMarker
+                  key={i.id}
+                  id={i.id}
+                  fx={i.fx}
+                  fy={i.fy}
+                  count={i.memberIds.length}
+                  hasSelected={selectedId !== undefined && i.memberIds.includes(selectedId)}
+                  open={open?.id === i.id}
+                  onToggle={() => setOpenCluster((c) => (c === i.id ? null : i.id))}
+                />
+              ),
+            )
+          : placed.map((r) => (
+              <MapMarker key={r.location.locationId} row={r} selected={r.location.locationId === selectedId} labelSide={labels.get(r.location.locationId)} onOpen={onOpen} />
+            ))}
       </div>
+      {open ? (
+        <ClusterChooser
+          rows={open.memberIds.map((id) => byId.get(id)!)}
+          selectedId={selectedId}
+          onOpen={(id) => {
+            setOpenCluster(null);
+            onOpen(id);
+          }}
+          onClose={closeChooser}
+        />
+      ) : null}
     </div>
   );
 }

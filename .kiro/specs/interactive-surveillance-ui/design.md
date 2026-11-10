@@ -989,3 +989,92 @@ e2e/
 - LCP and real-device performance (manual Lighthouse).
 - Assistive-technology behaviour beyond axe (manual).
 - The exact PHAC dataset reuse/attribution licence wording (open item in plan §15).
+
+---
+
+## Milestone 4 design
+
+Source: `docs/MILESTONE_4_REVIEW_FIXES.md`. Requirement 19 (criteria `UI-19.n`). Constraints: `src/evidence/**`, the Wording_Guard, share text output and licence text are not modified; all new copy lives in `src/ui-copy/**` and is covered by the wording guard test; all dates come from `src/lib/clock.ts`; Reduced_Motion is respected; no forecast, risk, "safe" claim or new score is introduced.
+
+### Approach per item
+
+| Doc item | Approach | New or changed modules |
+|---|---|---|
+| 16.1 Marker hit targets | Pure function `clusterMarkers(points, mapSize, hitSize=44)` projects markers to pixel space and groups any whose 44 px boxes intersect (connected components, deterministic order by `locationId`). A group of one stays a marker. A cluster renders one 44 px button named "{n} places" that opens a chooser built from the existing City_List row component. Recomputed on map resize. | `src/components/landing/map-clusters.ts`, `ClusterChooser.tsx`, `CanadaMap.tsx` |
+| 16.2 Local created date | `createdAt` is formatted from the viewer's local calendar date via a clock-module helper (`localDateParts`, using the viewer's own time zone, not `America/Toronto`), never `toISOString()` or `toTorontoIso`. Freshness and planner ranges stay on Toronto dates. | `src/lib/clock.ts` (helper `localDateParts`), `CardScreen.tsx` |
+| 16.3 404 padding | `not-found.tsx` wrapped in `PageContainer`. | `src/app/not-found.tsx` |
+| 16.4 Regional site | A reviewed table `city slug → PHAC locationId`, each row with `citation` (PHAC location name or site list text and URL). `resolveRegionalSite(cityId, locations)` returns the PHAC location only for table rows whose target exists in the current snapshot; otherwise `undefined`, so current "No monitoring site" and the provincial-aggregate offer remain. Result carries `viaRegionalSite: true`. The table is outside the engine, and the engine's `resolveCoverage` is not called differently. | `src/server/geo/regional-sites.ts` (table + resolver) or `src/data/geo/regional-sites.json` with a Zod schema; `RegionalSiteBadge.tsx`; `ProvenanceTrigger` content in `src/ui-copy/coverage.ts` |
+| 16.5 Planner date range | `plannerDateRange(today)` returns `{min, max}` as Toronto calendar dates (max = today + 365 days). The input gets `min`, `max`; `validatePlannerDate(value, today)` returns `ok` or a reason (`malformed`, `before_min`, `after_max`) with copy from `ui-copy/planner.ts`. The planner reducer treats an invalid date as missing. | `src/components/planner/date-range.ts`, `PlannerStepper`, `src/ui-copy/planner.ts` |
+| 16.6 Sort | `sortLocations(rows, mode)`; `alpha` is A–Z by display name (locale-insensitive code-point tiebreak on `locationId`), `activity` orders by PHAC category rank High > Moderate > Low, then unknown/no data/not monitored last, ties A–Z. Uses the already-rendered `activityIndex` only. URL param `sort` (`alpha` default omitted, `activity`) added to the URL builders and public-parameter list. | `src/components/landing/sort.ts`, `url-state.ts`, `CityList.tsx`, `SortControl.tsx` |
+| 16.7 Map size, quiet markers | Desktop grid becomes map ≈ 2/3 and list ≈ 1/3 within PageContainer. Markers for `unknown` and `no_city_site` rows are filtered out by default; the toggle "Show places without data" (stored in the URL as `nodata=1`) shows them. The list always shows every row. | `LandingView.module.css`, `CanadaMap.tsx`, `url-state.ts` |
+| 16.8 Status explanations | Audit then fill gaps. A coverage test checks the "i" content includes the five topics, built only from existing PHAC definitions in `src/evidence/copy/**` and the methods copy (imported, not edited). The timeline view model returns the last 12 EpiWeeks ending at the latest measured week with missing weeks as explicit `missing` entries (no interpolation), and the table fallback lists them. | `src/ui-copy/status-explanations.ts`, `src/components/city/recent-weeks.ts`, `ProvenanceTrigger` |
+| 16.9 Living fog | `FogLayer` gets `data-level` and CSS custom properties `--fog-density`, `--fog-opacity` from the existing monotone level map; drift uses `transform` and `opacity` keyframes only (compositor-friendly), 40–60 s per cycle. `@media (prefers-reduced-motion: reduce)` sets `animation: none`. Legend sentence added in `ui-copy`. | `FogLayer.tsx`, `Fog.module.css`, `src/ui-copy/landing.ts` |
+| 16.10 Omen Card restyle | Parchment, ornate border (CSS/SVG), `WaxSeal` (uses `BirdIcon`), level shown as "arcana" title. `cardVoiceLine(activityIndex)` returns one fixed line per PHAC level (and a neutral line for unknown/too-early states) from `src/ui-copy/card.ts`. Share text is not touched, the voice line is not part of it. | `OmenCard.tsx`, `Card.module.css`, `WaxSeal.tsx`, `src/ui-copy/card.ts` |
+| 16.11 Reveal and skeleton | Mask-lift is a CSS clip/transform animation of about 600 ms on first view of `/methods`, skipped under Reduced_Motion. `LanternSkeleton` replaces grey bars in the four loading states and keeps each component's reserved min-height so CLS stays near 0. | `MaskReveal.tsx`, `LanternSkeleton.tsx`, existing screen-state components |
+| 16.12 Social image, card PNG | `export const metadata` with `openGraph` and `twitter` in the root layout; `src/app/opengraph-image.tsx` (static, bird glyph, title, "Wastewater signals, not forecasts", no data fetch). Card PNG: serialise the Omen Card as a self-contained SVG built from the same `generateShareText`/card view data, draw it on a canvas with `Image` + `toBlob`, download via an object URL. No library. If it cannot be done without a dependency over about 10 KB gzipped or an external service, it is skipped and reported. | `src/app/layout.tsx`, `src/app/opengraph-image.tsx`, `src/components/card/card-image.ts`, `DownloadCardImage.tsx` |
+
+### New modules (summary)
+
+`map-clusters.ts`, `ClusterChooser.tsx`, `regional-sites` table and resolver (non-evidence), `RegionalSiteBadge.tsx`, `date-range.ts`, `sort.ts`, `SortControl.tsx`, `recent-weeks.ts`, `LanternSkeleton.tsx`, `MaskReveal.tsx`, `WaxSeal.tsx`, `card-image.ts`, `opengraph-image.tsx`, plus copy additions in `src/ui-copy/{card,coverage,planner,landing,status-explanations}.ts`.
+
+### Additional correctness properties
+
+### Property 23: Marker clustering keeps every hit target unique and non-overlapping
+
+*For any* set of projected marker positions and any map size, after `clusterMarkers` every output item (marker or cluster) has a 44 px hit box, no two output hit boxes overlap, every input location appears in exactly one output item, and a hit test at the centre of any output item returns that item.
+
+**Validates: Requirements 19.1, 19.2, 19.3, 19.4**
+
+### Property 24: The created date is the local calendar date for any instant
+
+*For any* instant, any IANA time zone and either side of a UTC date boundary, the "Card created" date equals the calendar date of that instant in the viewer's local time zone (via the clock-module helper), independent of `toISOString()` and `toTorontoIso`; 2026-11-07T23:30-05:00 in Toronto and 2026-11-07T22:30-08:00 in Vancouver both yield "Nov 7, 2026".
+
+**Validates: Requirements 19.5, 19.6**
+
+### Property 25: Only reviewed table rows resolve to a regional site
+
+*For any* city id and location set, `resolveRegionalSite` returns a location if and only if the id has a row in the table and the row's target exists in the current snapshot; every table row has a non-empty citation; a city with no row keeps `no_city_site` and the provincial-aggregate offer and never receives another location's values.
+
+**Validates: Requirements 19.8, 19.9, 19.10, 19.11**
+
+### Property 26: Planner date range validation matches the clock
+
+*For any* `today` and candidate string, `validatePlannerDate` returns `ok` if and only if the string is a real calendar date with a four-digit year in `[today, today + 365 days]` (Toronto calendar); `min` and `max` attributes equal the range ends; the reducer never confirms an invalid date.
+
+**Validates: Requirements 19.12, 19.13, 19.14**
+
+### Property 27: Sort order depends only on the PHAC category, then A–Z, stably, unknown last
+
+*For any* list of rows, `sortLocations(…, "activity")` is a permutation of the input ordered by PHAC category rank, with unknown, no data and not monitored rows last and equal ranks in A–Z order, unaffected by `wAvg`, trend, freshness or input order; `"alpha"` is A–Z; both are idempotent and the mode round-trips through the URL.
+
+**Validates: Requirements 19.15, 19.16, 19.17**
+
+### Property 28: Voice lines pass the wording guard, one per level, and never use banned words
+
+*For any* PHAC level (and the unknown case), `cardVoiceLine` returns exactly one fixed non-empty line, the four lines are distinct, each passes `checkWording`, and none contains "safe", "danger", "you will", a percentage sign or digit-percentage pattern; share text from `generateShareText` is byte-identical to the pre-change output for the same card.
+
+**Validates: Requirements 19.26, 19.27**
+
+### Property 29: Reduced motion means no animation
+
+*For any* Milestone 4 stylesheet (fog drift, mask-lift, skeleton shimmer), every rule that declares an `animation` or `transition` has a matching `prefers-reduced-motion: reduce` override setting it to `none`, and the fog animation uses only `transform` and `opacity`.
+
+**Validates: Requirements 19.22, 19.24, 19.28, 19.29**
+
+### Milestone 4 error handling
+
+| Situation | Handling | Never |
+|---|---|---|
+| Regional table target missing from the snapshot | No resolution; "No monitoring site" plus provincial-aggregate offer | Showing another location's values |
+| Out-of-range or malformed planner date | Inline message, Confirm disabled | Building a card |
+| Canvas, `Image` or `toBlob` unavailable or fails | Hide or disable "Download card as image" and show nothing misleading; card on screen unaffected | Sending the card to a server |
+| Provenance dialog closed | `ProvenanceTrigger` keeps the `<dialog>` shell but renders its body (explanation, definitions, level words) only while open, so closed pages carry no repeated copies; Escape and focus return to the trigger are unchanged (UI-19.35, 19.36) | Rendering the body in the closed state, or weakening the UI-12.6 test |
+| Fog or reveal animation unsupported | Static rendering | Hiding level text (level is always also text) |
+
+### Milestone 4 testing and Lighthouse non-regression plan
+
+- **Property tests** (fast-check, 100+ runs, tagged `// Feature: interactive-surveillance-ui, Property N`) for P23 to P29 in `tests/ui/map-clusters.test.ts`, `card-created-date.test.ts`, `regional-sites.test.ts`, `planner-date-range.test.ts`, `city-sort.test.ts`, `card-voice.test.ts`, `reduced-motion-m4.test.ts`.
+- **Example tests:** 404 inside PageContainer; sort URL round-trip; "Show places without data" toggle leaves the list unchanged; status explanation topics present; 12-week strip with missing weeks; legend sentence; OG metadata and `opengraph-image` contain no live data; PNG helper builds from share data.
+- **Playwright:** marker-hit test (`elementFromPoint` equals the marker or cluster at its centre) at 1440 and 390 px; cluster chooser opens and selects; `/nope` has no horizontal overflow at 390 px; planner six-digit year rejected; Vancouver shows the "Regional site" label; sort via URL; reduced-motion run shows static fog.
+- **Lighthouse non-regression:** run mobile Lighthouse on `/` (median of at least 3 runs) before the first change and after the last. Gate: performance ≥ 90, LCP ≤ 2.5 s, CLS near 0, First Load JS for `/` not above the 15.7 result (108 kB) without justification. Heavy additions (cluster chooser, PNG export, card styling) load lazily or outside the landing bundle. The h1 and limitation line stay server-rendered.
+- **Unchanged guards:** `git diff --stat` shows no changes under `src/evidence/**`, the wording guard, share text or licence text; existing vitest and Playwright baselines stay green.

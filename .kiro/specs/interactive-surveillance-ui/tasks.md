@@ -93,7 +93,7 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - Component tests with `renderToStaticMarkup` for every unknown reason, every freshness label, and `ThreeClocks` with missing values ("unavailable")
     - _Requirements: 1.4, 1.5, 1.6, 1.7, 1.9, 1.10, 1.12, 12.5, 13.3, 17.1_
 
-- [~] 4. Checkpoint - Ensure all tests pass
+- [ ] 4. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 5. Map geometry (D2)
@@ -209,7 +209,7 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - Run `npx playwright install chromium` then `npx playwright test` in the foreground; fix failures; if the browser cannot be installed in this environment, report that clearly and continue
     - _Requirements: 17.6, 17.7, 17.8_
 
-- [~] 13. Checkpoint - Ensure all tests pass
+- [ ] 13. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 14. Final verification and documentation
@@ -298,6 +298,119 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - Run `npx tsc --noEmit` and `npx vitest run`, and report the counts
     - _Requirements: UI-17.10_
 
+- [ ] 17. Review fixes and Costume Contest polish (Milestone 4)
+  - Numbering note: `docs/MILESTONE_4_REVIEW_FIXES.md` calls this "group 16", but 16 is already taken by "Follow-ups". Mapping: tasks 17.1 to 17.12 are doc items 16.1 to 16.12 (same order: P0 bugs 17.1 to 17.5, P1 clarity 17.6 to 17.8, Costume Contest polish 17.9 to 17.12); 17.13 is the doc's "Done means".
+  - Constraints for the whole group: no forecasts, risk, "safe" claims or new scores; all user-facing copy only via `src/ui-copy/**` and covered by the wording guard tests; all dates via the clock module (`src/lib/clock.ts`); `prefers-reduced-motion` respected; do not change `src/evidence/**` or the wording guard (`checkWording`); put the regional-site table in a non-evidence module (`src/server/geo` or `src/data`); do not change share text output or any licence or attribution text; keep existing vitest and Playwright baselines green; file-write tools only for edits (no sed/awk/echo redirection); no deploy; do not start dev servers.
+  - [x] 17.1 Cluster map markers so hit targets never overlap (doc 16.1, P0)
+    - Create `src/components/landing/map-clusters.ts` with pure `clusterMarkers(points, mapSize, hitSize = 44)` (connected components of intersecting 44 px boxes, deterministic by `locationId`) and `ClusterChooser.tsx` reusing the City_List row component; update `CanadaMap.tsx` to render clusters named "{n} places" and recompute on resize; keep 44 px targets
+    - Add `e2e/map-hit.spec.ts`: at 1440 px and 390 px, for every visible marker or cluster `document.elementFromPoint` at its centre returns that same element; cluster opens the chooser and a row opens the place
+    - Write property test for clustering
+    - **Property 23: Marker clustering keeps every hit target unique and non-overlapping**
+    - **Validates: Requirements 19.1, 19.2, 19.3, 19.4**
+    - _Requirements: UI-19.1, UI-19.2, UI-19.3, UI-19.4_
+  - [x] 17.2 Omen Card created date from the local calendar (doc 16.2, P0)
+    - In `CardScreen.tsx` replace the `toISOString()`-based `createdAt` with the local calendar date from the clock module (`useToday`, helper in `src/lib/clock.ts` if needed); keep `clock-scan` test green
+    - Test with a fixed clock 2026-11-07T23:30-05:00 shows "Nov 7, 2026"
+    - Write property test for the created date
+    - **Property 24: The created date is the local calendar date for any instant**
+    - **Validates: Requirements 19.5, 19.6**
+    - _Requirements: UI-19.5, UI-19.6_
+  - [x] 17.3 404 page inside PageContainer (doc 16.3, P0)
+    - Wrap `src/app/not-found.tsx` in `PageContainer`; extend the 390 px no-overflow Playwright test to `/nope`; add a markup test that the 404 uses PageContainer
+    - _Requirements: UI-19.7_
+  - [x] 17.4 Regional-site resolution with citations and label (doc 16.4, P0)
+    - Create the reviewed table and resolver in a non-evidence module (`src/server/geo/regional-sites.ts` or `src/data/geo/regional-sites.json` with Zod schema): `city → PHAC locationId` only where PHAC's own location name or site list covers the city (for example Vancouver to Metro Vancouver, with the Iona Island, Lions Gate, Lulu Island and Annacis Island plants), a non-empty `citation` per row, no guessing; target must exist in the current snapshot
+    - Show a "Regional site" label and an "i" explaining catchment versus city boundary on the City_Page and the City_List row (`RegionalSiteBadge.tsx`, copy in `src/ui-copy/coverage.ts`); cities not in the table keep "No monitoring site" and the provincial-aggregate offer
+    - Add Playwright check that Vancouver shows the regional label and Metro Vancouver values; confirm `git diff` leaves `src/evidence/**` untouched
+    - Write property test for the resolver
+    - **Property 25: Only reviewed table rows resolve to a regional site**
+    - **Validates: Requirements 19.8, 19.9, 19.10, 19.11**
+    - _Requirements: UI-19.8, UI-19.9, UI-19.10, UI-19.11_
+  - [x] 17.5 Planner date min/max and validation message (doc 16.5, P0)
+    - Create `src/components/planner/date-range.ts` (`plannerDateRange`, `validatePlannerDate`) using the clock in `America/Toronto`; set `min` = today and `max` = today + 365 days on the input; add the validation message to `src/ui-copy/planner.ts`; reducer treats invalid date as missing and keeps Confirm disabled
+    - Unit test plus Playwright test including a six-digit year
+    - Write property test for date validation
+    - **Property 26: Planner date range validation matches the clock**
+    - **Validates: Requirements 19.12, 19.13, 19.14**
+    - _Requirements: UI-19.12, UI-19.13, UI-19.14_
+  - [x] 17.6 City list sort control stored in the URL (doc 16.6, P1)
+    - Create `src/components/landing/sort.ts` (`sortLocations`) and `SortControl.tsx`: "A–Z" (default) and "Highest activity first" by PHAC category rank only, unknown/no data/not monitored last, ties A–Z; add `sort` to the URL builders and public-parameter list; compute no new score
+    - Write property test for sorting and a URL round-trip test; add the control labels to `ui-copy`
+    - **Property 27: Sort order depends only on the PHAC category, then A–Z, stably, unknown last**
+    - **Validates: Requirements 19.15, 19.16, 19.17**
+    - _Requirements: UI-19.15, UI-19.16, UI-19.17_
+  - [ ] 17.7 Bigger map and quieter markers (doc 16.7, P1)
+    - Rebalance the desktop layout so the map uses most of the content width with a narrower list column; hide markers for locations without data or monitoring site by default; add the "Show places without data" toggle (URL parameter, copy in `ui-copy`); the list stays unchanged
+    - Tests: toggle changes markers only, list rows identical; Playwright check at 1440 px for map width share and the toggle; 390 px layout unchanged in behaviour
+    - _Requirements: UI-19.18, UI-19.19_
+  - [x] 17.8 Status explanations and recent PHAC weeks (doc 16.8, P1)
+    - Audit the City_Page "i" content against the five topics (High/Moderate/Low as PHAC categories; PHAC trend definition and window; different sample weeks; NA1/NA2 and missing-week meanings; "community signal, not personal chance"); fill gaps in `src/ui-copy/status-explanations.ts` using only existing PHAC definitions from `src/evidence/copy/**` and the methods copy (imported, not edited)
+    - Add `src/components/city/recent-weeks.ts` returning the last 12 PHAC weeks with missing weeks marked and never interpolated; render it on the City_Page and in the chart's text alternative
+    - Tests: topics present, wording guard clean, 12-week strip with a gap marked missing (real fixture history)
+    - _Requirements: UI-19.20, UI-19.21_
+  - [ ] 17.9 Living fog bound to the PHAC level (doc 16.9, P1)
+    - Update `FogLayer.tsx` and its CSS: slow drift using only `transform` and `opacity`, density and opacity from CSS variables following `activityIndex`, unknown stays hatched and never the lowest density; static under `prefers-reduced-motion`; add the legend sentence "Fog shows PHAC's activity level. It is not your risk." via `ui-copy`
+    - Tests: legend present, existing fog property (P4) still green, CSS rule test for reduced-motion and compositor-only properties; Playwright reduced-motion check
+    - Write property test for reduced motion
+    - **Property 29: Reduced motion means no animation**
+    - **Validates: Requirements 19.22, 19.23, 19.24**
+    - _Requirements: UI-19.22, UI-19.23, UI-19.24_
+  - [x] 17.10 Omen Card restyle with wax seal and voice lines (doc 16.10, polish)
+    - Restyle the card (parchment, ornate border, `WaxSeal.tsx` using `BirdIcon`, level as "arcana"); add `cardVoiceLine` with one fixed line per PHAC level in `src/ui-copy/card.ts` (for example High: "The waters carry a strong signal this week.") describing the signal, never the risk; no "safe", "danger", "you will" or percentages
+    - Keep share text byte-identical: add a snapshot-style test comparing `generateShareText` output before and after; contrast test still passes for new tokens
+    - Write property test for voice lines
+    - **Property 28: Voice lines pass the wording guard, one per level, and never use banned words**
+    - **Validates: Requirements 19.25, 19.26, 19.27**
+    - _Requirements: UI-19.25, UI-19.26, UI-19.27_
+  - [ ] 17.11 Mask-lift reveal and lantern-and-fog skeleton (doc 16.11, polish)
+    - Add `MaskReveal.tsx` (about 600 ms, first view of `/methods`, skipped for reduced motion) and `LanternSkeleton.tsx` replacing grey bars in the loading states with the same reserved heights
+    - Tests: reduced-motion CSS rule, skeleton keeps reserved heights (class/min-height assertions), screen-state matrix still green; CLS checked in 17.13
+    - **Property 29: Reduced motion means no animation** (extend the CSS-rule property test to the reveal and skeleton)
+    - **Validates: Requirements 19.28, 19.29**
+    - _Requirements: UI-19.28, UI-19.29_
+  - [x] 17.12 Social preview metadata and "Download card as image" (doc 16.12, polish)
+    - Add Open Graph and Twitter metadata in the root layout and a static `src/app/opengraph-image.tsx` (bird glyph, title, "Wastewater signals, not forecasts", no live data); tests that the metadata is present on all routes and the image has no data fetch
+    - Add `src/components/card/card-image.ts` and `DownloadCardImage.tsx`: SVG to canvas to PNG client-side from the same share data; no external service and no dependency over about 10 KB gzipped; lazy-load so the landing bundle does not grow. If not feasible, skip the download part, add no dependency, and report it in 17.13 and `docs/KIRO_USAGE.md`
+    - Privacy test: attendee categories never appear in the image or filename
+    - _Requirements: UI-19.30, UI-19.31, UI-19.32, UI-15.1_
+  - [ ] 17.13 Done-means verification and report
+    - Before any change, record a baseline: Lighthouse mobile median (at least 3 runs) on `/` and the vitest and Playwright counts
+    - At the end run `npx tsc --noEmit`, `npx vitest run`, `npm run build` and `npx playwright test` (including the new marker-hit at desktop and 390 px and the date tests) and report counts
+    - Run Lighthouse mobile median on `/` after the changes and report before/after (performance ≥ 90, LCP ≤ 2.5 s, CLS near 0, First Load JS)
+    - Capture screenshots at 1440 and 390 px of: the landing page with a cluster open, the Toronto city page, the Vancouver city page, the Omen Card, and the 404 page
+    - Update `docs/KIRO_USAGE.md` with what was found and fixed, any bug a test caught and the Lighthouse table; report anything not done (for example a skipped PNG download)
+    - Confirm `git diff --stat` shows no changes to `src/evidence/**`, the wording guard, share text or licence text; no deploy
+    - _Requirements: UI-19.4, UI-19.14, UI-19.33, UI-19.34, UI-17.10, UI-17.11_
+
+- [x] 18. Milestone 4 follow-ups (review of M4 work)
+  - Same constraints as group 17 (no forecasts or risk claims, copy via `src/ui-copy/**`, dates via the clock module, `src/evidence/**`, wording guard, share text and licence text untouched, no deploy, no dev servers).
+  - [x] 18.1 Provenance dialog body renders only while open
+    - Problem: the closed `<dialog>` in `ProvenanceTrigger.tsx` renders its full explanation in the DOM (about 16 repeated copies per city page) and level words appear inside a No-data card, so `tests/ui/screen-states.test.tsx` UI-12.6 fails
+    - Render the body only while open; remove repeated definitions from the closed state; keep Escape closing and focus return to the trigger
+    - Do not weaken the UI-12.6 test; add a test that a closed City_Page has no repeated definition text and that opening shows the body and closing unmounts it
+    - Keep the e2e keyboard and a11y specs green
+    - _Requirements: UI-19.35, UI-19.36, UI-19.37, UI-7.5, UI-12.6_
+  - [x] 18.2 Omen Card created date uses the viewer's local calendar date
+    - Add a clock-module helper (`localDateParts` in `src/lib/clock.ts`) and replace the `toTorontoIso` use in `CardScreen.tsx`; keep `clock-scan` green
+    - Test: fixed clock 2026-11-07T22:30-08:00 in the Vancouver time zone shows "Nov 7, 2026"; keep the Toronto 2026-11-07T23:30-05:00 case
+    - Update the property test for **Property 24: The created date is the local calendar date for any instant** (now viewer-local, any IANA zone)
+    - **Validates: Requirements 19.5, 19.6**
+    - _Requirements: UI-19.5, UI-19.6_
+  - [x] 18.3 Open Graph and Twitter metadata, static social image and card PNG download (doc item 16.12)
+    - Add Open Graph and Twitter metadata on all routes and a static `src/app/opengraph-image.tsx` (bird glyph, title, "Wastewater signals, not forecasts", no live data); tests that metadata is present on all routes and the image performs no data fetch
+    - Add `card-image.ts` and `DownloadCardImage.tsx`: SVG to canvas to PNG client-side from the same share data, lazy-loaded, no external service, no dependency over about 10 KB gzipped; privacy test that attendee categories never appear in the image or filename
+    - If infeasible within those limits, add nothing and report it as infeasible in 18.4
+    - _Requirements: UI-19.30, UI-19.31, UI-19.32, UI-15.1_
+  - [x] 18.4 Reconcile group 17 statuses and document Milestone 4
+    - Audit each of 17.6 to 17.12 against the code and tests and set checkboxes honestly: mark done what is implemented and tested, leave unimplemented items unchecked, and list the unchecked items in the final report
+    - Add a "Milestone 4" section to `docs/KIRO_USAGE.md`: bugs found and fixed, before/after numbers, anything skipped (including the PNG download if infeasible)
+    - _Requirements: UI-19.34_
+  - [x] 18.5 Final verification
+    - Run `npx tsc --noEmit`, `npx vitest run`, `npm run build` and `npx playwright test`, and report counts
+    - Run Lighthouse mobile on `/`, median of 3, and compare with the baseline: performance 89/91/92, LCP 2.38/2.37/2.50 s, CLS about 0.01, TBT 391/324/257 ms, First Load JS for `/` 108 kB; gate: performance 90 or above, LCP 2.5 s or below
+    - Confirm `git diff --stat` shows no changes to `src/evidence/**`, the wording guard, share text or licence text; delete temporary files
+    - _Requirements: UI-19.33, UI-19.34_
+
 ## Notes
 
 - Tests are not marked optional: the repo rule requires tests with every evidence-engine or ingestion change, and the design's 22 properties are the acceptance gate.
@@ -331,7 +444,14 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     { "id": 17, "tasks": ["15.7"] },
     { "id": 18, "tasks": ["15.8"] },
     { "id": 19, "tasks": ["16.1", "16.2"] },
-    { "id": 20, "tasks": ["16.3"] }
+    { "id": 20, "tasks": ["16.3"] },
+    { "id": 21, "tasks": ["17.1", "17.2", "17.3", "17.4", "17.5"] },
+    { "id": 22, "tasks": ["17.6", "17.8", "17.9", "17.10"] },
+    { "id": 23, "tasks": ["17.7", "17.11", "17.12"] },
+    { "id": 24, "tasks": ["17.13"] },
+    { "id": 25, "tasks": ["18.1", "18.2", "18.3"] },
+    { "id": 26, "tasks": ["18.4"] },
+    { "id": 27, "tasks": ["18.5"] }
   ]
 }
 ```

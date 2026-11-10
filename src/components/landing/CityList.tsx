@@ -5,6 +5,7 @@ import { LevelBadge } from "@/components/design-system/LevelBadge";
 import { TrendGlyph } from "@/components/design-system/TrendGlyph";
 import { FreshnessLantern } from "@/components/design-system/FreshnessLantern";
 import { NO_MONITORING_SITE } from "@/ui-copy/coverage";
+import { RegionalSiteInfo, RegionalSiteLabel } from "@/components/city/RegionalSiteBadge";
 import { NO_LOCATIONS, NO_MATCHING_LOCATIONS } from "@/ui-copy/states";
 import { weekOf } from "@/ui-copy/timing";
 import { CITY_LIST_LABEL, FIND_CITY_LABEL, FIND_CITY_PLACEHOLDER, SEARCHING } from "@/ui-copy/landing";
@@ -28,8 +29,9 @@ export function CityRow({ row, selected, onOpen }: CityRowProps) {
   const cls = [styles.row, selected ? styles.rowSelected : "", row.noSite || row.stopped ? styles.rowMuted : ""]
     .filter(Boolean)
     .join(" ");
+  const regional = row.location.coverage === "regional_site" ? row.location.regional : undefined;
   return (
-    <li>
+    <li {...(regional ? { className: styles.rowItem } : {})}>
       <a
         href={`/city/${encodeURIComponent(id)}`}
         className={cls}
@@ -47,6 +49,7 @@ export function CityRow({ row, selected, onOpen }: CityRowProps) {
           ) : (
             <>
               <LevelBadge activity={row.badge.kind === "level" ? row.badge.activity : "unknown"} {...(row.badge.kind === "unknown" && row.badge.reason ? { reason: row.badge.reason } : {})} />
+              {regional ? <RegionalSiteLabel region={regional.targetName} /> : null}
               {row.badge.kind === "level" ? <TrendGlyph trend={row.trend} /> : null}
               {row.stoppedText ? <span className={styles.rowNote}>{row.stoppedText}</span> : null}
               {row.weekStart ? <span className={`mono ${styles.rowNote}`}>{weekOf(row.weekStart)}</span> : null}
@@ -57,6 +60,7 @@ export function CityRow({ row, selected, onOpen }: CityRowProps) {
           )}
         </span>
       </a>
+      {regional ? <RegionalSiteInfo /> : null}
     </li>
   );
 }

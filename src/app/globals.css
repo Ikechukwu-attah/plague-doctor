@@ -38,6 +38,10 @@
 
   /* Omen Card paper variant */
   --paper-ink: #0b1020;
+  /* Omen Card ornament (17.10): wax seal, its glyph, ornate border */
+  --seal-wax: #8c2f24;
+  --seal-glyph: #eadfc8;
+  --paper-border: #6b4a00;
   --paper-glyph-dark: #9a6512;
 
   /* Provenance trigger "i": glyph and ring, chosen by surface (UI-7.1, UI-13.5).

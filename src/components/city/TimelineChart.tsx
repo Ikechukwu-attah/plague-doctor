@@ -35,13 +35,15 @@ export interface TimelineChartProps {
   model: TimelineModel;
   virus: Pathogen;
   place: string;
+  /** Recent-weeks sentence appended to the chart's text alternative (UI-19.21). */
+  recentSummary?: string;
 }
 
 /**
  * Hand-written SVG. Points are keyboard-focusable; gaps are drawn as breaks in
  * the line plus ticks; nothing is drawn past the latest supplied week.
  */
-export function TimelineChart({ model, virus, place }: TimelineChartProps) {
+export function TimelineChart({ model, virus, place, recentSummary }: TimelineChartProps) {
   const [active, setActive] = useState<string | null>(null);
   if (model.empty) return <p className={styles.muted}>{TIMELINE_EMPTY}</p>;
 
@@ -131,6 +133,7 @@ export function TimelineChart({ model, virus, place }: TimelineChartProps) {
       </ul>
       <figcaption>
         <TimelineSummary model={model} />
+        {recentSummary ? <p className={styles.muted}>{recentSummary}</p> : null}
       </figcaption>
       <details className={styles.tableDetails}>
         <summary>{TIMELINE_TABLE_SUMMARY}</summary>

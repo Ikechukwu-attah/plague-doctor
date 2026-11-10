@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`UI-19.27 share text unchanged by the restyle > is deterministic, free of voice lines and matches the stored snapshot 1`] = `
+"Plague Doctor — Toronto
+Event date: Nov 3, 2026
+
+COVID-19: High — as of week of Oct 18, 2026, not on your event date
+Flu A: Moderate — as of week of Oct 18, 2026, not on your event date
+Flu B: Not detected — as of week of Oct 18, 2026, not on your event date
+RSV: Moderate — as of week of Oct 18, 2026, not on your event date
+
+This is community wastewater, not your chance of getting sick. It is not a forecast.
+Source: https://health-infobase.canada.ca/src/data/wastewater/wastewater_trend.csv"
+`;

@@ -5,8 +5,8 @@
  * dependency on Zod. The validating implementation lives in `client-impl.ts` and is imported on
  * the first request, which happens after the first paint.
  */
-import type { LocationEntry, MeasuredWeek, SourceSnapshot, StatusObservation } from "@/evidence/types";
-import type { DataStatusResponse, EnvelopeMeta, StatusResponse } from "./schemas";
+import type { MeasuredWeek, SourceSnapshot, StatusObservation } from "@/evidence/types";
+import type { ApiLocationEntry, DataStatusResponse, EnvelopeMeta, StatusResponse } from "./schemas";
 import type { ParamMap } from "./urls";
 
 export interface ApiResult<T> {
@@ -20,7 +20,7 @@ export type FetchLike = (
 ) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
 
 export interface ApiClient {
-  locations(p?: ParamMap["locations"], signal?: AbortSignal): Promise<ApiResult<LocationEntry[]>>;
+  locations(p?: ParamMap["locations"], signal?: AbortSignal): Promise<ApiResult<ApiLocationEntry[]>>;
   observations(p?: ParamMap["observations"], signal?: AbortSignal): Promise<ApiResult<StatusObservation[]>>;
   history(p: ParamMap["history"], signal?: AbortSignal): Promise<ApiResult<MeasuredWeek[]>>;
   status(p: ParamMap["status"], signal?: AbortSignal): Promise<ApiResult<StatusResponse>>;

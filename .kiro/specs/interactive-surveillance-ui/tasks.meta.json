@@ -11,6 +11,14 @@
     "7.1 City, timeline and provenance view models": {
       "status": "passed",
       "lastRunTimestamp": 1794029995231
+    },
+    "17.5 Planner date min/max and validation message (doc 16.5, P0)": {
+      "status": "passed",
+      "lastRunTimestamp": 1794100787749
+    },
+    "17.4 Regional-site resolution with citations and label (doc 16.4, P0)": {
+      "status": "passed",
+      "lastRunTimestamp": 1794103994515
     }
   },
   "executionHistory": {
@@ -884,6 +892,229 @@
         "executionId": "5e03f3fe-d8f7-4f06-a765-dde5565183ff",
         "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
         "timestamp": 1794083128045
+      }
+    ],
+    "17.1 Cluster map markers so hit targets never overlap (doc 16.1, P0)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100079315
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100091329
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100810190
+      }
+    ],
+    "17.2 Omen Card created date from the local calendar (doc 16.2, P0)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100079398
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100091579
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100810489
+      }
+    ],
+    "17.3 404 page inside PageContainer (doc 16.3, P0)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100079506
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100091759
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100810811
+      }
+    ],
+    "17.4 Regional-site resolution with citations and label (doc 16.4, P0)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100079570
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100812412
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794104038493
+      }
+    ],
+    "17.5 Planner date min/max and validation message (doc 16.5, P0)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100079605
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100092247
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100811780
+      }
+    ],
+    "17.6 City list sort control stored in the URL (doc 16.6, P1)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100079669
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794104038563
+      }
+    ],
+    "17.7 Bigger map and quieter markers (doc 16.7, P1)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100079754
+      }
+    ],
+    "17.8 Status explanations and recent PHAC weeks (doc 16.8, P1)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100079873
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794104038718
+      }
+    ],
+    "17.9 Living fog bound to the PHAC level (doc 16.9, P1)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100079977
+      }
+    ],
+    "17.10 Omen Card restyle with wax seal and voice lines (doc 16.10, polish)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100080157
+      },
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794104048872
+      }
+    ],
+    "17.11 Mask-lift reveal and lantern-and-fog skeleton (doc 16.11, polish)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100080330
+      }
+    ],
+    "17.12 Social preview metadata and \"Download card as image\" (doc 16.12, polish)": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100080491
+      }
+    ],
+    "17.13 Done-means verification and report": [
+      {
+        "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794100080701
+      }
+    ],
+    "18.1 Provenance dialog body renders only while open": [
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794105538370
+      },
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794107836317
+      }
+    ],
+    "18.3 Open Graph and Twitter metadata, static social image and card PNG download (doc item 16.12)": [
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794105587631
+      },
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794107836499
+      }
+    ],
+    "18.2 Omen Card created date uses the viewer's local calendar date": [
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794105587839
+      },
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794107836415
+      }
+    ],
+    "18.4 Reconcile group 17 statuses and document Milestone 4": [
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794107836601
+      },
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794107942935
+      }
+    ],
+    "18.5 Final verification": [
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794107943205
+      },
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794108402170
+      }
+    ],
+    "18. Milestone 4 follow-ups (review of M4 work)": [
+      {
+        "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794108402225
       }
     ]
   }

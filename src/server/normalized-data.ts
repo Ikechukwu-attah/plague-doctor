@@ -12,6 +12,8 @@ import type {
   LocationEntry,
   CoverageStatus,
 } from "@/evidence/types";
+import type { ApiLocationEntry } from "@/lib/api/location-types";
+import { resolveRegionalSite } from "@/server/geo/regional-sites";
 import { GAZETTEER, lookupCity } from "@/server/geo/cities";
 import { getNormalizedDir } from "@/server/ingest/snapshot-store";
 
@@ -122,7 +124,7 @@ function bestGrouping(groupings: Set<string>): LocationEntry["grouping"] {
 export function deriveLocations(
   observations: StatusObservation[],
   search?: string
-): LocationEntry[] {
+): ApiLocationEntry[] {
   const provinceMap = buildProvinceMap(observations);
 
   // --- Collect locations present in PHAC data ---
@@ -154,7 +156,7 @@ export function deriveLocations(
     }
   }
 
-  const phacEntries: LocationEntry[] = [];
+  const phacEntries: ApiLocationEntry[] = [];
   for (const [, loc] of byId) {
     const coverage = deriveCoverage(loc.groupings);
     const entry: LocationEntry = {
@@ -174,18 +176,20 @@ export function deriveLocations(
   }
 
   // --- Add gazetteer-only cities (ING-11) ---
-  const gazetteeerEntries: LocationEntry[] = [];
+  const gazetteeerEntries: ApiLocationEntry[] = [];
   for (const [slug, city] of GAZETTEER) {
     if (!byId.has(slug)) {
       const provObs = provinceMap.get(city.province);
-      const entry: LocationEntry = {
+      const regional = resolveRegionalSite(slug, observations);
+      const entry: ApiLocationEntry = {
         locationId: slug,
         locationName: city.cityName,
         city: city.cityName,
         province: city.province,
         pruid: city.pruid,
         grouping: "city",
-        coverage: "no_city_site",
+        coverage: regional ? "regional_site" : "no_city_site",
+        ...(regional ? { regional: regional.info } : {}),
         ...(provObs ? { provinceAggregate: provinceAggregateEntry(provObs) } : {}),
       };
       gazetteeerEntries.push(entry);
@@ -220,7 +224,7 @@ export function deriveLocations(
 export function resolveLocation(
   locationId: string,
   observations: StatusObservation[]
-): LocationEntry | null {
+): ApiLocationEntry | null {
   const provinceMap = buildProvinceMap(observations);
 
   // Check PHAC observations
@@ -250,6 +254,7 @@ export function resolveLocation(
   if (!city) return null;
 
   const provObs = provinceMap.get(city.province);
+  const regional = resolveRegionalSite(locationId, observations);
   return {
     locationId,
     locationName: city.cityName,
@@ -257,7 +262,8 @@ export function resolveLocation(
     province: city.province,
     pruid: city.pruid,
     grouping: "city",
-    coverage: "no_city_site",
+    coverage: regional ? "regional_site" : "no_city_site",
+    ...(regional ? { regional: regional.info } : {}),
     ...(provObs ? { provinceAggregate: provinceAggregateEntry(provObs) } : {}),
   };
 }

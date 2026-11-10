@@ -2,7 +2,8 @@
  * Coverage and ingestion facts for Behind the Mask (UI-11.9, UI-11.11).
  * Counts only, derived from API data. No place names are written here.
  */
-import type { LocationEntry, SourceSnapshot, StatusObservation } from "@/evidence/types";
+import type { SourceSnapshot, StatusObservation } from "@/evidence/types";
+import type { ApiLocationEntry } from "@/lib/api/location-types";
 import { AGGREGATE_SOURCE_URL, TREND_SOURCE_URL } from "@/evidence/copy/sources";
 import { toTorontoDateString, formatDisplayDate } from "@/evidence/date-utils";
 import { ApiError, describeApiError } from "@/lib/api/errors";
@@ -26,10 +27,11 @@ function isStopped(o: StatusObservation): boolean {
 }
 
 export function buildCoverageFacts(args: {
-  locations: readonly LocationEntry[];
+  locations: readonly ApiLocationEntry[];
   observations: readonly StatusObservation[];
 }): CoverageFactsModel {
-  const inSnapshot = args.locations.filter((l) => l.coverage !== "no_city_site");
+  // regional_site entries are derived from a PHAC location that is already counted.
+  const inSnapshot = args.locations.filter((l) => l.coverage !== "no_city_site" && l.coverage !== "regional_site");
   const byGrouping = { site: 0, city: 0, province: 0, national: 0 };
   for (const l of inSnapshot) byGrouping[l.grouping] += 1;
 
@@ -45,7 +47,7 @@ export function buildCoverageFacts(args: {
   return {
     locations: inSnapshot.length,
     byGrouping,
-    withoutCoverage: args.locations.length - inSnapshot.length,
+    withoutCoverage: args.locations.filter((l) => l.coverage === "no_city_site").length,
     discontinued,
   };
 }

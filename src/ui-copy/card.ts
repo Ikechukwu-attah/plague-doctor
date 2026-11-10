@@ -4,6 +4,7 @@
  */
 import type { Pathogen } from "../evidence/types";
 import { formatDisplayDate } from "../evidence/date-utils";
+import { createdLocalDate } from "../lib/clock";
 import { VIRUS_LABEL } from "./levels";
 import { weekOf } from "./timing";
 
@@ -21,6 +22,27 @@ export const PAST_OBSERVATIONS_LABEL = "past observations, not a prediction";
 
 export function notDetectedNote(): string {
   return "Not detected is not a guarantee that nobody in the community is infected.";
+}
+
+/**
+ * Plague doctor voice lines (17.10, UI-19.25..27). One fixed line per PHAC level,
+ * describing the SIGNAL in the week shown, never risk, never a prediction.
+ * Rule: rendered under the level word of each row, on NEAR cards only. Too-early
+ * and past cards describe no current conditions, so they carry no voice line.
+ * Lines avoid the level words themselves so the PHAC value is never restated or re-classified.
+ */
+export type VoiceLevel = "high" | "moderate" | "low" | "not_detected" | "unknown";
+
+export const CARD_VOICE_LINES: Readonly<Record<VoiceLevel, string>> = {
+  high: "The waters carry a strong signal in the week shown.",
+  moderate: "The waters carry a middling signal in the week shown.",
+  low: "The waters carry a faint signal in the week shown.",
+  not_detected: "The instruments did not detect a signal in the week shown.",
+  unknown: "The record is silent here, and silence is not a measurement.",
+};
+
+export function cardVoiceLine(level: VoiceLevel): string {
+  return CARD_VOICE_LINES[level];
 }
 
 export const NO_RECENT_DATA = "No recent data";
@@ -98,7 +120,7 @@ export const DIFF_NEWLY_MISSING = "no longer reported";
 export const DIFF_UNCHANGED_ENTRY = "unchanged";
 
 export function baselineOnly(s: { snapshotId: string; createdAt: string }): string {
-  return `Showing your saved card from snapshot ${s.snapshotId}, created ${formatDisplayDate(s.createdAt.slice(0, 10))}.`;
+  return `Showing your saved card from snapshot ${s.snapshotId}, created ${formatDisplayDate(createdLocalDate(s.createdAt))}.`;
 }
 
 // Omen Card screen chrome (UI-9, UI-10)
