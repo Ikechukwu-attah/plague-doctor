@@ -106,9 +106,9 @@ export function CanadaMap({ rows, virus, week, selectedId, showNoData = false, p
     [rows, size, measured, showNoData],
   );
   const byId = new Map(placed.map((r) => [r.location.locationId, r]));
-  const singles = items ? items.filter((i) => i.kind === "marker").map((i) => byId.get(i.id)!) : placed;
+  // Labels run after clustering over the rendered items; before the first measurement none are drawn.
   const labels = useMemo(
-    () => new Map(selectMapLabels(singles, selectedId, size, MAP_W, MAP_H).map((l) => [l.id, l.side])),
+    () => new Map(items ? selectMapLabels(placed, selectedId, size, items).map((l) => [l.id, l.side]) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [items, rows, selectedId, size, showNoData],
   );

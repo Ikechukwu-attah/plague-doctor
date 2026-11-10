@@ -1162,6 +1162,18 @@
         "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
         "timestamp": 1794308494230
       }
+    ],
+    "17.15 Map labels never overlap markers, clusters or other labels": [
+      {
+        "executionId": "e0fb0a69-da0b-45b6-8df8-e98909605c7a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794328661392
+      },
+      {
+        "executionId": "e0fb0a69-da0b-45b6-8df8-e98909605c7a",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794329590913
+      }
     ]
   }
 }

@@ -391,6 +391,16 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - Tests: unit or component test that the skeleton renders in the map panel before data and before the map chunk resolves and has the reserved height; test that the map import does not depend on the data fetch result; Playwright test asserting time to first marker stays within a generous budget (for example at most 60 percent of the recorded before value and under an absolute ceiling with wide margin for CI variance) plus a check that the panel is never empty (skeleton or map present at every sampled moment); existing marker-hit, a11y and screen-state tests stay green
     - Result (details in `docs/KIRO_USAGE.md`): cause was a strict waterfall (island chunk, then 4 reads, then the map chunk requested only at `phase === "ready"`). Throttled median first marker 4196 to 3478 ms, outlines 3900 to 2163 ms, skeleton panel at 340 ms; unthrottled 396 to 320 ms; CLS 0.031 to 0.001; `/` First Load JS 109 to 110 kB. Lighthouse not re-run here (task 17.13).
     - _Requirements: UI-19.28, UI-19.29, UI-19.33, UI-19.38, UI-3.1, UI-3.3, UI-4.2, UI-2.8_
+  - [x] 17.15 Map labels never overlap markers, clusters or other labels
+    - Change `selectMapLabels` in `src/lib/view/map-labels.ts` so it runs after clustering, over the rendered items (singles plus clusters), with every single and cluster as an obstacle using its 44 px hit box and each label measured (text width and height) before placement
+    - For each label try the sides in order right, left, above, below; place it on the first side whose box intersects no marker, cluster or already placed label (and stays inside the map box); if no side fits, drop the label. The marker keeps its accessible name and its City_List row; no copy or classification changes
+    - `CanadaMap` passes the cluster items (not just the raw points) to `selectMapLabels`, and `MapMarker` supports label sides above and below in addition to right and left; placement is recomputed on map resize
+    - Tests: property and unit test (`tests/ui/map-labels.test.ts`, fast-check, 100+ runs, tagged `// Feature: interactive-surveillance-ui, Property 30`) at map widths 390, 800, 1024 and 1440 using real fixture rows (production parsers and the fixture loaders in `tests/ui/helpers.ts`, then `clusterMarkers`): no label box intersects any marker or cluster box or any other label; a label is omitted when all four sides collide; side order is right, left, above, below
+    - Playwright check at 800 px on the real DOM: read the bounding boxes of every `[data-map]` marker or cluster button and every visible map label and assert no label box intersects any marker, cluster or other label box
+    - The marker-hit e2e (`elementFromPoint` at each centre, desktop and 390 px) stays green; existing a11y and screen-state tests stay green
+    - **Property 30: Label placement is collision-free**
+    - **Validates: Requirements 19.39**
+    - _Requirements: UI-19.39, UI-19.1, UI-19.3, UI-19.4_
 
 - [x] 18. Milestone 4 follow-ups (review of M4 work)
   - Same constraints as group 17 (no forecasts or risk claims, copy via `src/ui-copy/**`, dates via the clock module, `src/evidence/**`, wording guard, share text and licence text untouched, no deploy, no dev servers).
@@ -460,9 +470,10 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     { "id": 23, "tasks": ["17.7", "17.11", "17.12"] },
     { "id": 24, "tasks": ["17.14"] },
     { "id": 25, "tasks": ["17.13"] },
-    { "id": 26, "tasks": ["18.1", "18.2", "18.3"] },
-    { "id": 27, "tasks": ["18.4"] },
-    { "id": 28, "tasks": ["18.5"] }
+    { "id": 26, "tasks": ["17.15"] },
+    { "id": 27, "tasks": ["18.1", "18.2", "18.3"] },
+    { "id": 28, "tasks": ["18.4"] },
+    { "id": 29, "tasks": ["18.5"] }
   ]
 }
 ```

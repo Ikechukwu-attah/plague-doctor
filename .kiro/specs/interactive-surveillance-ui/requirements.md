@@ -397,3 +397,4 @@ Source: `docs/MILESTONE_4_REVIEW_FIXES.md` (doc items 16.1 to 16.12 map to crite
 36. WHEN a Provenance_Dialog is opened and then closed by Escape or its close control, THE UI SHALL unmount the body and return focus to the control that opened it.
 37. THE Test_Suite SHALL assert that a City_Page with the dialogs closed contains no repeated definition text and that a No-data card contains no PHAC level word (UI-12.6), without weakening the existing assertion.
 38. THE Canada_Map panel SHALL show a skeleton immediately and its first marker SHALL appear without a blank panel.
+39. THE Canada_Map SHALL place a marker name label only where its box intersects no marker, cluster or other label, trying right, left, above and below, and SHALL omit the label when no side fits (the marker keeps its accessible name and its list row).

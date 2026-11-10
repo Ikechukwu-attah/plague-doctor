@@ -173,7 +173,7 @@ Defects found in the screenshot pass and fixed: the drawer left a 77 px gap unde
 ## Milestone 4
 
 ### What was added to the spec
-Requirement 19 (review fixes and Costume Contest polish) plus task group 17 (items 17.1 to 17.13) and group 18 (follow-ups 18.1 to 18.5). Numbering note: `docs/MILESTONE_4_REVIEW_FIXES.md` calls the new group "group 16", but 16 ("Follow-ups") already existed, so it was recorded as group 17.
+Requirement 19 (review fixes and Costume Contest polish) plus task group 17 (items 17.1 to 17.15) and group 18 (follow-ups 18.1 to 18.5). Numbering note: `docs/MILESTONE_4_REVIEW_FIXES.md` calls the new group "group 16", but 16 ("Follow-ups") already existed, so it was recorded as group 17.
 
 ### Bugs found and fixed (with tests)
 1. Map hit-target overlap: markers' 44 px boxes overlapped, so clicks went to the wrong place (for example Toronto opened london). Verified with `document.elementFromPoint` on the live site. Fixed by clustering (17.1). Tests: `tests/ui/map-clusters.test.ts`, `e2e/marker-hit.spec.ts` (1440 px and 390 px).
@@ -214,6 +214,7 @@ Unit tests at audit time: `tsc --noEmit` clean, vitest 59 files / 494 tests pass
 - 17.9 Living fog bound to the PHAC level: drift uses only `transform` and `opacity`. `--fog-scale` and `--fog-opacity` follow `activityIndex`. Unknown stays hatched and is never the lowest fog. Fog is static under `prefers-reduced-motion`. The legend sentence "Fog shows PHAC's activity level. It is not your risk." (`LEGEND_SENTENCE`) is rendered. Tests: `tests/ui/fog-motion.test.ts` (11 tests: legend, compositor-only keyframes and transitions, monotone scale and opacity, Property 29), existing Property 4 green, `e2e/reduced-motion.spec.ts`.
 - 17.11 Mask-lift reveal and lantern-and-fog skeleton: `MaskReveal.tsx` runs a 600 ms curtain lift on the first `/methods` view per session (`sessionStorage`). It is skipped for reduced motion, non-interactive and `aria-hidden`. `LanternSkeleton.tsx` replaces the grey bars and keeps the reserved heights. Tests: reduced-motion CSS rule (Property 29 extended), reserved-height class assertions, screen-state matrix green.
 - 17.14 (map panel skeleton, time to first marker): see the section below.
+- 17.15 (map labels never overlap markers, clusters or other labels): see the last section.
 
 ### Final gate (task 17.13, after 17.7, 17.9, 17.11, 17.14)
 - `npx tsc --noEmit`: 0 errors.
@@ -305,3 +306,33 @@ Method: `e2e/map-timing.spec.ts` (run through `playwright.perf.config.ts`, which
 - Build: `/` First Load JS 109 kB before, 110 kB after (shared 105 kB unchanged).
 - e2e budgets in `e2e/map-timing.spec.ts`: first marker under 6000 ms throttled and 2500 ms unthrottled, panel under 1000 ms unthrottled, never blank after first paint, CLS under 0.1.
 - Flake seen once: `a11y landing page` timed out at 30 s on the very first request after server start; it passed on rerun.
+
+## Task 17.15: map labels never overlap markers, clusters or other labels
+Bug seen live at about 800 px: the "Metro Vancouver · High" label ran across the "12 places" prairie cluster ("Metro ⑫uver").
+
+### Cause
+- `selectMapLabels` ran over single markers only and ignored clusters.
+- It tried only right, then left.
+- It used a 14 px offset that did not match the CSS (22 px half-box + 4 px gap).
+
+### Fix
+- Placement now runs after clustering, over the rendered items.
+- Obstacles are the 44 px box of every single marker and cluster (except the label's own marker) plus already placed labels.
+- Sides are tried in the order right, left, above, below. The label box must stay inside the map.
+- If no side fits, the label is dropped, selected included. The marker, its accessible name, the selected ring and the list row are unaffected.
+- A selected marker whose label was dropped shows no label. Hover and focus still show it temporarily.
+
+### Tests
+- `tests/ui/map-labels.test.ts` (Property 30): fixture rows at 390 / 800 / 1024 / 1440 px with `showNoData` both ways, shuffle determinism, fast-check over widths 320 to 1600 and any selected location, and synthetic side-order, drop and edge cases.
+- `tests/ui/landing-map.test.tsx` updated.
+- `e2e/map-labels.spec.ts`: at 800 px, no label DOM box intersects another marker or cluster button, or another label.
+
+### Results
+- `npx tsc --noEmit`: 0 errors.
+- `npx vitest run`: 62 files / 541 tests passed.
+- Playwright `map-labels`, `marker-hit` (desktop, mobile, reduced-motion), `map-layout` and `keyboard-and-viewport`, run with `--workers=1`: 21 passed, 30 skipped (non-desktop projects for desktop-only specs), 0 failed.
+- Labels surviving with the committed trimmed fixture: 390 px 1, 800 px 1, 1024 px 1, 1440 px 2 (same with "Show places without data" on or off).
+- The live data has more city-level rows, so more labels survive there. The fixture target of 3 or more labels at 1440 px was not reachable, and the collision rule was not loosened.
+
+### Process note
+The shell tool silently ignored a python heredoc edit once. The edits were redone with the file tools.

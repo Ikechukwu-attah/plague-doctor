@@ -249,7 +249,6 @@
 }
 .marker:hover .markerLabel,
 .marker:focus-visible .markerLabel,
-.selected .markerLabel,
 .labelOn {
   opacity: 1;
 }
@@ -258,6 +257,22 @@
   right: 100%;
   margin-left: 0;
   margin-right: var(--space-1);
+}
+.labelAbove,
+.labelBelow {
+  left: 50%;
+  right: auto;
+  margin-left: 0;
+  transform: translateX(-50%);
+}
+.labelAbove {
+  top: auto;
+  bottom: 100%;
+  margin-bottom: var(--space-1);
+}
+.labelBelow {
+  top: 100%;
+  margin-top: var(--space-1);
 }
 /* Labelled markers paint above unlabelled dots so label text is never overdrawn. */
 .markerLabelled {

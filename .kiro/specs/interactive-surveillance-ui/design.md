@@ -1061,6 +1061,12 @@ Source: `docs/MILESTONE_4_REVIEW_FIXES.md`. Requirement 19 (criteria `UI-19.n`).
 
 **Validates: Requirements 19.22, 19.24, 19.28, 19.29**
 
+### Property 30: Label placement is collision-free
+
+*For any* set of rendered map items (singles and clusters, each with a 44 px hit box), any measured label sizes and any map width (390, 800, 1024, 1440 with real fixture rows), `selectMapLabels` returns labels whose boxes intersect no marker box, no cluster box and no other label box; each placed label sits on the first fitting side in the order right, left, above, below; a label with no fitting side is omitted, while its marker keeps its accessible name and its City_List row.
+
+**Validates: Requirements 19.39**
+
 ### Milestone 4 error handling
 
 | Situation | Handling | Never |
@@ -1073,7 +1079,7 @@ Source: `docs/MILESTONE_4_REVIEW_FIXES.md`. Requirement 19 (criteria `UI-19.n`).
 
 ### Milestone 4 testing and Lighthouse non-regression plan
 
-- **Property tests** (fast-check, 100+ runs, tagged `// Feature: interactive-surveillance-ui, Property N`) for P23 to P29 in `tests/ui/map-clusters.test.ts`, `card-created-date.test.ts`, `regional-sites.test.ts`, `planner-date-range.test.ts`, `city-sort.test.ts`, `card-voice.test.ts`, `reduced-motion-m4.test.ts`.
+- **Property tests** (fast-check, 100+ runs, tagged `// Feature: interactive-surveillance-ui, Property N`) for P23 to P30 in `tests/ui/map-clusters.test.ts`, `card-created-date.test.ts`, `regional-sites.test.ts`, `planner-date-range.test.ts`, `city-sort.test.ts`, `card-voice.test.ts`, `reduced-motion-m4.test.ts`, `map-labels.test.ts`.
 - **Example tests:** 404 inside PageContainer; sort URL round-trip; "Show places without data" toggle leaves the list unchanged; status explanation topics present; 12-week strip with missing weeks; legend sentence; OG metadata and `opengraph-image` contain no live data; PNG helper builds from share data.
 - **Playwright:** marker-hit test (`elementFromPoint` equals the marker or cluster at its centre) at 1440 and 390 px; cluster chooser opens and selects; `/nope` has no horizontal overflow at 390 px; planner six-digit year rejected; Vancouver shows the "Regional site" label; sort via URL; reduced-motion run shows static fog.
 - **Lighthouse non-regression:** run mobile Lighthouse on `/` (median of at least 3 runs) before the first change and after the last. Gate: performance ≥ 90, LCP ≤ 2.5 s, CLS near 0, First Load JS for `/` not above the 15.7 result (108 kB) without justification. Heavy additions (cluster chooser, PNG export, card styling) load lazily or outside the landing bundle. The h1 and limitation line stay server-rendered.

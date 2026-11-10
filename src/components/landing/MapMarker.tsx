@@ -2,6 +2,7 @@
 import type { CSSProperties } from "react";
 import type { LandingRow } from "@/lib/view/landing-rows";
 import { trendGlyphModel } from "@/lib/view/trend";
+import type { MapLabelSide } from "@/lib/view/map-labels";
 import { SELECTED } from "@/ui-copy/landing";
 import styles from "./Landing.module.css";
 
@@ -13,7 +14,7 @@ export function markerPosition(p: { x: number; y: number }): { left: string; top
 }
 
 /** Shape + glyph + word; colour is never the only signal. */
-export function MapMarker(props: { row: LandingRow; selected?: boolean; labelSide?: "right" | "left" | undefined; onOpen: (locationId: string) => void }) {
+export function MapMarker(props: { row: LandingRow; selected?: boolean; labelSide?: MapLabelSide | undefined; onOpen: (locationId: string) => void }) {
   const { row, selected } = props;
   if (!row.point) return null;
   const pos = markerPosition(row.point);
@@ -24,7 +25,14 @@ export function MapMarker(props: { row: LandingRow; selected?: boolean; labelSid
     : b.activity === "not_detected"
       ? `${styles.dot} ${styles.dotNd}`
       : styles.dot;
-  const labelCls = [styles.markerLabel, props.labelSide ? styles.labelOn : "", props.labelSide === "left" ? styles.labelLeft : ""]
+  const side = props.labelSide;
+  const labelCls = [
+    styles.markerLabel,
+    side ? styles.labelOn : "",
+    side === "left" ? styles.labelLeft : "",
+    side === "above" ? styles.labelAbove : "",
+    side === "below" ? styles.labelBelow : "",
+  ]
     .filter(Boolean)
     .join(" ");
   const style = { ...pos, ...(b.kind === "level" ? { "--level-color": b.cssVar } : {}) } as CSSProperties;

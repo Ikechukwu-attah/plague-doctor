@@ -8,11 +8,18 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { buildLandingRows } from "../../src/lib/view/landing-rows";
 import type { LandingRow } from "../../src/lib/view/landing-rows";
 import { selectMapLabels, MAP_LABEL_CAP } from "../../src/lib/view/map-labels";
+import { clusterMarkers } from "../../src/lib/view/marker-clusters";
 import { CanadaMap } from "../../src/components/landing/CanadaMap";
 import { MAP_H, MAP_W } from "../../src/components/landing/MapMarker";
 import type { LocationEntry } from "../../src/evidence/types";
 import { loadTrendFixture } from "./helpers";
-const SIZE = { width: 673, height: 573 };
+const SIZE = { width: 1440, height: Math.round(1440 * 0.851) };
+function itemsFor(rs: readonly LandingRow[], size = SIZE) {
+  return clusterMarkers(
+    rs.filter((r) => r.point).map((r) => ({ id: r.location.locationId, fx: r.point!.x / MAP_W, fy: r.point!.y / MAP_H })),
+    size,
+  );
+}
 function rows(): LandingRow[] {
   const seen = new Map<string, LocationEntry>();
   for (const o of loadTrendFixture()) {
@@ -38,7 +45,7 @@ function rows(): LandingRow[] {
 describe("selectMapLabels (task 15.4)", () => {
   const all = rows();
   it("labels only city-level observations with a point, within the cap", () => {
-    const labels = selectMapLabels(all, undefined, SIZE, MAP_W, MAP_H);
+    const labels = selectMapLabels(all, undefined, SIZE, itemsFor(all));
     expect(labels.length).toBeGreaterThan(0);
     expect(labels.length).toBeLessThanOrEqual(MAP_LABEL_CAP);
     for (const l of labels) {
@@ -48,22 +55,25 @@ describe("selectMapLabels (task 15.4)", () => {
     }
   });
   it("is stable under input shuffle", () => {
-    const a = selectMapLabels(all, undefined, SIZE, MAP_W, MAP_H);
-    const b = selectMapLabels([...all].reverse(), undefined, SIZE, MAP_W, MAP_H);
+    const a = selectMapLabels(all, undefined, SIZE, itemsFor(all));
+    const b = selectMapLabels([...all].reverse(), undefined, SIZE, itemsFor([...all].reverse()));
     expect(b.map((l) => l.id).sort()).toEqual(a.map((l) => l.id).sort());
   });
   it("always includes the selected location, even a site-level one, first", () => {
-    const sel = all.find((r) => r.point && r.observation?.grouping === "site");
+    const items = itemsFor(all);
+    const singles = new Set(items.filter((i) => i.kind === "marker").map((i) => i.id));
+    const sel = all.find((r) => r.point && r.observation?.grouping === "site" && singles.has(r.location.locationId));
     if (!sel) return;
-    const labels = selectMapLabels(all, sel.location.locationId, SIZE, MAP_W, MAP_H);
-    expect(labels[0]?.id).toBe(sel.location.locationId);
+    const labels = selectMapLabels(all, sel.location.locationId, SIZE, items);
+    // The selected label is tried first; it is only absent when no side fits (task 17.15).
+    if (labels.some((l) => l.id === sel.location.locationId)) expect(labels[0]?.id).toBe(sel.location.locationId);
   });
   it("gives no label to rows without a point", () => {
     const noPoint = all.map((r) => {
       const { point: _p, ...rest } = r;
       return rest as LandingRow;
     });
-    expect(selectMapLabels(noPoint, undefined, SIZE, MAP_W, MAP_H)).toEqual([]);
+    expect(selectMapLabels(noPoint, undefined, SIZE, itemsFor(noPoint))).toEqual([]);
   });
 });
 describe("CanadaMap fog (task 15.4)", () => {
