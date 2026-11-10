@@ -119,6 +119,10 @@
 .rowMeta .mono {
   color: #3a3528;
 }
+/* The shared trend glyph is parchment-coloured (made for the dark shell); on the parchment card it must be ink. */
+.rowMeta [data-trend] {
+  color: #3a3528;
+}
 .rowMeta {
   font-size: var(--text-14);
   color: #3a3528;

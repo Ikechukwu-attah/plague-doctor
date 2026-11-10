@@ -13,7 +13,7 @@ export const FIND_CITY_PLACEHOLDER = "Toronto, Halifax…";
 export const SKIP_MAP = "Skip map to city list";
 export const CITY_LIST_LABEL = "Cities";
 export const LEGEND_LABEL = "Map legend";
-export const LEGEND_SENTENCE = "Fog = PHAC activity index for the selected virus. Never personal risk.";
+export const LEGEND_SENTENCE = "Fog shows PHAC's activity level. It is not your risk.";
 export const CLOSE_DETAILS = "Close details";
 export const PLAN_A_GATHERING = "Plan a gathering";
 export const OPEN_FULL_PAGE = "Open full page";
@@ -21,6 +21,9 @@ export const SELECTED = "selected";
 export const SEARCHING = "Searching…";
 
 export const SORT_LABEL = "Sort list";
+
+/** Map-only toggle (UI-19.18): places with no data or no monitoring site stay in the list either way. */
+export const SHOW_NO_DATA_PLACES = "Show places without data";
 export const SORT_AZ = "A–Z";
 export const SORT_ACTIVITY = "Highest activity first";
 export const SORT_ACTIVITY_NOTE = "Ordered by PHAC's activity level. Places without data come last.";

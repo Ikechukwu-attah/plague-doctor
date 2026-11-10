@@ -6,6 +6,8 @@
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Suspense } from "react";
+import { readFileSync } from "node:fs";
+import { LandingPending } from "../../src/components/landing/LandingIsland";
 import { buildLandingRows } from "../../src/lib/view/landing-rows";
 import { deriveLandingStatus, staleWeekFor } from "../../src/lib/view/landing-status";
 import { CanadaMap } from "../../src/components/landing/CanadaMap";
@@ -108,11 +110,41 @@ describe("UI-2.4 UI-2.7 success", () => {
 });
 
 describe("UI-2.8 UI-12.1 loading / UI-2.11 error / empty", () => {
-  it("loading shows a skeleton and no rows, legend or map", () => {
+  it("loading shows a skeleton and no rows, legend, markers or counts", () => {
     const html = render({ phase: "loading", rows: [] });
     expect(html).toContain('aria-busy="true"');
     expect(html).not.toContain('id="city-list"');
-    expect(html).not.toContain('data-map=""');
+    expect(html).not.toContain("data-location-id");
+    expect(html).not.toContain("data-cluster-id");
+    expect(html).not.toContain("Skip map to city list");
+  });
+  it("UI-19.28 loading on a wide screen keeps the map panel: busy, outlines only, 'Loading' instead of counts", () => {
+    const html = render({ phase: "loading", rows: [] });
+    expect(html).toContain('data-map-panel=""');
+    expect(html).toContain('data-map=""');
+    expect(html).toContain("<path");
+    expect(textOf(html)).toContain("Loading");
+    expect(textOf(html)).not.toMatch(/\d+ places/);
+  });
+  it("UI-19.28 loading without a map (mobile default or list view) renders no map panel", () => {
+    expect(render({ phase: "loading", rows: [], wide: false })).not.toContain("data-map-panel");
+    expect(render({ phase: "loading", rows: [], view: "list" })).not.toContain("data-map-panel");
+  });
+  it("UI-19.28 UI-19.29 the island fallback renders the map panel skeleton (static markup, before any chunk or data)", () => {
+    const html = renderToStaticMarkup(<LandingPending />);
+    expect(html).toContain('data-map-panel=""');
+    expect(html).toContain('data-map-skeleton=""');
+    expect(html).toContain('data-variant="map"');
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain("aspect-ratio");
+  });
+  it("UI-19.29 the map chunk request and the four reads do not wait for each other", () => {
+    const island = readFileSync("src/components/landing/LandingIsland.tsx", "utf8");
+    // The loader starts the map chunk without awaiting it and without reading any data.
+    expect(island).toMatch(/Promise\.all\(\[import\("\.\/LandingView"\), import\("@\/lib\/api\/client-impl"\), startMapChunk\(\)\]\)/);
+    expect(island).toMatch(/cache\.load\(LANDING_KEYS\.observations/);
+    const screen = readFileSync("src/components/landing/LandingScreen.tsx", "utf8");
+    expect(screen).toMatch(/phase === "loading"[\s\S]*<MapComponent rows=\{\[\]\}[^>]*pending/);
   });
   it("blocking error shows only the notice, no stale values", () => {
     const html = render({ phase: "error", rows: [], errorNotice: <p role="alert">Couldn&apos;t load locations</p> });
@@ -169,5 +201,23 @@ describe("UI-2.9 status derivation", () => {
     const s = deriveLandingStatus({ observations, snapshots: [], today: TODAY });
     expect(staleWeekFor({ status: s, loadFailedWithLastGood: true })).toBe(s.latestWeek);
     expect(staleWeekFor({ status: s, loadFailedWithLastGood: false })).toBeUndefined();
+  });
+});
+
+describe("UI-19.18 'Show places without data' toggle (task 17.7)", () => {
+  const listOf = (html: string) => /<ul[^>]*rows[^>]*>[\s\S]*?<\/ul>/.exec(html)?.[0];
+  it("changes only the map markers; list rows are identical either way", () => {
+    const off = render({ onNoData: () => {}, showNoData: false });
+    const on = render({ onNoData: () => {}, showNoData: true });
+    expect(listOf(off)).toBeTruthy();
+    expect(listOf(on)).toBe(listOf(off));
+    const markers = (h: string) => (h.match(/<button[^>]*data-location-id=/g) ?? []).length;
+    const unknown = rows.filter((r) => r.point && !r.duplicateMarker && r.badge.kind !== "level").length;
+    expect(markers(on) - markers(off)).toBe(unknown);
+  });
+  it("offers an unchecked checkbox by default and only while the map is shown", () => {
+    expect(render({ onNoData: () => {} })).toMatch(/type="checkbox"[^>]*>Show places without data/);
+    expect(render({ onNoData: () => {} })).not.toMatch(/checkbox"[^>]*checked[^>]*>Show places without data/);
+    expect(render({ onNoData: () => {}, view: "list" })).not.toContain("Show places without data");
   });
 });

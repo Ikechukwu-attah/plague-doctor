@@ -10,7 +10,7 @@ import { CityList } from "./CityList";
 import { Legend } from "./Legend";
 import { StaleBanner } from "./StaleBanner";
 import { FreshnessFooter } from "./FreshnessFooter";
-import { DiscontinuedToggle, MapToggle, SortControl, ViewSwitch } from "./Controls";
+import { DiscontinuedToggle, MapToggle, NoDataToggle, SortControl, ViewSwitch } from "./Controls";
 import { sortRows, type ListSort } from "@/lib/view/sort-rows";
 import styles from "./Landing.module.css";
 
@@ -34,6 +34,9 @@ export interface LandingScreenProps {
   onSort?: (sort: ListSort) => void;
   showDiscontinued: boolean;
   onDiscontinued: (checked: boolean) => void;
+  /** Map-only: draw markers for places without data (UI-19.18). Default off. */
+  showNoData?: boolean;
+  onNoData?: (checked: boolean) => void;
   /** True at 640 px and up. */
   wide: boolean;
   view: "map" | "list";
@@ -65,6 +68,9 @@ export function LandingScreen(p: LandingScreenProps) {
       <VirusChips value={p.virus} onChange={p.onVirus} />
       <div className={styles.controls}>
         <DiscontinuedToggle checked={p.showDiscontinued} onChange={p.onDiscontinued} />
+        {p.phase === "ready" && showMap && p.onNoData ? (
+          <NoDataToggle checked={p.showNoData === true} onChange={p.onNoData} />
+        ) : null}
         {p.phase === "ready" ? (
           <>
             {p.onSort ? <SortControl value={p.sort ?? "az"} onChange={p.onSort} /> : null}
@@ -73,7 +79,21 @@ export function LandingScreen(p: LandingScreenProps) {
           </>
         ) : null}
       </div>
-      {p.phase === "loading" ? <Skeleton variant="rows" rows={6} /> : null}
+      {p.phase === "loading" ? (
+        showMap && MapComponent ? (
+          /* Task 17.14: same grid as the ready state, so the outlines (chunk ready) and then markers (data) fill a reserved panel. */
+          <div className={styles.body} data-map="true">
+            <div className={styles.mapCol}>
+              <MapComponent rows={[]} virus={p.virus} pending onOpen={p.onOpen} />
+            </div>
+            <div className={styles.mapCol}>
+              <Skeleton variant="rows" rows={6} />
+            </div>
+          </div>
+        ) : (
+          <Skeleton variant="rows" rows={6} />
+        )
+      ) : null}
       {p.phase === "error" ? p.errorNotice : null}
       {p.phase === "ready" ? (
         <>
@@ -83,6 +103,7 @@ export function LandingScreen(p: LandingScreenProps) {
                 <MapComponent
                   rows={p.rows}
                   virus={p.virus}
+                  showNoData={p.showNoData === true}
                   {...(p.week ? { week: p.week } : {})}
                   {...(p.selectedId ? { selectedId: p.selectedId } : {})}
                   onOpen={p.onOpen}

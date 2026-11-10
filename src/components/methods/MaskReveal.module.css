@@ -1,0 +1,37 @@
+/* Mask-lift curtain: fixed overlay, transform/opacity only, no layout impact, never interactive. */
+.mask {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: var(--ink-900);
+  color: var(--parchment-dim);
+  pointer-events: none;
+  animation: maskLift 600ms cubic-bezier(0.6, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+.glyph {
+  width: 120px;
+  height: 80px;
+  opacity: 0.5;
+}
+@keyframes maskLift {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mask {
+    display: none;
+    animation: none;
+  }
+}

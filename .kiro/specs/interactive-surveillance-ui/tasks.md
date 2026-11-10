@@ -298,7 +298,7 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - Run `npx tsc --noEmit` and `npx vitest run`, and report the counts
     - _Requirements: UI-17.10_
 
-- [ ] 17. Review fixes and Costume Contest polish (Milestone 4)
+- [x] 17. Review fixes and Costume Contest polish (Milestone 4)
   - Numbering note: `docs/MILESTONE_4_REVIEW_FIXES.md` calls this "group 16", but 16 is already taken by "Follow-ups". Mapping: tasks 17.1 to 17.12 are doc items 16.1 to 16.12 (same order: P0 bugs 17.1 to 17.5, P1 clarity 17.6 to 17.8, Costume Contest polish 17.9 to 17.12); 17.13 is the doc's "Done means".
   - Constraints for the whole group: no forecasts, risk, "safe" claims or new scores; all user-facing copy only via `src/ui-copy/**` and covered by the wording guard tests; all dates via the clock module (`src/lib/clock.ts`); `prefers-reduced-motion` respected; do not change `src/evidence/**` or the wording guard (`checkWording`); put the regional-site table in a non-evidence module (`src/server/geo` or `src/data`); do not change share text output or any licence or attribution text; keep existing vitest and Playwright baselines green; file-write tools only for edits (no sed/awk/echo redirection); no deploy; do not start dev servers.
   - [x] 17.1 Cluster map markers so hit targets never overlap (doc 16.1, P0)
@@ -339,16 +339,16 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - **Property 27: Sort order depends only on the PHAC category, then A–Z, stably, unknown last**
     - **Validates: Requirements 19.15, 19.16, 19.17**
     - _Requirements: UI-19.15, UI-19.16, UI-19.17_
-  - [ ] 17.7 Bigger map and quieter markers (doc 16.7, P1)
-    - Rebalance the desktop layout so the map uses most of the content width with a narrower list column; hide markers for locations without data or monitoring site by default; add the "Show places without data" toggle (URL parameter, copy in `ui-copy`); the list stays unchanged
-    - Tests: toggle changes markers only, list rows identical; Playwright check at 1440 px for map width share and the toggle; 390 px layout unchanged in behaviour
+  - [x] 17.7 Bigger map and quieter markers (doc 16.7, P1)
+    - Rebalance the desktop layout so that at viewport widths of 1024 px or more the map takes most of the content width and the City_List is a fixed column of about 340 px; phones (under 640 px) keep the City_List first with the "Show map" toggle; hide markers for locations without data or monitoring site by default; add the "Show places without data" toggle (URL parameter, copy in `ui-copy`); the list stays unchanged
+    - Tests: toggle changes markers only, list rows identical; Playwright check at 1440 px and 1024 px for map width share (map wider than the roughly 340 px list column) and the toggle; 390 px layout unchanged in behaviour ("Show map" kept)
     - _Requirements: UI-19.18, UI-19.19_
   - [x] 17.8 Status explanations and recent PHAC weeks (doc 16.8, P1)
     - Audit the City_Page "i" content against the five topics (High/Moderate/Low as PHAC categories; PHAC trend definition and window; different sample weeks; NA1/NA2 and missing-week meanings; "community signal, not personal chance"); fill gaps in `src/ui-copy/status-explanations.ts` using only existing PHAC definitions from `src/evidence/copy/**` and the methods copy (imported, not edited)
     - Add `src/components/city/recent-weeks.ts` returning the last 12 PHAC weeks with missing weeks marked and never interpolated; render it on the City_Page and in the chart's text alternative
     - Tests: topics present, wording guard clean, 12-week strip with a gap marked missing (real fixture history)
     - _Requirements: UI-19.20, UI-19.21_
-  - [ ] 17.9 Living fog bound to the PHAC level (doc 16.9, P1)
+  - [x] 17.9 Living fog bound to the PHAC level (doc 16.9, P1)
     - Update `FogLayer.tsx` and its CSS: slow drift using only `transform` and `opacity`, density and opacity from CSS variables following `activityIndex`, unknown stays hatched and never the lowest density; static under `prefers-reduced-motion`; add the legend sentence "Fog shows PHAC's activity level. It is not your risk." via `ui-copy`
     - Tests: legend present, existing fog property (P4) still green, CSS rule test for reduced-motion and compositor-only properties; Playwright reduced-motion check
     - Write property test for reduced motion
@@ -362,7 +362,7 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - **Property 28: Voice lines pass the wording guard, one per level, and never use banned words**
     - **Validates: Requirements 19.25, 19.26, 19.27**
     - _Requirements: UI-19.25, UI-19.26, UI-19.27_
-  - [ ] 17.11 Mask-lift reveal and lantern-and-fog skeleton (doc 16.11, polish)
+  - [x] 17.11 Mask-lift reveal and lantern-and-fog skeleton (doc 16.11, polish)
     - Add `MaskReveal.tsx` (about 600 ms, first view of `/methods`, skipped for reduced motion) and `LanternSkeleton.tsx` replacing grey bars in the loading states with the same reserved heights
     - Tests: reduced-motion CSS rule, skeleton keeps reserved heights (class/min-height assertions), screen-state matrix still green; CLS checked in 17.13
     - **Property 29: Reduced motion means no animation** (extend the CSS-rule property test to the reveal and skeleton)
@@ -373,7 +373,8 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - Add `src/components/card/card-image.ts` and `DownloadCardImage.tsx`: SVG to canvas to PNG client-side from the same share data; no external service and no dependency over about 10 KB gzipped; lazy-load so the landing bundle does not grow. If not feasible, skip the download part, add no dependency, and report it in 17.13 and `docs/KIRO_USAGE.md`
     - Privacy test: attendee categories never appear in the image or filename
     - _Requirements: UI-19.30, UI-19.31, UI-19.32, UI-15.1_
-  - [ ] 17.13 Done-means verification and report
+  - [x] 17.13 Done-means verification and report
+    - Run this task after 17.14 (see the dependency graph) so the final Lighthouse and test counts include the map-loading fix
     - Before any change, record a baseline: Lighthouse mobile median (at least 3 runs) on `/` and the vitest and Playwright counts
     - At the end run `npx tsc --noEmit`, `npx vitest run`, `npm run build` and `npx playwright test` (including the new marker-hit at desktop and 390 px and the date tests) and report counts
     - Run Lighthouse mobile median on `/` after the changes and report before/after (performance ≥ 90, LCP ≤ 2.5 s, CLS near 0, First Load JS)
@@ -381,6 +382,15 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - Update `docs/KIRO_USAGE.md` with what was found and fixed, any bug a test caught and the Lighthouse table; report anything not done (for example a skipped PNG download)
     - Confirm `git diff --stat` shows no changes to `src/evidence/**`, the wording guard, share text or licence text; no deploy
     - _Requirements: UI-19.4, UI-19.14, UI-19.33, UI-19.34, UI-17.10, UI-17.11_
+  - [x] 17.14 Map panel shows the lantern skeleton immediately and the time to first marker is cut (user report: on the live site the map panel is blank for ~5 s before markers appear)
+    - Diagnose first, before any fix, and record findings in `docs/KIRO_USAGE.md`: the dynamic-import chunk size and load time of `CanadaMap`; the size and parse cost of the projected province JSON (about 36 KB); the data waterfall (LandingView dynamic import, then the 4 API calls, then the `CanadaMap` dynamic import, then the ResizeObserver measure, then clustering); which step dominates the blank period
+    - Measure "time to first marker" with a Playwright performance test against a built app (`npm run build` then the production server; start no dev server): from navigation start to the first `[data-map]` marker button visible, under simulated slow network and CPU throttling (CDP); record the median of at least 3 runs as before and after in `docs/KIRO_USAGE.md`
+    - Show the lantern-and-fog skeleton (`LanternSkeleton.tsx` from 17.11) inside the map panel from the first paint, reserving the map box height and aspect ratio so layout shift stays near 0; keep the skeleton static under `prefers-reduced-motion`
+    - Fix the waterfall without adding sequential dependencies: start the `CanadaMap` chunk import in parallel with the data fetches (or preload it), do not gate the map import on data arrival, split or lazily load the geometry JSON, render province outlines before markers, and compute the initial size without waiting on a late ResizeObserver callback (use a sensible default box, then refine)
+    - Do not hurt LCP: Lighthouse mobile median on `/` stays at performance 90 or above and LCP at 2.5 s or below, with First Load JS for `/` not growing; keep every honesty element (legend sentence, week-of dates, freshness text, unknown hatching) rendered and unchanged; the City_List still works with the map absent or failed
+    - Tests: unit or component test that the skeleton renders in the map panel before data and before the map chunk resolves and has the reserved height; test that the map import does not depend on the data fetch result; Playwright test asserting time to first marker stays within a generous budget (for example at most 60 percent of the recorded before value and under an absolute ceiling with wide margin for CI variance) plus a check that the panel is never empty (skeleton or map present at every sampled moment); existing marker-hit, a11y and screen-state tests stay green
+    - Result (details in `docs/KIRO_USAGE.md`): cause was a strict waterfall (island chunk, then 4 reads, then the map chunk requested only at `phase === "ready"`). Throttled median first marker 4196 to 3478 ms, outlines 3900 to 2163 ms, skeleton panel at 340 ms; unthrottled 396 to 320 ms; CLS 0.031 to 0.001; `/` First Load JS 109 to 110 kB. Lighthouse not re-run here (task 17.13).
+    - _Requirements: UI-19.28, UI-19.29, UI-19.33, UI-19.38, UI-3.1, UI-3.3, UI-4.2, UI-2.8_
 
 - [x] 18. Milestone 4 follow-ups (review of M4 work)
   - Same constraints as group 17 (no forecasts or risk claims, copy via `src/ui-copy/**`, dates via the clock module, `src/evidence/**`, wording guard, share text and licence text untouched, no deploy, no dev servers).
@@ -448,10 +458,11 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     { "id": 21, "tasks": ["17.1", "17.2", "17.3", "17.4", "17.5"] },
     { "id": 22, "tasks": ["17.6", "17.8", "17.9", "17.10"] },
     { "id": 23, "tasks": ["17.7", "17.11", "17.12"] },
-    { "id": 24, "tasks": ["17.13"] },
-    { "id": 25, "tasks": ["18.1", "18.2", "18.3"] },
-    { "id": 26, "tasks": ["18.4"] },
-    { "id": 27, "tasks": ["18.5"] }
+    { "id": 24, "tasks": ["17.14"] },
+    { "id": 25, "tasks": ["17.13"] },
+    { "id": 26, "tasks": ["18.1", "18.2", "18.3"] },
+    { "id": 27, "tasks": ["18.4"] },
+    { "id": 28, "tasks": ["18.5"] }
   ]
 }
 ```

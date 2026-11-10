@@ -209,8 +209,99 @@ Unit tests at audit time: `tsc --noEmit` clean, vitest 59 files / 494 tests pass
 - Spec group numbering: doc "group 16" is group 17 here.
 - The PNG card download was feasible (client-side SVG to canvas, no new dependency) and shipped in 18.3.
 
-### Skipped / not done (audit of 17.6 to 17.12)
-- 17.7 Bigger map and quieter markers: not implemented. No "Show places without data" toggle or URL parameter; markers for places without data are not hidden; desktop layout is still the 2fr / 1fr grid.
-- 17.9 Living fog bound to the PHAC level: not complete. The legend sentence "Fog shows PHAC's activity level. It is not your risk." is absent from `src/`; the existing drift and Property 4 tests pass, but the transform/opacity-only and CSS-variable rework and its tests were not done.
-- 17.11 Mask-lift reveal and lantern-and-fog skeleton: not implemented. No `MaskReveal.tsx` or `LanternSkeleton.tsx`.
-- 17.13 Done-means verification is pending in 18.5 (full build, Playwright, Lighthouse after numbers).
+### Completed after the 18.4 audit (17.7, 17.9, 17.11)
+- 17.7 Bigger map and quieter markers: from 1024 px the landing grid is `minmax(0, 1fr) 340px` (map panel takes the remaining width, City_List is a fixed 340 px column). Markers for places without data or a monitoring site are hidden by default. A "Show places without data" toggle (`SHOW_NO_DATA_PLACES` in `src/ui-copy/landing.ts`) is stored in the URL as `nodata=1`. List rows are unchanged; below 640 px the list comes first with "Show map". Tests: `tests/ui/landing-map.test.tsx`, `tests/ui/landing-screen.test.tsx`, `tests/ui/url-state.test.ts`, `e2e/map-layout.spec.ts` (1440 and 1024 px width share, toggle plus URL).
+- 17.9 Living fog bound to the PHAC level: drift uses only `transform` and `opacity`. `--fog-scale` and `--fog-opacity` follow `activityIndex`. Unknown stays hatched and is never the lowest fog. Fog is static under `prefers-reduced-motion`. The legend sentence "Fog shows PHAC's activity level. It is not your risk." (`LEGEND_SENTENCE`) is rendered. Tests: `tests/ui/fog-motion.test.ts` (11 tests: legend, compositor-only keyframes and transitions, monotone scale and opacity, Property 29), existing Property 4 green, `e2e/reduced-motion.spec.ts`.
+- 17.11 Mask-lift reveal and lantern-and-fog skeleton: `MaskReveal.tsx` runs a 600 ms curtain lift on the first `/methods` view per session (`sessionStorage`). It is skipped for reduced motion, non-interactive and `aria-hidden`. `LanternSkeleton.tsx` replaces the grey bars and keeps the reserved heights. Tests: reduced-motion CSS rule (Property 29 extended), reserved-height class assertions, screen-state matrix green.
+- 17.14 (map panel skeleton, time to first marker): see the section below.
+
+### Final gate (task 17.13, after 17.7, 17.9, 17.11, 17.14)
+- `npx tsc --noEmit`: 0 errors.
+- `npx vitest run`: 61 files / 525 tests passed, 0 failed.
+- `npm run build`: no errors. First Load JS: `/` 110 kB (page 4.77 kB, shared 105 kB), `/_not-found` 105 kB, `/methods` 113 kB, `/city/[locationId]` 127 kB, `/plan` 139 kB, `/card` 148 kB.
+- `npx playwright test` (desktop, mobile, reduced-motion):
+  - Run 1: 104 passed, 34 skipped, 0 failed.
+  - Run 2 (after the card CSS fix below): 98 passed, 34 skipped, 6 failed. All 6 were timeouts or timing budgets in the desktop project: keyboard-and-viewport drawer, map-layout 1440, both map-timing tests (unthrottled first marker 2551 ms against a 2500 ms budget), both marker-hit tests. The machine load average was 48 at the time (background macOS and editor processes).
+  - Those four specs rerun alone: 22 passed, 32 skipped, 0 failed.
+  - Run 3 (full): 104 passed, 34 skipped, 0 failed.
+  - Classified as load flakes, not defects. No check was weakened.
+- Skips (34) are the existing project-conditional cases: desktop-only specs in the mobile and reduced-motion projects, plus the timing specs outside desktop.
+- `git diff --stat -- src/evidence` empty. `src/evidence/wording-guard.ts` and `src/ui-copy/methods.ts` (`EDUCATIONAL_STATEMENT`, `DATA_ATTRIBUTION`) unchanged. Share text unchanged.
+
+### Lighthouse after (task 17.13)
+Lighthouse 12.8.2, mobile defaults, `/`, production build without `NEXT_PUBLIC_PD_TEST_CLOCK`, `next start`.
+
+| Run | Perf | LCP | CLS | TBT | First Load JS `/` |
+|---|---|---|---|---|---|
+| Before M4 | 89 / 91 / 92 | 2.38 / 2.37 / 2.50 s | 0 to 0.01 | 391 / 324 / 257 ms | 108 kB |
+| After M4 (18.5) | 95 / 95 / 96 (median 95) | 2.35 / 2.39 / 2.31 s (median 2.35 s) | 0.01 | 183 / 209 / 153 ms (median 183 ms) | 109 kB |
+| Final, 17.13 gate run (load avg ~4) | 88 / 95 / 94 (median 94) | 2.60 / 2.36 / 2.37 s (median 2.37 s) | 0.010 / 0 / 0 (median 0) | 368 / 203 / 224 ms (median 224 ms) | 110 kB |
+
+Gate (perf 90 or above, LCP 2.5 s or below) passed on the final median. Earlier runs were taken under heavy machine load and are recorded here for honesty:
+- First 3 runs (load avg 9 to 15, first one on a cold server): 79 / 86 / 84, LCP 4.65 / 2.39 / 2.62 s, TBT 244 / 465 / 506 ms.
+- Next 3 runs: 78 / 65 / 85, TBT 886 / 15164 / 469 ms.
+
+To separate load from code, HEAD (the committed M4 state, before 17.7, 17.9, 17.11 and 17.14) was built in a temporary worktree and measured interleaved with the current build under the same load. Six interleaved pairs:
+
+| Build | Perf | LCP | TBT |
+|---|---|---|---|
+| HEAD | 89, 92, 90, 90, 95, 90 (median 90) | 2.64, 2.55, 2.41, 2.64, 2.39, 2.42 s (median 2.49 s) | 337, 278, 336, 307, 194, 340 ms (median 322 ms) |
+| Current | 81, 92, 88, 93, 90, 93 (median 91) | 1.87, 2.34, 2.40, 2.39, 2.61, 2.59 s (median 2.40 s) | 741, 279, 412, 249, 321, 227 ms (median 300 ms) |
+
+Main-thread work was the same on both (1.6 vs 1.6 s and 1.9 vs 1.8 s on matched runs; bootup 0.6 to 0.7 s). Long tasks sit in the shared framework chunks. The request set differs by one small chunk. Conclusion: no performance regression from 17.7, 17.9, 17.11 or 17.14. The low earlier runs came from load. The worktree was removed afterwards.
+
+### Time to first marker (before 17.14 / after 17.14 / 17.13 confirmation)
+| Median (ms) | Before | After (17.14) | Rerun (17.13) |
+|---|---|---|---|
+| First marker, throttled | 4196 | 3478 | 3296 (runs 3296 / 3285 / 3304) |
+| Outlines, throttled | 3900 | 2163 | 2010 |
+| Map panel visible, throttled | 4196 | 340 | 315 |
+| First marker, unthrottled | 396 | 320 | 350 (runs 430 / 350 / 317) |
+
+Rerun: `PERF_RECORD=1 npx playwright test -c playwright.perf.config.ts` against `next start -p 3300` (production build).
+
+### Screenshot review (task 17.13)
+Captured at 1440x900 and 390x844 in `/tmp/shots-m4/` (test-clock build, pinned 2026-11-02): landing with a cluster open, landing loading skeleton (CDP CPU 4x and 1.6 Mbps, captured about 900 ms after commit), Toronto city page, Vancouver city page, Omen Card (near date), 404 and `/methods` (1 s after load). All were viewed.
+- Defect fixed: on the Omen Card the PHAC trend ("→ Stable") was invisible. The shared `TrendGlyph` uses the parchment text colour, which matches the parchment card. Added a card-scoped rule in `Card.module.css` (`.rowMeta [data-trend]` uses the card ink `#3a3528`). The shared design-system style is unchanged. Same class of bug as the group-15 provenance glyph.
+- Not fixed, needs a decision: the map stage is height-capped (`--map-max-h` with the 1000:851 aspect ratio). At 1440x900 the stage is about 50% of the content width, while the panel spans the whole column. The rest is empty panel. A taller map, or letting the page scroll, would use the width.
+- Not fixed, for review: on 390 px with the map shown, the cluster chooser overlaps the top of the map and runs to the viewport bottom, so its last row is cut until you scroll. It works, but it is tight.
+- No other visual defects found. The Vancouver "Regional site" label and Metro Vancouver values, the 404 inside `PageContainer`, and the skeletons with reserved heights all render as expected.
+
+### Skipped / not done
+- Nothing from 17.1 to 17.14 is skipped.
+- Not done: a manual screen-reader pass and a Lighthouse run on an idle machine (the gate median was taken at load avg ~4).
+
+## Task 17.14: map panel skeleton and time to first marker
+Method: `e2e/map-timing.spec.ts` (run through `playwright.perf.config.ts`, which has no webServer) against `npm run build` + `next start -p 3300`, fresh browser context per run, cold cache, desktop 1440x900. Marks come from an in-page rAF sampler (ms since navigation start). Throttled profile = CDP CPU 4x, 1.6 Mbps down, 750 kbps up, 150 ms RTT (Lighthouse-mobile-like). Median of 3 runs for "before", 5 runs for "after".
+
+### Diagnosis (before, throttled waterfall, median run)
+| Step | Time (ms) |
+| --- | --- |
+| Shared framework chunks (54 + 47 kB) finished | 1430 |
+| Hydration CPU gap, then island chunks (LandingView, client-impl) requested | 1783 to 2284 |
+| 4 API reads requested only now (after the view mounted) | 2562 |
+| `/api/observations` (168 kB, 335 rows) done | 3770 |
+| `CanadaMap` chunk (380, 18.5 kB incl. the 35 kB projected province JSON) requested only after data arrived | 3911 to 4155 |
+| First visible map box, outlines and marker | 3900 / 3900 / 4196 |
+- The blank period is a strict waterfall: island chunk, then data, then map chunk, then render. The map chunk was requested at `phase === "ready"` (LandingScreen mounts the lazy map only then), so it queued behind the slowest read.
+- Dominant steps locally: the 168 kB observations payload (about 1.2 s throttled; `next start` serves it uncompressed here, a CDN compresses it) and the late map chunk (about 0.35 s), plus about 1.2 s of hydration and chunk start-up CPU that this task does not change.
+- Province JSON: 35 087 bytes, inside the map chunk (not the main bundle); parse cost is small next to the network steps (map chunk 18.5 kB gzip, 244 ms throttled including latency). Left as is.
+- Before the fix the panel had no skeleton at all: the loading state was a rows skeleton, and the map box appeared only with the markers. CLS was 0.031 because the real layout (chips, controls, map plus list grid) replaced a different placeholder.
+- Unthrottled before: panel 396, outlines 364, first marker 396 ms (median).
+
+### Fix
+- `MapPanelSkeleton` (LanternSkeleton variant `map`, same 1000:851 stage and `--map-max-h` cap as `.mapBox`, `data-map-panel`, `aria-busy`) is in the server-rendered Suspense fallback from 640 px, in the same grid as the ready layout, with a spacer for the chips and controls rows. Static under `prefers-reduced-motion` (existing LanternSkeleton rule).
+- `LandingIsland` starts the four reads in an effect at mount (same cache keys as `LandingView`, shared in-flight requests) and starts the `CanadaMap` chunk request from the same loader as the view chunk, at 640 px and up. Nothing awaits it.
+- `LandingScreen` in the loading phase renders the map with `pending`: outlines only, no markers, no counts, text alternative "Loading", no skip link. Markers appear when data arrives.
+
+### After (same script, same profiles)
+| Metric (median ms) | Before throttled | After throttled | Before unthrottled | After unthrottled |
+| --- | --- | --- | --- | --- |
+| Map panel visible (skeleton) | 4196 | 340 | 396 | 62 |
+| Province outlines painted | 3900 | 2163 | 364 | 319 |
+| First marker | 4196 | 3478 | 396 | 320 |
+| CLS | 0.031 | 0.001 | 0.031 | 0.001 to 0.003 |
+- First marker improved by 17 percent throttled and 19 percent unthrottled, not the 40 percent hoped for: after the fix the remaining time is hydration plus the 168 kB observations transfer, which the API contract fixes. The user-visible blank period is gone (panel at 62 to 340 ms, outlines at 2.2 s instead of 3.9 s).
+- Build: `/` First Load JS 109 kB before, 110 kB after (shared 105 kB unchanged).
+- e2e budgets in `e2e/map-timing.spec.ts`: first marker under 6000 ms throttled and 2500 ms unthrottled, panel under 1000 ms unthrottled, never blank after first paint, CLS under 0.1.
+- Flake seen once: `a11y landing page` timed out at 30 s on the very first request after server start; it passed on rerun.

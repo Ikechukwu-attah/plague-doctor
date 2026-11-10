@@ -7,6 +7,7 @@ import { fogSpec } from "@/lib/view/fog";
 import provinces from "@/data/geo/canada-provinces.projected.json";
 import { mapLabel, mapTextAlternative, SKIP_MAP } from "@/ui-copy/landing";
 import type { MapCounts } from "@/ui-copy/landing";
+import { LOADING_LABEL } from "@/ui-copy/states";
 import { FogLayer } from "./FogLayer";
 import type { FogItem } from "./FogLayer";
 import { MapMarker, MAP_H, MAP_W } from "./MapMarker";
@@ -48,13 +49,26 @@ export interface CanadaMapProps {
   /** Sample week (EpiWeek Sunday) shown in the label and text alternative. */
   week?: string;
   selectedId?: string;
+  /** Draw markers and fog for places without data or monitoring site (UI-19.18). Default off. */
+  showNoData?: boolean;
+  /**
+   * Task 17.14: data has not arrived yet. Draws the province outlines only (no markers, no counts, no fog) so the
+   * panel is never blank once the chunk is ready; the text alternative says "Loading" instead of any count.
+   */
+  pending?: boolean;
   onOpen: (locationId: string) => void;
 }
 
+/** A place the map draws by default: it has a monitoring site and a PHAC level. */
+export function hasMapData(r: LandingRow): boolean {
+  return !r.noSite && r.badge.kind === "level";
+}
+
 /** Decorative outlines + absolutely positioned markers (left = x/w, top = y/h). Ordered west to east. */
-export function CanadaMap({ rows, virus, week, selectedId, onOpen }: CanadaMapProps) {
+export function CanadaMap({ rows, virus, week, selectedId, showNoData = false, pending = false, onOpen }: CanadaMapProps) {
+  // Markers, fog, clustering and labels all work from this visible set; the text alternative counts every row.
   const placed = rows
-    .filter((r) => r.point && !r.duplicateMarker)
+    .filter((r) => r.point && !r.duplicateMarker && (showNoData || hasMapData(r)))
     .sort((a, b) => a.point!.x - b.point!.x || a.location.locationId.localeCompare(b.location.locationId));
   const fog: FogItem[] = placed.map((r) => ({
     id: r.location.locationId,
@@ -89,14 +103,14 @@ export function CanadaMap({ rows, virus, week, selectedId, onOpen }: CanadaMapPr
           )
         : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rows, size, measured],
+    [rows, size, measured, showNoData],
   );
   const byId = new Map(placed.map((r) => [r.location.locationId, r]));
   const singles = items ? items.filter((i) => i.kind === "marker").map((i) => byId.get(i.id)!) : placed;
   const labels = useMemo(
     () => new Map(selectMapLabels(singles, selectedId, size, MAP_W, MAP_H).map((l) => [l.id, l.side])),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, rows, selectedId, size],
+    [items, rows, selectedId, size, showNoData],
   );
   const [openCluster, setOpenCluster] = useState<string | null>(null);
   const open = items?.find((i) => i.kind === "cluster" && i.id === openCluster) ?? null;
@@ -111,10 +125,18 @@ export function CanadaMap({ rows, virus, week, selectedId, onOpen }: CanadaMapPr
   }
   const labelArgs = week ? { virus, week } : { virus };
   return (
-    <div className={styles.mapWrap}>
-      <SkipMapLink />
-      <div ref={boxRef} role="group" aria-label={mapLabel(labelArgs)} className={styles.mapBox} data-map="">
-        <p className="visually-hidden">{mapTextAlternative({ ...labelArgs, counts: countRows(rows) })}</p>
+    <div className={styles.mapWrap} data-map-panel="" {...(pending ? { "aria-busy": true } : {})}>
+      {pending ? null : <SkipMapLink />}
+      <div
+        ref={boxRef}
+        role="group"
+        aria-label={pending ? LOADING_LABEL : mapLabel(labelArgs)}
+        className={styles.mapBox}
+        data-map=""
+      >
+        <p className="visually-hidden">
+          {pending ? LOADING_LABEL : mapTextAlternative({ ...labelArgs, counts: countRows(rows) })}
+        </p>
         <svg
           className={styles.outlines}
           viewBox={`0 0 ${MAP_W} ${MAP_H}`}

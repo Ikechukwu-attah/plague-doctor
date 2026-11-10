@@ -45,18 +45,29 @@ describe("Property 7: URL builders round-trip and admit only public parameters (
         city: fc.option(slug, { nil: undefined }),
         view: fc.option(fc.constantFrom("map", "list" as const), { nil: undefined }),
         discontinued: fc.option(fc.constant(true), { nil: undefined }),
+        nodata: fc.option(fc.constant(true), { nil: undefined }),
       })
       .map((r) => {
         const s: LandingState = { virus: r.virus as LandingState["virus"] };
         if (r.city !== undefined) s.city = r.city;
         if (r.view !== undefined) s.view = r.view as "map" | "list";
         if (r.discontinued) s.discontinued = true;
+        if (r.nodata) s.nodata = true;
         return s;
       });
     fc.assert(fc.property(landing, (x) => {
         expect(parseLandingUrl(serializeLandingUrl(x))).toEqual(x);
       }),
     );
+  });
+
+  it("UI-19.18 nodata=1 round-trips, is omitted when off and ignores other values", () => {
+    expect(serializeLandingUrl({ virus: "rsv", nodata: true })).toBe("virus=rsv&nodata=1");
+    expect(serializeLandingUrl({ virus: "rsv" })).toBe("virus=rsv");
+    expect(serializeLandingUrl({ virus: "rsv", nodata: false })).toBe("virus=rsv");
+    expect(parseLandingUrl("virus=rsv&nodata=1")).toEqual({ virus: "rsv", nodata: true });
+    expect(parseLandingUrl("nodata=0")).toEqual({ virus: "covid19" });
+    expect(parseLandingUrl("nodata=1&nodata=1")).toEqual({ virus: "covid19" });
   });
 
   it("landing URL falls back to defaults on junk", () => {

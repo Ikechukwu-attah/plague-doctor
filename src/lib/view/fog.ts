@@ -14,6 +14,14 @@ const FOG: Record<Exclude<Activity, "unknown">, Extract<FogSpec, { kind: "fog" }
 
 const HATCH: FogSpec = { kind: "hatch", radiusPx: 28 };
 
+/** Static layout size of every fog spot (px). Level changes scale it with a transform, never animate width/height. */
+export const FOG_BASE_PX = 180;
+
+/** Static scale factor for a spec (larger PHAC level => larger scale). */
+export function fogScale(spec: FogSpec): number {
+  return Math.round((spec.radiusPx / FOG_BASE_PX) * 1000) / 1000;
+}
+
 export function fogSpec(activityIndex: Activity): FogSpec {
   return activityIndex === "unknown" ? { ...HATCH } : { ...FOG[activityIndex] };
 }

@@ -144,12 +144,15 @@
 }
 .fogSpot {
   position: absolute;
-  transform: translate(-50%, -50%);
+  /* Static layout size; PHAC level sets --fog-scale / --fog-opacity (inline), eased by transform + opacity only. */
+  width: 180px;
+  height: 180px;
+  transform: translate(-50%, -50%) scale(var(--fog-scale, 1));
+  opacity: var(--fog-opacity, 1);
   pointer-events: none;
   transition:
-    width var(--fog-density-ease),
-    height var(--fog-density-ease),
-    opacity 600ms ease;
+    transform var(--fog-density-ease),
+    opacity var(--fog-density-ease);
 }
 .fogDrift {
   /* A span is inline by default and ignores width/height: that made every glow zero-sized. */
@@ -159,8 +162,8 @@
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--fog-teal) calc(var(--peak) * 100%), transparent) 0%,
-    color-mix(in srgb, var(--fog-teal) calc(var(--peak) * 33%), transparent) 45%,
+    color-mix(in srgb, var(--fog-teal) 100%, transparent) 0%,
+    color-mix(in srgb, var(--fog-teal) 33%, transparent) 45%,
     transparent 70%
   );
   animation: drift var(--drift-duration, var(--fog-drift-duration)) ease-in-out infinite alternate;
@@ -168,7 +171,8 @@
 }
 .fogHatch {
   background: none;
-  border: 1px dashed var(--level-unknown-stroke);
+  /* Border is scaled with the spot; compensate so the dashed halo stays visible. */
+  border: calc(1.5px / var(--fog-scale, 1)) dashed var(--level-unknown-stroke);
   animation: none;
 }
 @keyframes drift {
@@ -500,6 +504,30 @@
   min-height: 70dvh;
   padding: var(--space-4);
 }
+/* Task 17.14: stands in for the virus chips + controls rows (one target-height row each, plus the page gaps) so the body does not shift when they mount. */
+.pendingHead {
+  height: calc(var(--target-min) * 2 + var(--space-4) * 2);
+}
+/* Task 17.14: the map panel placeholder shows from 640 px (the mobile layout hides the map by default). */
+.pendingMap {
+  display: none;
+}
+@media (min-width: 640px) {
+  .pendingMap {
+    display: flex;
+  }
+}
+@media (min-width: 1024px) {
+  .pending {
+    padding: var(--space-6) var(--space-8);
+  }
+  .pendingBody {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+}
 
 /* Landing route layout */
 .page {
@@ -523,8 +551,18 @@
     padding: var(--space-6) var(--space-8);
   }
   .body[data-map="true"] {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    /* UI-19.18: the map takes the remaining width; the city list is a fixed ~340 px column. */
+    grid-template-columns: minmax(0, 1fr) 340px;
     align-items: start;
+  }
+  /*
+   * The map panel (background) spans the whole map column; the 1000:851 stage inside it is as wide as the
+   * viewport height budget allows (.mapBox --map-max-h) and is centred in the panel, so a wide column never
+   * makes the map taller than the viewport and the SVG is never stretched.
+   */
+  .mapWrap {
+    background: var(--ink-800);
+    border-radius: var(--radius-panel);
   }
   /* City list scrolls inside its own column, bounded to the map's height budget. */
   .body[data-map="true"] .list {

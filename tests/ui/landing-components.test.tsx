@@ -12,7 +12,7 @@ import type { LandingRow } from "../../src/lib/view/landing-rows";
 import { fogSpec } from "../../src/lib/view/fog";
 import { checkWording } from "../../src/evidence/wording-guard";
 import type { LocationEntry, Pathogen } from "../../src/evidence/types";
-import { CanadaMap, countRows } from "../../src/components/landing/CanadaMap";
+import { CanadaMap, countRows, hasMapData } from "../../src/components/landing/CanadaMap";
 import { MapMarker, markerPosition } from "../../src/components/landing/MapMarker";
 import { FogLayer, driftTiming } from "../../src/components/landing/FogLayer";
 import { CityList, CityRow } from "../../src/components/landing/CityList";
@@ -131,7 +131,10 @@ describe("UI-3.1 UI-13.7 CanadaMap", () => {
     const byId = new Map(rows.map((r) => [r.location.locationId, r.point?.x ?? -1]));
     const seq = xs.map((id) => byId.get(id)!);
     expect(seq).toEqual([...seq].sort((a, b) => a - b));
-    expect(xs.length).toBe(rows.filter((r) => r.point).length);
+    // Places without data or monitoring site are hidden by default (UI-19.18).
+    expect(xs.length).toBe(rows.filter((r) => r.point && hasMapData(r)).length);
+    const all = renderToStaticMarkup(<CanadaMap rows={rows} virus="fluA" week="2026-10-18" showNoData onOpen={() => {}} />);
+    expect([...all.matchAll(/data-location-id="/g)].length).toBe(rows.filter((r) => r.point).length);
   });
   it("counts per level add up to the number of rows", () => {
     const c = countRows(rows);
@@ -164,6 +167,11 @@ describe("UI-3.4 UI-3.5 UI-3.12 FogLayer", () => {
         expect(t.duration).toBeLessThanOrEqual(20);
       }),
     );
+  });
+  it("UI-19.18 CSS: at 1024 px and up the city list is a 340 px column next to a flexible map", () => {
+    const css = readFileSync(join(process.cwd(), "src/components/landing/Landing.module.css"), "utf8");
+    const at1024 = css.slice(css.indexOf("@media (min-width: 1024px)"));
+    expect(at1024).toMatch(/\.body\[data-map="true"\]\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+340px/);
   });
   it("CSS: 600 ms ease density transition, drift keyframes and a reduced-motion block", () => {
     const css = readFileSync(join(process.cwd(), "src/components/landing/Landing.module.css"), "utf8");

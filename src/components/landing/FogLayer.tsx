@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { fogScale } from "@/lib/view/fog";
 import type { FogSpec } from "@/lib/view/fog";
 import styles from "./Landing.module.css";
 
@@ -21,12 +22,15 @@ export function FogLayer({ items }: { items: FogItem[] }) {
     <div className={styles.fogLayer} aria-hidden="true" data-fog-layer="">
       {items.map((it, i) => {
         const t = driftTiming(i);
-        const size = it.spec.radiusPx;
-        const outer: CSSProperties = { left: `${it.left}%`, top: `${it.top}%`, width: size, height: size };
+        const outer = {
+          left: `${it.left}%`,
+          top: `${it.top}%`,
+          "--fog-scale": fogScale(it.spec),
+          "--fog-opacity": it.spec.kind === "fog" ? it.spec.peakOpacity : 1,
+        } as CSSProperties;
         const inner = {
           "--drift-duration": `${t.duration}s`,
           "--drift-delay": `${t.delay}s`,
-          ...(it.spec.kind === "fog" ? { "--peak": it.spec.peakOpacity } : {}),
         } as CSSProperties;
         return (
           <span

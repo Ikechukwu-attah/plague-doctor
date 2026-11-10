@@ -5,12 +5,23 @@ import {
   SORT_ACTIVITY,
   SORT_AZ,
   SORT_LABEL,
+  SHOW_NO_DATA_PLACES,
   browseAsList,
   sortAnnouncement,
 } from "@/ui-copy/landing";
 import { useAnnounce } from "@/components/design-system/LiveRegionProvider";
 import type { ListSort } from "@/lib/view/sort-rows";
 import styles from "./Landing.module.css";
+
+/** Map only; off by default (UI-19.18). The city list is unaffected. */
+export function NoDataToggle(props: { checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className={styles.check}>
+      <input type="checkbox" checked={props.checked} onChange={(e) => props.onChange(e.target.checked)} />
+      {SHOW_NO_DATA_PLACES}
+    </label>
+  );
+}
 
 /** Off by default (UI-4.5). */
 export function DiscontinuedToggle(props: { checked: boolean; onChange: (checked: boolean) => void }) {

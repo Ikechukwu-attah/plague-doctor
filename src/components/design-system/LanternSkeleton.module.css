@@ -1,0 +1,96 @@
+/* Lantern-and-fog loading skeleton (UI-19.28). Heights match the old Skeleton so CLS stays ~0. */
+.skeleton {
+  display: grid;
+  gap: var(--space-3);
+}
+.block {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--ink-700);
+}
+.line {
+  height: 14px;
+  border-radius: var(--radius-input);
+}
+.row {
+  height: 56px;
+  border-radius: var(--radius-panel);
+}
+.card {
+  height: 240px;
+  border-radius: var(--radius-card);
+}
+.map {
+  width: 100%;
+  border-radius: var(--radius-card);
+}
+.fog {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -50%;
+  width: 200%;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(95, 211, 188, 0.14), transparent 55%),
+    radial-gradient(ellipse at 70% 40%, rgba(185, 174, 152, 0.12), transparent 50%);
+  animation: lanternFogDrift 16s ease-in-out infinite alternate;
+  will-change: transform;
+  pointer-events: none;
+}
+.fogSlow {
+  animation-duration: 22s;
+  animation-direction: alternate-reverse;
+  opacity: 0.7;
+}
+.glyph {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 36px;
+  margin: -18px 0 0 -14px;
+  color: var(--lantern);
+  opacity: 0.35;
+  animation: lanternGlow 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.row .glyph {
+  width: 18px;
+  height: 24px;
+  margin: -12px 0 0 -9px;
+}
+.map .glyph,
+.card .glyph {
+  width: 40px;
+  height: 52px;
+  margin: -26px 0 0 -20px;
+}
+@keyframes lanternFogDrift {
+  from {
+    transform: translateX(-8%);
+  }
+  to {
+    transform: translateX(8%);
+  }
+}
+@keyframes lanternGlow {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fog,
+  .fogSlow,
+  .glyph {
+    animation: none;
+    will-change: auto;
+  }
+  .glyph {
+    opacity: 0.35;
+  }
+}

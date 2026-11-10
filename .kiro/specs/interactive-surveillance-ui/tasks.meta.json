@@ -19,6 +19,10 @@
     "17.4 Regional-site resolution with citations and label (doc 16.4, P0)": {
       "status": "passed",
       "lastRunTimestamp": 1794103994515
+    },
+    "17.9 Living fog bound to the PHAC level (doc 16.9, P1)": {
+      "status": "passed",
+      "lastRunTimestamp": 1794308193646
     }
   },
   "executionHistory": {
@@ -996,6 +1000,16 @@
         "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
         "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
         "timestamp": 1794100079754
+      },
+      {
+        "executionId": "bcee5ea4-4ae3-4fd8-9337-8fe9ab9b0509",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794308233423
+      },
+      {
+        "executionId": "bcee5ea4-4ae3-4fd8-9337-8fe9ab9b0509",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794308484443
       }
     ],
     "17.8 Status explanations and recent PHAC weeks (doc 16.8, P1)": [
@@ -1015,6 +1029,16 @@
         "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
         "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
         "timestamp": 1794100079977
+      },
+      {
+        "executionId": "bcee5ea4-4ae3-4fd8-9337-8fe9ab9b0509",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794306031087
+      },
+      {
+        "executionId": "bcee5ea4-4ae3-4fd8-9337-8fe9ab9b0509",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794308232942
       }
     ],
     "17.10 Omen Card restyle with wax seal and voice lines (doc 16.10, polish)": [
@@ -1034,6 +1058,16 @@
         "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
         "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
         "timestamp": 1794100080330
+      },
+      {
+        "executionId": "bcee5ea4-4ae3-4fd8-9337-8fe9ab9b0509",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794306030730
+      },
+      {
+        "executionId": "bcee5ea4-4ae3-4fd8-9337-8fe9ab9b0509",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794308233277
       }
     ],
     "17.12 Social preview metadata and \"Download card as image\" (doc 16.12, polish)": [
@@ -1048,6 +1082,11 @@
         "executionId": "bc6905d0-447a-4865-856b-e9bcac8da0d1",
         "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
         "timestamp": 1794100080701
+      },
+      {
+        "executionId": "bcee5ea4-4ae3-4fd8-9337-8fe9ab9b0509",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794311108144
       }
     ],
     "18.1 Provenance dialog body renders only while open": [
@@ -1115,6 +1154,13 @@
         "executionId": "9086bbd3-f9ae-457b-a332-b32c894ab5dd",
         "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
         "timestamp": 1794108402225
+      }
+    ],
+    "17.14 Map panel shows the lantern skeleton immediately and the time to first marker is cut (user report: on the live site the map panel is blank for ~5 s before markers appear)": [
+      {
+        "executionId": "bcee5ea4-4ae3-4fd8-9337-8fe9ab9b0509",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794308494230
       }
     ]
   }

@@ -22,17 +22,16 @@ import { useAnnounceOnChange } from "@/components/design-system/LiveRegionProvid
 import { VIRUS_LABEL } from "@/ui-copy/levels";
 import { RETRY, loadFailed, stateAnnouncement } from "@/ui-copy/states";
 import { useDetailMode } from "./detail-mode";
+import { LANDING_KEYS } from "./landing-ids";
 import { LandingScreen } from "./LandingScreen";
+import { MapPanelSkeleton } from "./MapPanelSkeleton";
 import styles from "./Landing.module.css";
 
-/* Task 15.7: map (outlines, fog, markers) and detail surface load after the list is interactive. */
+/* Task 15.7: map (outlines, fog, markers) and detail surface load after the list is interactive.
+ * Task 17.14: the chunk is requested at hydration (see LandingIsland) and while it loads the panel shows the lantern skeleton. */
 const LazyCanadaMap = dynamic(() => import("./CanadaMap").then((m) => m.CanadaMap), {
   ssr: false,
-  loading: () => (
-    <div className={styles.mapWrap} aria-busy="true">
-      <div className={styles.mapBox} />
-    </div>
-  ),
+  loading: () => <MapPanelSkeleton />,
 });
 const LazyDetailSurface = dynamic(() => import("./DetailSurface").then((m) => m.DetailSurface), {
   ssr: false,
@@ -59,10 +58,10 @@ export function LandingView() {
   const { virus } = state;
   const showDiscontinued = state.discontinued === true;
 
-  const locs = useResource("landing:locations", () => client.locations(), "locations");
-  const obs = useResource("landing:observations", () => client.observations(), "observations");
-  const dataStatus = useResource("landing:data-status", () => client.dataStatus(), "data-status");
-  const snaps = useResource("landing:snapshots", () => client.snapshots(), "snapshots");
+  const locs = useResource(LANDING_KEYS.locations, () => client.locations(), "locations");
+  const obs = useResource(LANDING_KEYS.observations, () => client.observations(), "observations");
+  const dataStatus = useResource(LANDING_KEYS.dataStatus, () => client.dataStatus(), "data-status");
+  const snaps = useResource(LANDING_KEYS.snapshots, () => client.snapshots(), "snapshots");
 
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -88,6 +87,7 @@ export function LandingView() {
       if (next.city === undefined) delete next.city;
       if (next.discontinued !== true) delete next.discontinued;
       if (next.sort === undefined) delete next.sort;
+      if (next.nodata !== true) delete next.nodata;
       router.replace(`${pathname}?${serializeLandingUrl(next)}`, { scroll: false });
     },
     [state, router, pathname],
@@ -212,6 +212,8 @@ export function LandingView() {
       onSort={(s) => update({ sort: s === "activity" ? "activity" : undefined })}
       showDiscontinued={showDiscontinued}
       onDiscontinued={(checked) => update({ discontinued: checked })}
+      showNoData={state.nodata === true}
+      onNoData={(checked) => update({ nodata: checked })}
       wide={wide}
       view={state.view ?? "map"}
       onView={(view) => update({ view })}

@@ -69,7 +69,7 @@ describe("selectMapLabels (task 15.4)", () => {
 describe("CanadaMap fog (task 15.4)", () => {
   it("renders one fog spot per placed marker; unknown is hatched, never absent", () => {
     const r = rows();
-    const html = renderToStaticMarkup(<CanadaMap rows={r} virus="covid19" onOpen={() => {}} />);
+    const html = renderToStaticMarkup(<CanadaMap rows={r} virus="covid19" showNoData onOpen={() => {}} />);
     const placed = r.filter((x) => x.point).length;
     expect((html.match(/data-fog="/g) ?? []).length).toBe(placed);
     for (const x of r) {
@@ -77,5 +77,52 @@ describe("CanadaMap fog (task 15.4)", () => {
       const act = x.noSite ? "unknown" : (x.observation?.activityIndex ?? "unknown");
       if (act === "unknown") expect(html).toContain('data-fog="hatch"');
     }
+  });
+});
+
+describe("UI-19.18/19.19 'Show places without data' (task 17.7)", () => {
+  const NO_SITE: LocationEntry = {
+    locationId: "synthetic-nowhere",
+    locationName: "Synthetic Nowhere",
+    city: "Synthetic Nowhere",
+    province: "Ontario",
+    pruid: "35",
+    grouping: "city",
+    coverage: "no_city_site",
+  };
+  const withNoSite = buildLandingRows({
+    locations: [
+      ...rows().map((r) => r.location),
+      NO_SITE,
+    ],
+    observations: loadTrendFixture(),
+    virus: "covid19",
+    today: "2026-11-07",
+    showDiscontinued: true,
+    points: { ...Object.fromEntries(rows().filter((r) => r.point).map((r) => [r.location.locationId, r.point!])), "synthetic-nowhere": { x: 500, y: 425.5 } },
+  });
+  const unknownIds = withNoSite.filter((r) => r.point && !r.duplicateMarker && (r.noSite || r.badge.kind !== "level")).map((r) => r.location.locationId);
+  const markerIds = (html: string) => new Set([...html.matchAll(/data-location-id="([^"]+)"/g)].map((m) => m[1]!));
+
+  it("unknown / no-site markers and fog are absent when off and present when on", () => {
+    expect(unknownIds).toContain("synthetic-nowhere");
+    const off = renderToStaticMarkup(<CanadaMap rows={withNoSite} virus="covid19" onOpen={() => {}} />);
+    const on = renderToStaticMarkup(<CanadaMap rows={withNoSite} virus="covid19" showNoData onOpen={() => {}} />);
+    const offIds = markerIds(off);
+    const onIds = markerIds(on);
+    for (const id of unknownIds) {
+      expect(offIds.has(id)).toBe(false);
+      expect(onIds.has(id)).toBe(true);
+    }
+    expect(onIds.size).toBeGreaterThan(offIds.size);
+    expect((on.match(/data-fog="/g) ?? []).length).toBeGreaterThan((off.match(/data-fog="/g) ?? []).length);
+    expect(off).not.toContain('data-fog="hatch"');
+  });
+
+  it("the text alternative counts every row either way", () => {
+    const alt = (html: string) => /class="visually-hidden">([^<]*)</.exec(html)?.[1];
+    const off = renderToStaticMarkup(<CanadaMap rows={withNoSite} virus="covid19" onOpen={() => {}} />);
+    const on = renderToStaticMarkup(<CanadaMap rows={withNoSite} virus="covid19" showNoData onOpen={() => {}} />);
+    expect(alt(off)).toBe(alt(on));
   });
 });

@@ -1,22 +1,8 @@
-import { LOADING_LABEL } from "@/ui-copy/states";
-import styles from "./DesignSystem.module.css";
+import { LanternSkeleton, type LanternSkeletonProps } from "./LanternSkeleton";
 
-export interface SkeletonProps {
-  variant?: "lines" | "rows" | "card";
-  lines?: number;
-  rows?: number;
-}
+export type SkeletonProps = Pick<LanternSkeletonProps, "variant" | "lines" | "rows" | "aspect" | "height">;
 
-/** Placeholder for pending data. Shows no values; shimmer stops under reduced motion. */
-export function Skeleton({ variant = "lines", lines = 3, rows = 4 }: SkeletonProps) {
-  const count = variant === "rows" ? rows : variant === "card" ? 1 : lines;
-  const cls = variant === "rows" ? styles.skeletonRow : variant === "card" ? styles.skeletonCard : styles.skeletonLine;
-  return (
-    <div className={styles.skeleton} aria-busy="true" data-variant={variant}>
-      <span className="visually-hidden">{LOADING_LABEL}</span>
-      {Array.from({ length: count }, (_, i) => (
-        <div key={i} className={`${cls} ${styles.shimmer}`} aria-hidden="true" />
-      ))}
-    </div>
-  );
+/** Placeholder for pending data. Delegates to the lantern-and-fog skeleton; same reserved heights as before. */
+export function Skeleton(props: SkeletonProps) {
+  return <LanternSkeleton {...props} />;
 }
