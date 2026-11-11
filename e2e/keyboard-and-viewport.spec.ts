@@ -203,15 +203,29 @@ test.describe("targets and viewports (UI-13.3, UI-4.8, UI-5.9, UI-8.12)", () => 
   });
 });
 
-test("landing map fits the viewport, list scrolls internally, drawer leaves the nav reachable (task 15.4)", async ({ page }) => {
+test("landing map fits 70vh, the places table is in the page flow (no inner scroller), drawer leaves the nav reachable (tasks 15.4, 19.3)", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const map = page.locator("div[role=group][data-map]");
   await expect(map).toBeVisible();
   const box = await map.boundingBox();
-  expect(box?.height ?? 9999).toBeLessThanOrEqual(900);
-  const dims = await page.locator("ul[class*=rows]").evaluate((el) => ({ c: el.clientHeight, s: el.scrollHeight }));
-  expect(dims.s).toBeGreaterThan(dims.c);
+  expect(box?.height ?? 9999).toBeLessThanOrEqual(0.7 * 900 + 1);
+  // UI-20.24: neither the table nor any ancestor up to <body> is a scroll container, and the table is as tall as its rows.
+  const table = page.locator("table[data-places-table]");
+  await expect(table).toBeVisible();
+  const scrollers = await table.evaluate((el) => {
+    const bad: string[] = [];
+    for (let n: HTMLElement | null = el as HTMLElement; n && n !== document.body; n = n.parentElement) {
+      const s = getComputedStyle(n);
+      if (/(auto|scroll)/.test(s.overflowY) || /(auto|scroll)/.test(s.overflowX)) bad.push(n.tagName + "." + n.className);
+      if (n.scrollHeight > n.clientHeight + 1 && n !== el && s.overflowY !== "visible") bad.push("clipped " + n.tagName);
+    }
+    return bad;
+  });
+  expect(scrollers).toEqual([]);
+  const dims = await table.evaluate((el) => ({ h: el.getBoundingClientRect().height, s: el.scrollHeight }));
+  expect(dims.s).toBeLessThanOrEqual(dims.h + 1);
+  expect(dims.h).toBeGreaterThan(900);
   await page.locator("button[data-location-id]").first().click({ force: true });
   await expect(page.locator("aside[data-variant=drawer]")).toBeVisible();
   const nav = await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Plan a gathering" }).boundingBox();

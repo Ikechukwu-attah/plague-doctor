@@ -1174,6 +1174,61 @@
         "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
         "timestamp": 1794329590913
       }
+    ],
+    "19.1 Fix the empty page below the footer (doc 18.1)": [
+      {
+        "executionId": "8063ed8b-bfba-4a9e-837d-f97032dcc49c",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794331455882
+      },
+      {
+        "executionId": "8063ed8b-bfba-4a9e-837d-f97032dcc49c",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794331746243
+      }
+    ],
+    "19.2 Fit the map to the panel, remove clusters, add the marker dodge (doc 18.2)": [
+      {
+        "executionId": "8063ed8b-bfba-4a9e-837d-f97032dcc49c",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794331746507
+      },
+      {
+        "executionId": "8063ed8b-bfba-4a9e-837d-f97032dcc49c",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794332580355
+      }
+    ],
+    "19.3 Full-width map and the \"All places\" table (doc 18.3)": [
+      {
+        "executionId": "8063ed8b-bfba-4a9e-837d-f97032dcc49c",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794332580155
+      },
+      {
+        "executionId": "8063ed8b-bfba-4a9e-837d-f97032dcc49c",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794333380232
+      }
+    ],
+    "19.4 Controls row (doc 18.4)": [
+      {
+        "executionId": "8063ed8b-bfba-4a9e-837d-f97032dcc49c",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794333380464
+      },
+      {
+        "executionId": "8063ed8b-bfba-4a9e-837d-f97032dcc49c",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794333653461
+      }
+    ],
+    "19.5 Done-means verification and report": [
+      {
+        "executionId": "8063ed8b-bfba-4a9e-837d-f97032dcc49c",
+        "chatSessionId": "sess_f74e0657-0bf9-433b-bbf0-730b62918e4e",
+        "timestamp": 1794333653112
+      }
     ]
   }
 }

@@ -1,8 +1,9 @@
 import { LanternSkeleton } from "@/components/design-system/LanternSkeleton";
 import styles from "./Landing.module.css";
 
-/** Same 1000:851 stage as the real `.mapBox` (and the same --map-max-h cap), so swapping it for the map shifts nothing. */
-export const MAP_ASPECT = 1000 / 851;
+import { MAP_ASPECT } from "./map-geometry";
+/** Same stage (aspect from the projected viewBox) as the real `.mapBox`, so swapping it for the map shifts nothing. */
+export { MAP_ASPECT };
 
 /**
  * Task 17.14 (UI-19.28): lantern-and-fog placeholder inside the map panel. Server-renderable, shows no values.

@@ -10,8 +10,9 @@ import { CityList } from "./CityList";
 import { Legend } from "./Legend";
 import { StaleBanner } from "./StaleBanner";
 import { FreshnessFooter } from "./FreshnessFooter";
-import { DiscontinuedToggle, MapToggle, NoDataToggle, SortControl, ViewSwitch } from "./Controls";
-import { sortRows, type ListSort } from "@/lib/view/sort-rows";
+import { PlacesTable } from "./PlacesTable";
+import { DiscontinuedToggle, MapToggle, NoDataToggle, ViewSwitch } from "./Controls";
+import { DEFAULT_SORT, sortRows, type ListSort } from "@/lib/view/sort-rows";
 import styles from "./Landing.module.css";
 
 export interface LandingScreenProps {
@@ -29,9 +30,11 @@ export interface LandingScreenProps {
   onQuery: (q: string) => void;
   searching?: boolean;
   searchError?: ReactNode;
-  /** City list order only; the map keeps its own order. */
+  /** Places order only (from the URL); the map keeps its own order. Default City A–Z. */
   sort?: ListSort;
   onSort?: (sort: ListSort) => void;
+  /** True at 768 px and up: render the Places_Table; below that, the stacked phone list (UI-20.25, UI-20.28). */
+  table?: boolean;
   showDiscontinued: boolean;
   onDiscontinued: (checked: boolean) => void;
   /** Map-only: draw markers for places without data (UI-19.18). Default off. */
@@ -61,19 +64,20 @@ export interface LandingScreenProps {
 export function LandingScreen(p: LandingScreenProps) {
   const showMap = p.wide ? p.view === "map" : p.mapShown;
   const MapComponent = p.mapComponent;
+  const sort = p.sort ?? DEFAULT_SORT;
   return (
     <div className={styles.page}>
       {p.staleWeek ? <StaleBanner week={p.staleWeek} action={p.staleAction} /> : null}
       {p.notices}
-      <VirusChips value={p.virus} onChange={p.onVirus} />
-      <div className={styles.controls}>
+      {/* UI-20.29, UI-20.30: one container, one row at 1024 px and up, wrapping cleanly below. DOM order: chips, discontinued, no-data (map only), browse as list. */}
+      <div className={styles.controls} data-controls-row="">
+        <VirusChips value={p.virus} onChange={p.onVirus} />
         <DiscontinuedToggle checked={p.showDiscontinued} onChange={p.onDiscontinued} />
         {p.phase === "ready" && showMap && p.onNoData ? (
           <NoDataToggle checked={p.showNoData === true} onChange={p.onNoData} />
         ) : null}
         {p.phase === "ready" ? (
           <>
-            {p.onSort ? <SortControl value={p.sort ?? "az"} onChange={p.onSort} /> : null}
             <ViewSwitch view={p.view} count={p.rows.length} onChange={p.onView} />
             <MapToggle mapShown={p.mapShown} onToggle={p.onToggleMap} />
           </>
@@ -81,14 +85,12 @@ export function LandingScreen(p: LandingScreenProps) {
       </div>
       {p.phase === "loading" ? (
         showMap && MapComponent ? (
-          /* Task 17.14: same grid as the ready state, so the outlines (chunk ready) and then markers (data) fill a reserved panel. */
+          /* Task 17.14: same single column as the ready state, so the outlines (chunk ready) and then markers (data) fill a reserved panel. */
           <div className={styles.body} data-map="true">
             <div className={styles.mapCol}>
               <MapComponent rows={[]} virus={p.virus} pending onOpen={p.onOpen} />
             </div>
-            <div className={styles.mapCol}>
-              <Skeleton variant="rows" rows={6} />
-            </div>
+            <Skeleton variant="rows" rows={6} />
           </div>
         ) : (
           <Skeleton variant="rows" rows={6} />
@@ -97,8 +99,9 @@ export function LandingScreen(p: LandingScreenProps) {
       {p.phase === "error" ? p.errorNotice : null}
       {p.phase === "ready" ? (
         <>
-          <div className={styles.body} data-map={showMap ? "true" : "false"}>
-            {showMap && MapComponent ? (
+          {/* UI-20.18: the map spans the full content width; the places list or table follows below it. */}
+          {showMap && MapComponent ? (
+            <div className={styles.body} data-map="true">
               <div className={styles.mapCol}>
                 <MapComponent
                   rows={p.rows}
@@ -109,20 +112,32 @@ export function LandingScreen(p: LandingScreenProps) {
                   onOpen={p.onOpen}
                 />
               </div>
-            ) : null}
-            <div className={styles.mapCol}>
-              {p.searchError}
-              <CityList
-                rows={sortRows(p.rows, p.sort ?? "az")}
-                query={p.query}
-                onQuery={p.onQuery}
-                onOpen={p.onOpen}
-                {...(p.selectedId ? { selectedId: p.selectedId } : {})}
-                {...(p.searching ? { searching: true } : {})}
-              />
             </div>
-          </div>
+          ) : null}
           <Legend />
+          {p.searchError}
+          {/* Property 33: the order comes from the URL sort; tables sort from their headers, the phone list follows the URL only. */}
+          {p.table ? (
+            <PlacesTable
+              rows={sortRows(p.rows, sort)}
+              sort={sort}
+              onSort={p.onSort ?? (() => {})}
+              query={p.query}
+              onQuery={p.onQuery}
+              onOpen={p.onOpen}
+              {...(p.selectedId ? { selectedId: p.selectedId } : {})}
+              {...(p.searching ? { searching: true } : {})}
+            />
+          ) : (
+            <CityList
+              rows={sortRows(p.rows, sort)}
+              query={p.query}
+              onQuery={p.onQuery}
+              onOpen={p.onOpen}
+              {...(p.selectedId ? { selectedId: p.selectedId } : {})}
+              {...(p.searching ? { searching: true } : {})}
+            />
+          )}
         </>
       ) : null}
       <FreshnessFooter clocks={p.clocks} {...(p.freshness ? { freshness: p.freshness } : {})} />

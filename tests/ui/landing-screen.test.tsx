@@ -16,6 +16,8 @@ import type { LandingScreenProps } from "../../src/components/landing/LandingScr
 import { TREND_SOURCE_URL } from "../../src/evidence/copy/sources";
 import type { LocationEntry, SourceSnapshot } from "../../src/evidence/types";
 import { LANDING_HEADING, limitation, staleBanner } from "../../src/ui-copy";
+import { SHOW_DISCONTINUED } from "../../src/ui-copy/coverage";
+import { SHOW_NO_DATA_PLACES } from "../../src/ui-copy/landing";
 import { loadTrendFixture, textOf } from "./helpers";
 
 const TODAY = "2026-11-07";
@@ -137,6 +139,22 @@ describe("UI-2.8 UI-12.1 loading / UI-2.11 error / empty", () => {
     expect(html).toContain('data-variant="map"');
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain("aspect-ratio");
+  });
+  it("UI-20.29 UI-20.30 one controls container holds chips, discontinued, no-data (map only) and browse as list in order", () => {
+    const html = render({ phase: "ready", view: "map", wide: true, onNoData: () => {}, showNoData: false });
+    expect((html.match(/data-controls-row=""/g) ?? []).length).toBe(1);
+    const row = html.slice(html.indexOf('data-controls-row=""'));
+    const at = (s: string) => row.indexOf(s);
+    const chips = at('role="group"');
+    const disc = at(SHOW_DISCONTINUED);
+    const noData = at(SHOW_NO_DATA_PLACES);
+    const browse = at("Browse as list");
+    expect(chips).toBeGreaterThan(-1);
+    expect(chips).toBeLessThan(disc);
+    expect(disc).toBeLessThan(noData);
+    expect(noData).toBeLessThan(browse);
+    const listHtml = render({ phase: "ready", view: "list", wide: true, onNoData: () => {} });
+    expect(listHtml).not.toContain(SHOW_NO_DATA_PLACES);
   });
   it("UI-19.29 the map chunk request and the four reads do not wait for each other", () => {
     const island = readFileSync("src/components/landing/LandingIsland.tsx", "utf8");

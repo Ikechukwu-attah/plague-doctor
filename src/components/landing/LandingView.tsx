@@ -13,6 +13,7 @@ import { useToday } from "@/lib/clock";
 import { parseLandingUrl, serializeLandingUrl } from "@/lib/url-state";
 import type { LandingState } from "@/lib/url-state";
 import { buildLandingRows } from "@/lib/view/landing-rows";
+import { sortFromParam, sortToParam } from "@/lib/view/sort-spec";
 import { buildThreeClocks } from "@/lib/view/three-clocks";
 import { deriveLandingStatus, staleWeekFor } from "@/lib/view/landing-status";
 import { Button } from "@/components/design-system/Button";
@@ -78,6 +79,8 @@ export function LandingView() {
   const searchPending = searchActive && (query.trim() !== debounced || search.state === "loading");
 
   const wide = useMediaQuery("(min-width: 640px)");
+  // One render path: the Places_Table from 768 px, the stacked phone list below (UI-20.25, UI-20.28).
+  const table = useMediaQuery("(min-width: 768px)");
   const detailMode = useDetailMode();
   const [mapShown, setMapShown] = useState(state.view === "map");
 
@@ -208,8 +211,9 @@ export function LandingView() {
             ),
           }
         : {})}
-      sort={state.sort === "activity" ? "activity" : "az"}
-      onSort={(s) => update({ sort: s === "activity" ? "activity" : undefined })}
+      sort={sortFromParam(state.sort)}
+      onSort={(s) => update({ sort: sortToParam(s) })}
+      table={table}
       showDiscontinued={showDiscontinued}
       onDiscontinued={(checked) => update({ discontinued: checked })}
       showNoData={state.nodata === true}

@@ -4,20 +4,25 @@ import type { LandingRow } from "@/lib/view/landing-rows";
 import { trendGlyphModel } from "@/lib/view/trend";
 import type { MapLabelSide } from "@/lib/view/map-labels";
 import { SELECTED } from "@/ui-copy/landing";
+import { markerPosition } from "./map-geometry";
 import styles from "./Landing.module.css";
 
-export const MAP_W = 1000;
-export const MAP_H = 851;
+export { MAP_H, MAP_W, markerPosition } from "./map-geometry";
 
-export function markerPosition(p: { x: number; y: number }): { left: string; top: string } {
-  return { left: `${(p.x / MAP_W) * 100}%`, top: `${(p.y / MAP_H) * 100}%` };
-}
-
-/** Shape + glyph + word; colour is never the only signal. */
-export function MapMarker(props: { row: LandingRow; selected?: boolean; labelSide?: MapLabelSide | undefined; onOpen: (locationId: string) => void }) {
+/**
+ * Shape + glyph + word; colour is never the only signal. `display` is the dodged centre as percentages of the map box;
+ * without it the marker sits at its true projected point.
+ */
+export function MapMarker(props: {
+  row: LandingRow;
+  selected?: boolean;
+  labelSide?: MapLabelSide | undefined;
+  display?: { left: string; top: string } | undefined;
+  onOpen: (locationId: string) => void;
+}) {
   const { row, selected } = props;
   if (!row.point) return null;
-  const pos = markerPosition(row.point);
+  const pos = props.display ?? markerPosition(row.point);
   const b = row.badge;
   const unknown = b.kind === "unknown";
   const dotCls = unknown

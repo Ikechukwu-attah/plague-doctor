@@ -5,6 +5,12 @@
 import { z } from "zod";
 import { PathogenSchema } from "@/evidence/schemas";
 import type { Pathogen } from "@/evidence/types";
+import {
+  isAcceptedSortValue,
+  sortFromParam,
+  sortToParam,
+  type SortParam,
+} from "@/lib/view/sort-spec";
 import { isKindId, isVenueId, type KindId, type VenueId } from "@/ui-copy/planner-options";
 
 export const DEFAULT_VIRUS: Pathogen = "covid19";
@@ -39,8 +45,8 @@ export const LandingUrlSchema = z.object({
   city: SlugSchema.optional().catch(undefined),
   view: z.enum(["map", "list"]).optional().catch(undefined),
   discontinued: z.enum(["1"]).optional().catch(undefined),
-  /** Only the non-default value is ever written (UI-19.15). */
-  sort: z.enum(["activity"]).optional().catch(undefined),
+  /** Places table order: `<key>` or `<key>:desc`; legacy `activity` is read as `level:desc` (UI-20.22). */
+  sort: z.string().refine(isAcceptedSortValue).optional().catch(undefined),
   /** Map only: show markers for places without data (UI-19.18). Omitted when off. */
   nodata: z.enum(["1"]).optional().catch(undefined),
 });
@@ -65,8 +71,8 @@ export interface LandingState {
   city?: string;
   view?: "map" | "list";
   discontinued?: boolean;
-  /** Absent means A–Z. */
-  sort?: "activity" | undefined;
+  /** Canonical sort value; absent means City A–Z. Never "name" and never the legacy "activity". */
+  sort?: SortParam | undefined;
   /** Map shows markers for places without data. Absent means hidden. */
   nodata?: boolean | undefined;
 }
@@ -113,7 +119,8 @@ export function parseLandingUrl(input: UrlInput): LandingState {
   if (p.city !== undefined) state.city = p.city;
   if (p.view !== undefined) state.view = p.view;
   if (p.discontinued === "1") state.discontinued = true;
-  if (p.sort === "activity") state.sort = "activity";
+  const sort = sortToParam(sortFromParam(p.sort));
+  if (sort !== undefined) state.sort = sort;
   if (p.nodata === "1") state.nodata = true;
   return state;
 }
@@ -125,7 +132,8 @@ export function serializeLandingUrl(s: LandingState): string {
   if (s.city) sp.set("city", s.city);
   if (s.view) sp.set("view", s.view);
   if (s.discontinued) sp.set("discontinued", "1");
-  if (s.sort === "activity") sp.set("sort", "activity");
+  const sort = sortToParam(sortFromParam(s.sort));
+  if (sort !== undefined) sp.set("sort", sort);
   if (s.nodata) sp.set("nodata", "1");
   return sp.toString();
 }

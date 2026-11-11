@@ -1084,3 +1084,76 @@ Source: `docs/MILESTONE_4_REVIEW_FIXES.md`. Requirement 19 (criteria `UI-19.n`).
 - **Playwright:** marker-hit test (`elementFromPoint` equals the marker or cluster at its centre) at 1440 and 390 px; cluster chooser opens and selects; `/nope` has no horizontal overflow at 390 px; planner six-digit year rejected; Vancouver shows the "Regional site" label; sort via URL; reduced-motion run shows static fog.
 - **Lighthouse non-regression:** run mobile Lighthouse on `/` (median of at least 3 runs) before the first change and after the last. Gate: performance ≥ 90, LCP ≤ 2.5 s, CLS near 0, First Load JS for `/` not above the 15.7 result (108 kB) without justification. Heavy additions (cluster chooser, PNG export, card styling) load lazily or outside the landing bundle. The h1 and limitation line stay server-rendered.
 - **Unchanged guards:** `git diff --stat` shows no changes under `src/evidence/**`, the wording guard, share text or licence text; existing vitest and Playwright baselines stay green.
+
+## Milestone 5 design
+
+Source: `docs/MILESTONE_5_LANDING_REDESIGN.md` (called "task group 18" in the doc; recorded as task group 19 and Requirement 20, criteria `UI-20.n`). Requirement 20 supersedes the clustering (19.1 to 19.4), the 340 px list column (19.18) and the sort control location (19.15 to 19.17) where they conflict; 19.39 stays. Constraints: `src/evidence/**`, the Wording_Guard, share text and licence text are not modified; copy lives in `src/ui-copy/**`; no forecast, risk or "safe" claim.
+
+### Page-height cause analysis (doc 18.1)
+
+Measured: `body.scrollHeight` 1213 versus `documentElement.scrollHeight` 3649. The `.visually-hidden` spans inside each city-list row are `position: absolute`, but no ancestor inside the scrolling list (`.Landing_list ul`, `overflow: auto`) is positioned, so their containing block is the initial containing block. They lay out against the page and the last one sits at y = 3648, stretching the scrollable overflow of the document below the footer. Fix in two layers: give the list scroller and rows `position: relative` (containment), and harden the global `.visually-hidden` to the standard clip pattern so it cannot extend layout wherever it is used. Because the table replaces the scroller (see below), the hardened utility is the lasting protection. A Playwright test compares `documentElement.scrollHeight` with the footer's bottom edge on five routes at two widths.
+
+### Approach per item
+
+| Doc item | Approach | New or changed modules |
+|---|---|---|
+| 18.1 Page height | Harden `.visually-hidden`; `position: relative` on list scroller and rows; Playwright height test. | `src/app/globals.css`, `LandingView.module.css`, `e2e/page-height.spec.ts` |
+| 18.2 Map fit | Lower-risk choice: regenerate at build time and keep points in the same projected space. `scripts/build-geometry.ts` calls `fitExtent` over the GeoJSON bounding box of all monitored locations plus their provinces, with padding, for a viewBox matching the panel aspect (about 16:9), and writes `projected.json` and the city-points file in that one space. Territories are drawn but clipped at the top edge by the viewBox. Alternative rejected: a runtime affine transform of the existing 1000 by 851 coordinates keeps stale geometry, needs per-render maths for every path and risks drift between outlines and points; build-time regeneration keeps the runtime unchanged. Points remain derived from Natural Earth plus cited overrides (no invented coordinates). | `scripts/build-geometry.ts`, generated `projected.json` and city-points, geometry schema/tests |
+| 18.2 Remove clusters | Delete `clusterMarkers`, `ClusterChooser` and their use in `CanadaMap.tsx`; the 17.1 cluster code is superseded and removed. Every mapped location renders one marker. | `CanadaMap.tsx`, remove `map-clusters.ts`, `ClusterChooser.tsx` |
+| 18.2 Dodge | Pure module `src/lib/view/marker-dodge.ts`: `dodgeMarkers(points, mapSize, opts)` projects true points to pixels, sorts by `locationId`, then runs a fixed number of relaxation iterations: for each pair whose 24 px hit boxes overlap, push both apart along the line between them (a fixed unit vector by id order when coincident), clamp each marker to a maximum displacement from its true point and to the map box. The result lists `{locationId, truePoint, displayPoint, displaced}`. No randomness, no time dependence. `CanadaMap` draws a thin leader line from `displayPoint` to `truePoint` for displaced markers. Hit box 24 by 24 centred on the display point, dot about 14 px. | `src/lib/view/marker-dodge.ts`, `CanadaMap.tsx`, `MapMarker.tsx` |
+| 18.2 Labels | `selectMapLabels` (19.39) gains leader lines as obstacles; labels for selected and hovered markers take priority, then comp-labelled cities in a fixed order where room allows. Placement sides stay right, left, above, below. | `src/lib/view/map-labels.ts` |
+| 18.3 Layout | At 1024 px and above the map spans the content width (`aspect-ratio: 16 / 9`, `max-height: 70vh`), the table sits below in normal flow. The list's fixed height and inner scroll are removed. | `LandingView.module.css`, `LandingView.tsx` |
+| 18.3 Table | New `PlacesTable.tsx`: a semantic `<table>` with columns City, Province, PHAC level, Trend, Sample week, Freshness, `table-layout: fixed`, `white-space: nowrap` and name cell ellipsis with `title` and the full name in the accessible name. Header cells contain `<button>`s; `aria-sort` on the `<th>` is derived from the URL `sort` parameter. Each header toggles ascending and descending via the existing `sort` parameter; the A–Z and activity orderings reuse `sortLocations` (P27), extended with column keys that order by the verbatim displayed value (level by PHAC category rank, trend by fixed order, sample week by date, freshness by label order), unknown last, ties A–Z. Row click and Enter/Space call the same `onSelect` as the marker, opening the same drawer. Search filters rows before sorting. No new classification is computed. | `src/components/landing/PlacesTable.tsx`, `sort.ts`, `url-state.ts`, `src/ui-copy/landing.ts` |
+| 18.3 Phones | Below 768 px the table renders as the stacked list: line 1 name with right-aligned status badge (flex, `justify-content: space-between`, name `min-width: 0` with ellipsis), line 2 trend and "week of" date left-aligned. The "Show map" toggle path is unchanged. | `PlacesTable.module.css`, `CityRow` |
+| 18.4 Controls | One flex row at 1024 px and above with `align-items: center` and `gap`; `flex-wrap: wrap` below. The "Sort list" select is removed. | `LandingControls.tsx`, `LandingView.module.css` |
+
+### Sorting in headers (P33)
+
+The `sort` URL value remains the single source of truth. `aria-sort` is `ascending`, `descending` or `none` on exactly the active column header; non-active headers are `none`. Default `alpha` shows the City column as ascending. Parsing falls back to the default for unknown values (existing behaviour).
+
+### New modules (summary)
+
+`src/lib/view/marker-dodge.ts`, `PlacesTable.tsx` (and CSS), `e2e/page-height.spec.ts`, extended `e2e/map-hit.spec.ts`, regenerated geometry files. Removed: `map-clusters.ts`, `ClusterChooser.tsx`, `SortControl.tsx`.
+
+### Additional correctness properties
+
+### Property 31: The document never extends below the footer
+
+*For any* route in `/`, `/plan`, `/methods`, `/card`, `/city/toronto` and any viewport width in {1440, 390}, `documentElement.scrollHeight` is within 2 px of the footer's bottom edge; and *for any* `.visually-hidden` element placed inside a positioned or unpositioned ancestor, its box is at most 1 by 1 px and clipped, so it adds no scrollable overflow.
+
+**Validates: Requirements 20.1, 20.2, 20.3, 20.4**
+
+### Property 32: Marker dodge separates hit boxes deterministically and keeps true points
+
+*For any* set of projected true points with distinct `locationId`s inside a map box, after `dodgeMarkers` no two 24 by 24 hit boxes overlap (given the point density is within the relaxation's capacity, otherwise the function reports the unresolved pair rather than overlapping silently), each display point is within the configured maximum displacement of its true point and inside the map box, the true points in the output equal the input, a displaced marker has a leader segment whose endpoints are its display point and its true point, and calling the function twice, or with the input in any order, returns identical output.
+
+**Validates: Requirements 20.9, 20.10, 20.11, 20.13**
+
+### Property 33: Header sorting reflects the URL sort, orders by PHAC category then A–Z, stably, unknown last
+
+*For any* list of rows and any sort value, exactly the active column header has `aria-sort` equal to the URL sort direction and all others `none`; the level ordering follows the PHAC category rank only, with unknown, no data and not monitored rows last and equal ranks in A–Z order; the output is a permutation of the input (after search filtering), is stable and idempotent, and the sort round-trips through the URL builders.
+
+**Validates: Requirements 20.21, 20.22, 20.23**
+
+### Property 34: Every marker hit test returns the marker itself
+
+*For any* mapped location at viewport widths 1440 and 1024, `document.elementFromPoint` at the centre of that marker's hit box returns that marker's button, and no other marker's hit box contains that point.
+
+**Validates: Requirements 20.12, 20.13, 20.14**
+
+### Milestone 5 error handling
+
+| Situation | Handling | Never |
+|---|---|---|
+| Dodge cannot separate a pair within the maximum displacement | Keep the capped positions, report the unresolved pair in tests and fail the property test; the list row still opens the place | Moving a marker beyond its cap or changing true coordinates |
+| Label has no free side | Omit the label; marker keeps its accessible name and table row | Overlapping a marker, leader or label |
+| Geometry file fails to load | Existing map error state; Places_Table still works | Blocking the table on the map |
+| Unknown `sort` value in the URL | Default sort | Throwing |
+
+### Milestone 5 testing and Lighthouse plan
+
+- **Property tests** (fast-check, 100+ runs, tagged `// Feature: interactive-surveillance-ui, Property N`): P32 in `tests/ui/marker-dodge.test.ts` (generated points plus real fixture rows at 1440, 1024 and 390 widths); P33 in `tests/ui/places-table-sort.test.ts` (extends the P27 generators). P31 and P34 are browser properties, implemented as Playwright tests over every route/width and every marker; they are enumerated checks rather than fast-check runs.
+- **Example tests:** hardened `.visually-hidden` CSS rule test; `PlacesTable` markup (columns, header buttons, `title` and accessible name for long names, row click opens the same drawer as the marker); phone row layout (two-line structure); controls row alignment at 1440 and wrapping at 1000; no inner scroll container in the table; geometry build output (viewBox, points in the same space, true coordinates unchanged); label test extended for leader lines.
+- **Playwright:** page-height test (5 routes by 2 widths); marker-hit for every marker at 1440 and 1024, "Show map" path at 390; table sort via header and URL; search filter; a11y (axe) on `/` with the table; existing specs stay green.
+- **Lighthouse:** mobile median of 3 on `/` before the first change and after the last. Gate: performance 90 or above, LCP 2.5 s or below, CLS below 0.1; First Load JS for `/` not larger without justification (removing cluster code should shrink it).
+- **Unchanged guards:** `git diff --stat` shows no changes under `src/evidence/**`, the wording guard, share text or licence text; no deploy.

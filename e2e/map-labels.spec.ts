@@ -2,18 +2,18 @@ import { test, expect } from "@playwright/test";
 import { pinClock } from "./helpers";
 
 /**
- * Task 17.15 (UI-3.6, UI-3.11): at 800 px no visible map label overlaps a marker or cluster button
- * (other than its own marker's) or another label, and no label text is covered.
+ * Task 17.15, 19.2 (UI-3.6, UI-3.11, UI-20.17): at 800 px no visible map label overlaps a marker button
+ * (other than its own marker's), a leader line or another label, and no label text is covered.
  */
-const ITEMS = "[data-map] button[data-location-id], [data-map] button[data-cluster-id]";
+const ITEMS = "[data-map] button[data-location-id]";
 
-test("labels at 800 px never overlap markers, clusters or each other", async ({ page }, info) => {
+test("labels at 800 px never overlap markers, leader lines or each other", async ({ page }, info) => {
   test.skip(info.project.name !== "desktop", "desktop viewport only");
   await page.setViewportSize({ width: 800, height: 900 });
   await pinClock(page);
   await page.goto("/");
   await expect(page.locator(ITEMS).first()).toBeVisible();
-  // Clustering and labels run after the first ResizeObserver measurement.
+  // The dodge and labels run after the first ResizeObserver measurement.
   await page.waitForTimeout(400);
   const result = await page.evaluate((sel) => {
     const buttons = Array.from(document.querySelectorAll<HTMLElement>(sel));
@@ -31,10 +31,16 @@ test("labels at 800 px never overlap markers, clusters or each other", async ({ 
       const cy = r.top + r.height / 2;
       if (cy >= 0 && cy <= window.innerHeight) {
         const top = document.elementFromPoint(cx, cy);
-        // Labels have pointer-events: none, so the hit target is whatever lies beneath. It must not be another marker/cluster.
+        // Labels have pointer-events: none, so the hit target is whatever lies beneath. It must not be another marker.
         const owner = top?.closest("button");
         if (owner && owner !== own) problems.push(`${name} covered by ${owner.getAttribute("aria-label")}`);
       }
+    }
+    // Leader lines: bounding box of each line's two endpoints (1 px stroke) against every label.
+    for (const g of Array.from(document.querySelectorAll<SVGLineElement>("[data-map] [data-leaders] line"))) {
+      const lr = g.getBoundingClientRect();
+      const thin = new DOMRect(lr.left - 1, lr.top - 1, lr.width + 2, lr.height + 2);
+      for (const { el, r } of rects) if (hit(r, thin)) problems.push(`${el.textContent} overlaps a leader line`);
     }
     for (let i = 0; i < rects.length; i++)
       for (let j = i + 1; j < rects.length; j++)

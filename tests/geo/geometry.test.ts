@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, statSync } from "fs";
 import { join } from "path";
 import { z } from "zod";
+import { geoConicConformal } from "d3-geo";
 
 // UI-3.1, UI-3.2, UI-18.2: map geometry and city points (real Natural Earth output).
 const GEO = join(process.cwd(), "src/data/geo");
@@ -100,6 +101,49 @@ describe("UI-3.2 UI-18.2: city-points.json", () => {
     expect(points.viewBox).toEqual(projected.viewBox);
   });
 
+  it("UI-20.5 UI-20.7: viewBox is about 16:9 and the points span the width (fitExtent, ~24+ px padding)", () => {
+    expect(w / h).toBeGreaterThan(1.7);
+    expect(w / h).toBeLessThan(1.85);
+    const xs = Object.values(points.entries).map((p) => p.x);
+    const ys = Object.values(points.entries).map((p) => p.y);
+    expect(Math.min(...xs)).toBeGreaterThanOrEqual(24);
+    expect(Math.max(...xs)).toBeLessThanOrEqual(w - 24);
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(24);
+    expect(Math.max(...ys)).toBeLessThanOrEqual(h - 24);
+    // The populated band fills the width: the points cover at least 90 % of the box width.
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(w * 0.9);
+  });
+  it("UI-20.6: outlines are clipped to the viewBox (territories cropped, not shrunk to fit)", () => {
+    // Every coordinate in the path data lies inside the box (clipExtent), so nothing is drawn past the crop.
+    for (const prov of projected.provinces) {
+      const nums = prov.d.match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
+      for (let i = 0; i + 1 < nums.length; i += 2) {
+        expect(nums[i]!, prov.pruid).toBeGreaterThanOrEqual(-0.5);
+        expect(nums[i]!, prov.pruid).toBeLessThanOrEqual(w + 0.5);
+        expect(nums[i + 1]!, prov.pruid).toBeGreaterThanOrEqual(-0.5);
+        expect(nums[i + 1]!, prov.pruid).toBeLessThanOrEqual(h + 0.5);
+      }
+    }
+  });
+  it("UI-20.7: lon/lat are kept and every point is in the same projected space as the outlines (no invented coordinates)", () => {
+    // Re-project lon/lat with the recorded projection, fitted to the same points; x/y must match within rounding.
+    const entries = Object.values(points.entries);
+    const proj = geoConicConformal()
+      .parallels(projected.projection.parallels as [number, number])
+      .rotate(projected.projection.rotate as [number, number]);
+    proj.fitExtent(
+      [
+        [40, 40],
+        [w - 40, h - 40],
+      ],
+      { type: "MultiPoint", coordinates: entries.map((p) => [p.lon, p.lat]) },
+    );
+    for (const [id, p] of Object.entries(points.entries)) {
+      const xy = proj([p.lon, p.lat])!;
+      expect(Math.abs(xy[0] - p.x), id).toBeLessThanOrEqual(0.06);
+      expect(Math.abs(xy[1] - p.y), id).toBeLessThanOrEqual(0.06);
+    }
+  });
   it("every point lies inside the viewBox", () => {
     for (const [id, p] of Object.entries(points.entries)) {
       expect(p.x, id).toBeGreaterThanOrEqual(0);

@@ -336,3 +336,64 @@ Bug seen live at about 800 px: the "Metro Vancouver · High" label ran across th
 
 ### Process note
 The shell tool silently ignored a python heredoc edit once. The edits were redone with the file tools.
+
+## Milestone 5
+
+Landing page layout (task group 19, Requirement 20, criteria `UI-20.n`): page height, a map that fits its panel, marker dodge instead of clusters, the "All places" table and the controls row.
+
+### Cause of the page-height bug (19.1)
+- The `.visually-hidden` spans inside list rows are `position: absolute`. The rows sat in an `overflow: auto` list, and neither the list nor the rows was positioned, so the spans had no positioned ancestor and were laid out against the page.
+- Result: `documentElement.scrollHeight` 3649 versus `body.scrollHeight` 1213, which left a large empty area below the footer. The e2e measured 3547 and 4626 on the old build.
+- The page grew with the number of rows, not with the content that was visible.
+
+### Fixes
+- Global `.visually-hidden` hardened (`position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap`), with `position: relative` on the list scroller, rows and table cells. CSS rule test: `tests/ui/visually-hidden-css.test.ts`.
+- The map stage is a 16:9 box that fits its panel, with the marker dodge replacing clusters (19.2). The "All places" table and the controls row followed (19.3, 19.4).
+- Final gate (19.5): the "All places" table was widened so nothing spills out of its cells.
+  - Freshness column 10% → 16% (name 19%, province 14%, level 17%, trend 14%, week 20%).
+  - The Level cell is a flex container that wraps, so the regional-site badge, chip and info button stay inside it.
+  - Phone regional rows get a definite 150 px badge track, so the chip wraps to a second right-aligned line and the name stays whole.
+
+### Bugs found by tests and review (with tests)
+1. First-footer versus last-footer measurement: the page-height check read the first `<footer>`, which is the in-page freshness footer, not the site footer. It now measures the last `<footer>`. Test: `e2e/page-height.spec.ts`.
+2. Page-level horizontal overflow at 1024 px on `/`: `documentElement.scrollWidth` 1034 against `clientWidth` 1024. The earlier suspicion (map markers, marker labels and fog spans) was wrong: `.mapBox` already has `overflow: hidden`, and those spans are clipped. The probe listed every element whose right edge passed the viewport. The real cause was the Freshness column. It was 10% wide (96 px at 1024 px) in a `table-layout: fixed` table, while the lantern and its label need about 150 px, so the label ran 10 px past the page padding. At 1440 px it also spilled out of its cell but not past the page. Fix: column widths above. Tests: `e2e/page-height.spec.ts` asserts `scrollWidth <= clientWidth` at 1440, 1280, 1024, 768 and 390 px. It failed before the fix (1034 versus 1024 at 1024 px only) and passes after.
+3. Hit-test sub-pixel gap of 0.5 px, reported from the earlier Milestone 5 tasks (marker hit test, `e2e/marker-hit.spec.ts`). I did not re-investigate it in 19.5; the suite passes with it as committed.
+4. Regional-site row overlap, found in screenshots (not by a test): in the Vancouver row the "i" button overran the Level column and sat on top of the Trend text at 1440 px. On the phone list the name broke mid-word ("Vanc / ouver") because the badge group and the outside info button left it about 47 px. Fixed with the wrapping Level cell and the 150 px phone track. New test: `e2e/page-height.spec.ts` "table level cell keeps its contents inside the cell" at 1440, 1280 and 1024 px (it passes after the fix; it was not run against the unfixed build, the defect was seen in the screenshot).
+5. A wrong first fix for item 4 was caught by an existing test: stacking the badges under the name in regional phone rows broke `e2e/places-table.spec.ts` (UI-20.28: badge to the right of the name, on line 1). A percentage `max-width` on an auto grid track was the second wrong attempt (it does not shrink the track). The definite 150 px track is the third and kept change.
+
+### Before / after
+Lighthouse 12.8.2, mobile defaults, `/`, production build without the test clock.
+| | Before M5 | After M5 |
+|---|---|---|
+| Performance | 94 (median) | 94 (82 / 94 / 96) |
+| LCP | 2.37 s | 2.344 s (2.335 / 2.344 / 2.513) |
+| CLS | 0 | 0.019 median (0.019 / 0.019 / 0) |
+| TBT | 224 ms | 210 ms (167 / 210 / 614) |
+| First Load JS `/` | 110 kB | 112 kB (shared 105 kB) |
+| Time to first marker, unthrottled | 350 ms | 319.5 ms median (319.5 / 319.5 / 450.2) |
+| Time to first marker, throttled (CPU 4x, 1.6 Mbps, 150 ms) | 3296 ms | 3340.6 ms median (3320 / 3340.6 / 3390.6) |
+| Page height | `scrollHeight` 3649 vs body 1213 | `scrollHeight` = footer bottom: 4159 px at 1440, 4999 px at 390 |
+| Markers visible after the dodge (26) | n/a | 8 at 1440, 19 at 1024, 23 at 390 |
+| Unit tests | 59 files / 494 tests (M4) | 64 files / 593 tests |
+| Playwright | 99 passed, 24 skipped (M4) | 125 passed, 85 skipped, 0 failed |
+- Gate (perf 90 or above, LCP 2.5 s or below, CLS below 0.1): passed on the medians.
+- Lighthouse and the time-to-first-marker were measured on the build before the last CSS-only change (the 150 px phone track for regional rows). The final build was not re-measured; no JS changed.
+- CLS 0.019 also appeared before the table and phone fixes (first run of the earlier set), so it is not from them. The M5 "before" CLS of 0 is the prior report's median.
+- An earlier set on a lightly loaded machine gave perf 91 / 97 / 96, LCP 2406 / 2387 / 2433 ms, CLS 0.019 / 0 / 0, TBT 296 / 114 / 150 ms (median 96, 2406 ms, 0, 150 ms).
+
+### Machine load
+- The machine was heavily loaded by macOS background processes (`BackgroundShortcutRunner`, `mobileassetd`), with load averages up to 142. Several measurement attempts were discarded.
+  - Lighthouse runs with TBT of 12,692 ms and 16,763 ms, and some failing outright.
+  - A 17-minute full Playwright run with 38 failures, nearly all `Test timeout of 30000ms exceeded`.
+- Each was re-run after the load fell to about 4 to 5. The page-height specs also passed when re-run alone with 2 workers. No check was weakened.
+
+### Process deviations
+- The 19.2 agent used a one-off node script for CSS and copy deletions instead of the file tools.
+- In 19.5 a delete and a test run were issued in parallel once, so the temporary spec was removed before it ran. It was recreated and run in sequence.
+- Temporary probe and screenshot specs (`e2e/zz-*.spec.ts`) were deleted. Screenshots are in `/tmp/shots-m5/`.
+
+### Not done
+- Fog glows are clipped hard at the stage edges (left and right of the 16:9 stage at 1440 px). That is accepted; it was not softened.
+- The unfixed build was not run against the new Level-cell test.
+- Lighthouse was not re-run after the last CSS-only change.
+- No screenshots were taken at 768 or 1024 px.

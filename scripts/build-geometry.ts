@@ -35,7 +35,11 @@ const SOURCES = [
   },
 ] as const;
 
-const WIDTH = 1000;
+/** UI-20.5 to 20.7: ~16:9 box; the projection is fitted to the monitored points, territories are cropped. */
+const VB_W = 1600;
+const VB_H = 900;
+/** Padding inside the box (room for the 24 px marker boxes and labels at the box edge). */
+const PAD = 40;
 const PROVINCES_SIZE_BUDGET = 80 * 1024;
 const PROJECTED_SIZE_BUDGET = 120 * 1024;
 
@@ -238,21 +242,6 @@ function main(): void {
     })),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any;
-  projection.fitWidth(WIDTH, fc);
-  const path0 = geoPath(projection).digits(1);
-  const b = geoPath(projection).bounds(fc);
-  const height = Math.ceil(b[1][1]);
-  const projected = {
-    viewBox: [WIDTH, height] as [number, number],
-    projection: { type: "conicConformal", parallels, rotate },
-    provinces: provinces.features.map((f, i) => ({
-      pruid: String(f.properties.pruid),
-      name: String(f.properties.name),
-      d: path0(fc.features[i]) ?? "",
-    })),
-  };
-  const projText = JSON.stringify(projected);
-  writeFileSync(path.join(OUT_DIR, "canada-provinces.projected.json"), projText);
 
   // 3. City points.
   const places = readFC(placesTmp).features;
@@ -337,21 +326,56 @@ function main(): void {
       unmatched.push(`${key} (${info.name}${info.province ? `, ${info.province}` : ""})`);
       continue;
     }
-    const xy = projection([match.lon, match.lat]);
-    if (!xy || xy[0] < 0 || xy[0] > WIDTH || xy[1] < 0 || xy[1] > height) {
-      unmatched.push(`${key} (${info.name}): outside map extent`);
-      continue;
-    }
     entries[key] = {
       lon: match.lon,
       lat: match.lat,
-      x: Math.round(xy[0] * 10) / 10,
-      y: Math.round(xy[1] * 10) / 10,
+      x: 0,
+      y: 0,
       place: match.place,
       neId: match.neId,
       ...(citation ? { citation } : {}),
     };
   }
+
+  // Fit the projection to ALL known city points (the populated band fills the box width). Provinces are drawn
+  // in the same space and clipped to the box, so territories are cropped instead of shrinking the fit.
+  const pointGeo = {
+    type: "MultiPoint" as const,
+    coordinates: Object.values(entries).map((e) => [e.lon, e.lat]),
+  };
+  if (pointGeo.coordinates.length === 0) throw new Error("No city points; refusing to fit");
+  projection.fitExtent(
+    [
+      [PAD, PAD],
+      [VB_W - PAD, VB_H - PAD],
+    ],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pointGeo as any,
+  );
+  for (const [key, e] of Object.entries(entries)) {
+    const xy = projection([e.lon, e.lat]);
+    if (!xy || xy[0] < 0 || xy[0] > VB_W || xy[1] < 0 || xy[1] > VB_H) {
+      throw new Error(`${key} falls outside the fitted box`);
+    }
+    e.x = Math.round(xy[0] * 10) / 10;
+    e.y = Math.round(xy[1] * 10) / 10;
+  }
+  projection.clipExtent([
+    [0, 0],
+    [VB_W, VB_H],
+  ]);
+  const path0 = geoPath(projection).digits(1);
+  const projected = {
+    viewBox: [VB_W, VB_H] as [number, number],
+    projection: { type: "conicConformal", parallels, rotate },
+    provinces: provinces.features.map((f, i) => ({
+      pruid: String(f.properties.pruid),
+      name: String(f.properties.name),
+      d: path0(fc.features[i]) ?? "",
+    })),
+  };
+  const projText = JSON.stringify(projected);
+  writeFileSync(path.join(OUT_DIR, "canada-provinces.projected.json"), projText);
 
   const generatedAt = new Date().toISOString().slice(0, 10);
   const pointsDoc = {
@@ -386,7 +410,7 @@ Downloaded: ${generatedAt}
 ## Processing
 
 - Provinces filtered to Canada (13 provinces and territories) and simplified with mapshaper (\`${simplify}\`, keep-shapes). Output is \`canada-provinces.geojson\` (properties \`pruid\`, \`name\`).
-- Pre-projected with d3-geo conic conformal (parallels ${parallels.join(", ")}, rotate ${rotate.join(", ")}), viewBox ${projected.viewBox.join(" x ")}, into \`canada-provinces.projected.json\`.
+- Pre-projected with d3-geo conic conformal (parallels ${parallels.join(", ")}, rotate ${rotate.join(", ")}), viewBox ${projected.viewBox.join(" x ")} (about 16:9), into \`canada-provinces.projected.json\`. The projection is fitted with \`fitExtent\` (padding ${PAD}) over every point in \`city-points.json\`, so the populated southern band fills the width; the outlines are clipped to the box (\`clipExtent\`), which crops the northern territories at the top edge instead of shrinking the map to include them. Outlines and points share this one projected space.
 - \`city-points.json\`: a location gets a point only if its name (and province, when known) matches exactly one Natural Earth populated place, or it has a hand-checked override carrying a \`citation\`. Coordinates always come from Natural Earth. Outlines are decorative; no data is attached to them.
 
 ## Regenerate

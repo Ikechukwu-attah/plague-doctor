@@ -4,22 +4,23 @@ import { selectMapLabels } from "@/lib/view/map-labels";
 import type { Pathogen } from "@/evidence/types";
 import type { LandingRow } from "@/lib/view/landing-rows";
 import { fogSpec } from "@/lib/view/fog";
+import { dodgeMarkers } from "@/lib/view/marker-dodge";
 import provinces from "@/data/geo/canada-provinces.projected.json";
 import { mapLabel, mapTextAlternative, SKIP_MAP } from "@/ui-copy/landing";
 import type { MapCounts } from "@/ui-copy/landing";
 import { LOADING_LABEL } from "@/ui-copy/states";
 import { FogLayer } from "./FogLayer";
 import type { FogItem } from "./FogLayer";
-import { MapMarker, MAP_H, MAP_W } from "./MapMarker";
-import { ClusterMarker } from "./ClusterMarker";
-import { ClusterChooser } from "./ClusterChooser";
-import { clusterMarkers } from "@/lib/view/marker-clusters";
+import { MapMarker } from "./MapMarker";
+import { MAP_H, MAP_W } from "./map-geometry";
 import { CITY_LIST_ID } from "./landing-ids";
 import styles from "./Landing.module.css";
 
 export { CITY_LIST_ID };
 
 const OUTLINES = (provinces as { provinces: Array<{ pruid: string; d: string }> }).provinces;
+/** Maximum distance (px) between a dodged marker and its true point (UI-20.11). */
+export const MAX_DODGE_PX = 40;
 
 export function countRows(rows: LandingRow[]): MapCounts {
   const counts: MapCounts = {
@@ -64,9 +65,13 @@ export function hasMapData(r: LandingRow): boolean {
   return !r.noSite && r.badge.kind === "level";
 }
 
-/** Decorative outlines + absolutely positioned markers (left = x/w, top = y/h). Ordered west to east. */
+/**
+ * Decorative outlines + absolutely positioned markers (left = x/w, top = y/h). Ordered west to east.
+ * Every visible marker is drawn (no clusters); overlapping hit boxes are separated by the Marker_Dodge and a thin
+ * leader line joins each displaced marker to its true point (UI-20.8 to UI-20.13). Fog stays at the true points.
+ */
 export function CanadaMap({ rows, virus, week, selectedId, showNoData = false, pending = false, onOpen }: CanadaMapProps) {
-  // Markers, fog, clustering and labels all work from this visible set; the text alternative counts every row.
+  // Markers, fog, dodge and labels all work from this visible set; the text alternative counts every row.
   const placed = rows
     .filter((r) => r.point && !r.duplicateMarker && (showNoData || hasMapData(r)))
     .sort((a, b) => a.point!.x - b.point!.x || a.location.locationId.localeCompare(b.location.locationId));
@@ -77,7 +82,7 @@ export function CanadaMap({ rows, virus, week, selectedId, showNoData = false, p
     top: (r.point!.y / MAP_H) * 100,
   }));
   const boxRef = useRef<HTMLDivElement | null>(null);
-  const [size, setSize] = useState({ width: 640, height: 545 });
+  const [size, setSize] = useState({ width: 640, height: (640 * MAP_H) / MAP_W });
   const [measured, setMeasured] = useState(false);
   useEffect(() => {
     const el = boxRef.current;
@@ -93,36 +98,29 @@ export function CanadaMap({ rows, virus, week, selectedId, showNoData = false, p
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  // Clustering needs the real rendered size; before the first measurement every marker is rendered.
-  const items = useMemo(
+  // The dodge needs the real rendered size; before the first measurement markers sit at their true points.
+  const dodged = useMemo(
     () =>
       measured
-        ? clusterMarkers(
-            placed.map((r) => ({ id: r.location.locationId, fx: r.point!.x / MAP_W, fy: r.point!.y / MAP_H })),
-            size,
-          )
+        ? dodgeMarkers(
+            placed.map((r) => ({
+              id: r.location.locationId,
+              x: (r.point!.x / MAP_W) * size.width,
+              y: (r.point!.y / MAP_H) * size.height,
+            })),
+            { hit: 24, maxDisplacement: MAX_DODGE_PX, bounds: size },
+          ).markers
         : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [rows, size, measured, showNoData],
   );
-  const byId = new Map(placed.map((r) => [r.location.locationId, r]));
-  // Labels run after clustering over the rendered items; before the first measurement none are drawn.
+  const dodgeById = new Map((dodged ?? []).map((m) => [m.id, m]));
+  // Labels run over the dodged positions and leader lines; before the first measurement none are drawn.
   const labels = useMemo(
-    () => new Map(items ? selectMapLabels(placed, selectedId, size, items).map((l) => [l.id, l.side]) : []),
+    () => new Map(dodged ? selectMapLabels(placed, selectedId, size, dodged).map((l) => [l.id, l.side]) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, rows, selectedId, size, showNoData],
+    [dodged, rows, selectedId, size, showNoData],
   );
-  const [openCluster, setOpenCluster] = useState<string | null>(null);
-  const open = items?.find((i) => i.kind === "cluster" && i.id === openCluster) ?? null;
-  function closeChooser(returnFocus: boolean) {
-    const id = openCluster;
-    setOpenCluster(null);
-    if (returnFocus && id) {
-      requestAnimationFrame(() => {
-        boxRef.current?.querySelector<HTMLElement>(`[data-cluster-id="${CSS.escape(id)}"]`)?.focus();
-      });
-    }
-  }
   const labelArgs = week ? { virus, week } : { virus };
   return (
     <div className={styles.mapWrap} data-map-panel="" {...(pending ? { "aria-busy": true } : {})}>
@@ -149,38 +147,40 @@ export function CanadaMap({ rows, virus, week, selectedId, showNoData = false, p
           ))}
         </svg>
         <FogLayer items={fog} />
-        {items
-          ? items.map((i) =>
-              i.kind === "marker" ? (
-                <MapMarker key={i.id} row={byId.get(i.id)!} selected={i.id === selectedId} labelSide={labels.get(i.id)} onOpen={onOpen} />
-              ) : (
-                <ClusterMarker
-                  key={i.id}
-                  id={i.id}
-                  fx={i.fx}
-                  fy={i.fy}
-                  count={i.memberIds.length}
-                  hasSelected={selectedId !== undefined && i.memberIds.includes(selectedId)}
-                  open={open?.id === i.id}
-                  onToggle={() => setOpenCluster((c) => (c === i.id ? null : i.id))}
-                />
-              ),
-            )
-          : placed.map((r) => (
-              <MapMarker key={r.location.locationId} row={r} selected={r.location.locationId === selectedId} labelSide={labels.get(r.location.locationId)} onOpen={onOpen} />
-            ))}
+        {dodged && dodged.some((m) => m.displaced) ? (
+          <svg
+            className={styles.leaders}
+            viewBox={`0 0 ${size.width} ${size.height}`}
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            focusable="false"
+            data-leaders=""
+          >
+            {dodged
+              .filter((m) => m.displaced)
+              .map((m) => (
+                <g key={m.id} data-leader={m.id}>
+                  <line x1={m.x} y1={m.y} x2={m.trueX} y2={m.trueY} className={styles.leaderLine} />
+                  <circle cx={m.trueX} cy={m.trueY} r={2} className={styles.leaderAnchor} />
+                </g>
+              ))}
+          </svg>
+        ) : null}
+        {placed.map((r) => {
+          const id = r.location.locationId;
+          const m = dodgeById.get(id);
+          return (
+            <MapMarker
+              key={id}
+              row={r}
+              selected={id === selectedId}
+              labelSide={labels.get(id)}
+              display={m ? { left: `${(m.x / size.width) * 100}%`, top: `${(m.y / size.height) * 100}%` } : undefined}
+              onOpen={onOpen}
+            />
+          );
+        })}
       </div>
-      {open ? (
-        <ClusterChooser
-          rows={open.memberIds.map((id) => byId.get(id)!)}
-          selectedId={selectedId}
-          onOpen={(id) => {
-            setOpenCluster(null);
-            onOpen(id);
-          }}
-          onClose={closeChooser}
-        />
-      ) : null}
     </div>
   );
 }

@@ -13,7 +13,8 @@ import { fogSpec } from "../../src/lib/view/fog";
 import { checkWording } from "../../src/evidence/wording-guard";
 import type { LocationEntry, Pathogen } from "../../src/evidence/types";
 import { CanadaMap, countRows, hasMapData } from "../../src/components/landing/CanadaMap";
-import { MapMarker, markerPosition } from "../../src/components/landing/MapMarker";
+import { MapMarker } from "../../src/components/landing/MapMarker";
+import { MAP_H, MAP_W, markerPosition } from "../../src/components/landing/map-geometry";
 import { FogLayer, driftTiming } from "../../src/components/landing/FogLayer";
 import { CityList, CityRow } from "../../src/components/landing/CityList";
 import { Legend } from "../../src/components/landing/Legend";
@@ -82,8 +83,8 @@ describe("UI-3.1 UI-3.6 markers", () => {
     for (const r of rows.slice(0, 20)) {
       const html = renderToStaticMarkup(<MapMarker row={r} onOpen={() => {}} />);
       const pos = markerPosition(r.point!);
-      expect(pos.left).toBe(`${(r.point!.x / 1000) * 100}%`);
-      expect(pos.top).toBe(`${(r.point!.y / 851) * 100}%`);
+      expect(pos.left).toBe(`${(r.point!.x / MAP_W) * 100}%`);
+      expect(pos.top).toBe(`${(r.point!.y / MAP_H) * 100}%`);
       expect(html).toContain(`left:${pos.left}`);
       expect(html).toContain(`top:${pos.top}`);
       expect(html).toContain(`aria-label="${r.markerLabel.replace(/'/g, "&#x27;").replace(/&/g, "&amp;")}"`.replace("&amp;#x27;", "&#x27;"));
@@ -168,10 +169,9 @@ describe("UI-3.4 UI-3.5 UI-3.12 FogLayer", () => {
       }),
     );
   });
-  it("UI-19.18 CSS: at 1024 px and up the city list is a 340 px column next to a flexible map", () => {
+  it("UI-20.18 CSS: the 340 px list column is gone (replaced by the full-width map, see places-table.test.tsx)", () => {
     const css = readFileSync(join(process.cwd(), "src/components/landing/Landing.module.css"), "utf8");
-    const at1024 = css.slice(css.indexOf("@media (min-width: 1024px)"));
-    expect(at1024).toMatch(/\.body\[data-map="true"\]\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+340px/);
+    expect(css).not.toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)\s+340px/);
   });
   it("CSS: 600 ms ease density transition, drift keyframes and a reduced-motion block", () => {
     const css = readFileSync(join(process.cwd(), "src/components/landing/Landing.module.css"), "utf8");

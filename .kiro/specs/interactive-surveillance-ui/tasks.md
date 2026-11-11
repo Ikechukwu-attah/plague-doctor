@@ -431,6 +431,51 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     - Confirm `git diff --stat` shows no changes to `src/evidence/**`, the wording guard, share text or licence text; delete temporary files
     - _Requirements: UI-19.33, UI-19.34_
 
+- [x] 19. Landing page layout fixes (Milestone 5)
+  - Numbering note: `docs/MILESTONE_5_LANDING_REDESIGN.md` calls this "task group 18", but group 18 is already "Milestone 4 follow-ups" and Requirement 19 is Milestone 4. Mapping: tasks 19.1 to 19.4 are doc items 18.1 to 18.4 (same order); 19.5 is the doc's "Done means". The matching requirement is the new Requirement 20 (criteria `UI-20.n`), which supersedes UI-19.1 to 19.4, the list column of UI-19.18 and the sort control location of UI-19.15 to 19.17 where they conflict.
+  - Constraints for the whole group: same as group 17 (no forecasts, risk or "safe" claims; copy only via `src/ui-copy/**`; dates via the clock module; `src/evidence/**`, the wording guard, share text and licence text untouched; no deploy; no dev servers; file-write tools only for edits). Do not change statuses of completed tasks in groups 1 to 18.
+  - [x] 19.1 Fix the empty page below the footer (doc 18.1)
+    - Cause: `.visually-hidden` spans in list rows are `position: absolute` with no positioned ancestor inside the `overflow: auto` list, so they lay out against the page (`documentElement.scrollHeight` 3649 versus `body.scrollHeight` 1213)
+    - Harden the global `.visually-hidden` to `position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap`; add `position: relative` to the list scroller and rows
+    - Add `e2e/page-height.spec.ts`: on `/`, `/plan`, `/methods`, `/card`, `/city/toronto` at 1440 and 390, `documentElement.scrollHeight` is within 2 px of the footer's bottom edge; add a CSS rule test for the hardened utility
+    - **Property 31: The document never extends below the footer**
+    - **Validates: Requirements 20.1, 20.2, 20.3, 20.4**
+    - _Requirements: UI-20.1, UI-20.2, UI-20.3, UI-20.4_
+  - [x] 19.2 Fit the map to the panel, remove clusters, add the marker dodge (doc 18.2)
+    - Regenerate geometry in `scripts/build-geometry.ts` with `fitExtent` over the bounding box of all monitored locations plus their provinces, with padding, territories cropped at the top; write `projected.json` and the city points in the same projected space with the new viewBox (build-time regeneration chosen over a runtime transform); no invented coordinates
+    - Remove numbered clusters: delete `src/components/landing/map-clusters.ts`, `ClusterChooser.tsx` and their tests and wiring; the 17.1 cluster code and Property 23 are superseded and removed (17.1 stays checked as history)
+    - Create `src/lib/view/marker-dodge.ts` (`dodgeMarkers`, deterministic collision relaxation, maximum displacement, true coordinates unchanged); render thin leader lines from displaced markers to their true points in `CanadaMap.tsx`; dot about 14 px, hit target at least 24 by 24 px that never overlaps another marker's
+    - Update `selectMapLabels` so labels for the selected and hovered marker take priority, comp-labelled cities follow where room allows, and no label intersects any marker, leader line or label (19.39 retained)
+    - Update `e2e/map-hit.spec.ts`: `elementFromPoint` at the centre returns the marker for every marker at 1440 and 1024; at 390 use the "Show map" toggle path
+    - Tests: geometry build output (viewBox, points in the same space), dodge unit tests with real fixture rows, label tests with leader lines
+    - Write property tests for the dodge and the hit test
+    - **Property 32: Marker dodge separates hit boxes deterministically and keeps true points**
+    - **Property 34: Every marker hit test returns the marker itself**
+    - **Validates: Requirements 20.5, 20.6, 20.7, 20.8, 20.9, 20.10, 20.11, 20.12, 20.13, 20.14, 20.15, 20.16, 20.17**
+    - _Requirements: UI-20.5, UI-20.6, UI-20.7, UI-20.8, UI-20.9, UI-20.10, UI-20.11, UI-20.12, UI-20.13, UI-20.14, UI-20.15, UI-20.16, UI-20.17_
+  - [x] 19.3 Full-width map and the "All places" table (doc 18.3)
+    - At 1024 px and above the map spans the content width (about 16:9, at most 70vh); remove the 340 px list column, the fixed list height and the inner scroll box
+    - Create `PlacesTable.tsx` with columns City, Province, PHAC level, Trend, Sample week, Freshness; header buttons sort with `aria-sort` derived from the URL `sort` parameter (extend `sort.ts` and `url-state.ts` with column keys, PHAC category rank then A–Z, stable, unknown last); remove `SortControl.tsx` and the "Sort list" select; search filters the table; one-line rows with ellipsized long names (`title` and accessible name carry the full name); row click or Enter opens the same city drawer as the marker
+    - Below 768 px keep the stacked list: line 1 name with right-aligned status badge, line 2 trend and "week of" date left-aligned, no overlap
+    - Add copy in `src/ui-copy/landing.ts` (wording guard tests cover it)
+    - Tests: table markup and `aria-sort`, URL round-trip, search filter, long-name ellipsis with title, row opens the same drawer, phone row structure, no inner scroll container; Playwright sort-by-header and axe checks
+    - Write property test for header sorting
+    - **Property 33: Header sorting reflects the URL sort, orders by PHAC category then A–Z, stably, unknown last**
+    - **Validates: Requirements 20.18, 20.19, 20.20, 20.21, 20.22, 20.23, 20.24, 20.25, 20.26, 20.27, 20.28**
+    - _Requirements: UI-20.18, UI-20.19, UI-20.20, UI-20.21, UI-20.22, UI-20.23, UI-20.24, UI-20.25, UI-20.26, UI-20.27, UI-20.28_
+  - [x] 19.4 Controls row (doc 18.4)
+    - Place the virus chips, "Show discontinued sites", "Show places without data" and "Browse as list" on one aligned row at 1024 px and above, wrapping cleanly below 1024 px; the sort control is gone (now in the table headers)
+    - Tests: layout test or Playwright check that the controls share one row at 1440 and wrap without overlap or clipping at 1000 and 390
+    - _Requirements: UI-20.29, UI-20.30_
+  - [x] 19.5 Done-means verification and report
+    - Before any change record a baseline: Lighthouse mobile median of 3 on `/`, vitest and Playwright counts
+    - At the end run `npx tsc --noEmit`, `npx vitest run`, `npm run build` and `npx playwright test` (including the page-height test and the all-marker hit tests) and report counts
+    - Run Lighthouse mobile median of 3 on `/` and report before and after: performance 90 or above, LCP 2.5 s or below, CLS below 0.1, First Load JS
+    - Capture screenshots at 1440x900 and 390x844: the landing page at the top and scrolled to the footer, which must show no empty space below it
+    - Add a "Milestone 5" section to `docs/KIRO_USAGE.md` (cause analysis, bugs a test caught, before/after table, anything not done)
+    - Confirm `git diff --stat` shows no changes under `src/evidence/**`, the wording guard, share text or licence text; delete temporary files; no deploy
+    - _Requirements: UI-20.1, UI-20.14, UI-20.31, UI-20.32_
+
 ## Notes
 
 - Tests are not marked optional: the repo rule requires tests with every evidence-engine or ingestion change, and the design's 22 properties are the acceptance gate.
@@ -473,7 +518,12 @@ All tests reference `UI-` requirement IDs and design property numbers in their n
     { "id": 26, "tasks": ["17.15"] },
     { "id": 27, "tasks": ["18.1", "18.2", "18.3"] },
     { "id": 28, "tasks": ["18.4"] },
-    { "id": 29, "tasks": ["18.5"] }
+    { "id": 29, "tasks": ["18.5"] },
+    { "id": 30, "tasks": ["19.1"] },
+    { "id": 31, "tasks": ["19.2"] },
+    { "id": 32, "tasks": ["19.3"] },
+    { "id": 33, "tasks": ["19.4"] },
+    { "id": 34, "tasks": ["19.5"] }
   ]
 }
 ```

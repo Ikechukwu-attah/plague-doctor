@@ -1,17 +1,18 @@
 /**
- * Property 30 (task 17.15, UI-3.6 UI-3.11 UI-19.1): map labels never overlap a marker, a cluster or another label.
- * Real PHAC fixture rows through buildLandingRows and clusterMarkers; the synthetic cases are labelled as such.
+ * Property 30 (task 17.15, UI-3.6 UI-3.11 UI-19.39) extended by task 19.2 (UI-20.16 UI-20.17):
+ * map labels never overlap a marker, a leader line or another label.
+ * Real PHAC fixture rows through buildLandingRows and dodgeMarkers; the synthetic cases are labelled as such.
  */
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 import { buildLandingRows } from "../../src/lib/view/landing-rows";
 import type { LandingRow } from "../../src/lib/view/landing-rows";
-import { selectMapLabels, labelBox, labelText } from "../../src/lib/view/map-labels";
-import type { MapLabel } from "../../src/lib/view/map-labels";
-import { clusterMarkers, HIT_SIZE } from "../../src/lib/view/marker-clusters";
-import type { MarkerItem } from "../../src/lib/view/marker-clusters";
+import { selectMapLabels, labelBox, labelText, leaderBox, markerBox } from "../../src/lib/view/map-labels";
+import type { MapLabel, LabelRect } from "../../src/lib/view/map-labels";
+import { dodgeMarkers } from "../../src/lib/view/marker-dodge";
+import type { DodgedMarker } from "../../src/lib/view/marker-dodge";
 import { hasMapData } from "../../src/components/landing/CanadaMap";
-import { MAP_H, MAP_W } from "../../src/components/landing/MapMarker";
+import { MAP_H, MAP_W } from "../../src/components/landing/map-geometry";
 import type { LocationEntry } from "../../src/evidence/types";
 import { loadTrendFixture } from "./helpers";
 
@@ -39,63 +40,59 @@ function allRows(): LandingRow[] {
 }
 
 const ROWS = allRows();
-const mapSize = (width: number) => ({ width, height: width * 0.851 });
-void MAP_H;
+const mapSize = (width: number) => ({ width, height: (width * MAP_H) / MAP_W });
 
 function visible(showNoData: boolean): LandingRow[] {
   return ROWS.filter((r) => r.point && !r.duplicateMarker && (showNoData || hasMapData(r)));
 }
-function itemsOf(rows: readonly LandingRow[], width: number): MarkerItem[] {
-  return clusterMarkers(
-    rows.map((r) => ({ id: r.location.locationId, fx: r.point!.x / MAP_W, fy: r.point!.y / MAP_H })),
-    mapSize(width),
-  );
+function markersOf(rows: readonly LandingRow[], width: number): DodgedMarker[] {
+  const size = mapSize(width);
+  return dodgeMarkers(
+    rows.map((r) => ({ id: r.location.locationId, x: (r.point!.x / MAP_W) * size.width, y: (r.point!.y / MAP_H) * size.height })),
+    { bounds: size },
+  ).markers;
 }
 function widthOf(id: string, rows: readonly LandingRow[]): number {
   const r = rows.find((x) => x.location.locationId === id)!;
   return labelText(r).length * 7.5 + 52;
 }
-function boxes(labels: MapLabel[], items: MarkerItem[], rows: readonly LandingRow[]) {
+function boxes(labels: MapLabel[], markers: DodgedMarker[], rows: readonly LandingRow[]) {
   return labels.map((l) => {
-    const it = items.find((i) => i.id === l.id)!;
+    const it = markers.find((i) => i.id === l.id)!;
     return { id: l.id, box: labelBox(l.side, it.x, it.y, widthOf(l.id, rows)) };
   });
 }
-function overlap(a: { x0: number; y0: number; x1: number; y1: number }, b: typeof a): boolean {
+function overlap(a: LabelRect, b: LabelRect): boolean {
   return a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
 }
-function assertClean(labels: MapLabel[], items: MarkerItem[], rows: readonly LandingRow[], size: { width: number; height: number }) {
-  const bs = boxes(labels, items, rows);
+function assertClean(labels: MapLabel[], markers: DodgedMarker[], rows: readonly LandingRow[], size: { width: number; height: number }) {
+  const bs = boxes(labels, markers, rows);
   bs.forEach((l, i) => {
     expect(l.box.x0).toBeGreaterThanOrEqual(0);
     expect(l.box.y0).toBeGreaterThanOrEqual(0);
     expect(l.box.x1).toBeLessThanOrEqual(size.width);
     expect(l.box.y1).toBeLessThanOrEqual(size.height);
-    for (const it of items) {
-      if (it.id === l.id) continue;
-      const h = HIT_SIZE / 2;
-      expect(overlap(l.box, { x0: it.x - h, y0: it.y - h, x1: it.x + h, y1: it.y + h })).toBe(false);
+    for (const m of markers) {
+      if (m.id !== l.id) expect(overlap(l.box, markerBox(m))).toBe(false);
+      const lb = leaderBox(m);
+      if (lb) expect(overlap(l.box, lb)).toBe(false);
     }
     for (const o of bs.slice(i + 1)) expect(overlap(l.box, o.box)).toBe(false);
   });
 }
 
-describe("Property 30: map labels never overlap markers, clusters or labels (task 17.15)", () => {
+describe("Property 30: map labels never overlap markers, leader lines or labels (task 17.15, 19.2)", () => {
   for (const showNoData of [false, true]) {
     for (const width of [390, 800, 1024, 1440]) {
       it(`fixture rows at ${width} px, showNoData=${showNoData}: every placed label is clean and deterministic`, () => {
         const rows = visible(showNoData);
-        const items = itemsOf(rows, width);
+        const markers = markersOf(rows, width);
         const size = mapSize(width);
-        const labels = selectMapLabels(rows, undefined, size, items);
-        assertClean(labels, items, rows, size);
+        const labels = selectMapLabels(rows, undefined, size, markers);
+        assertClean(labels, markers, rows, size);
         const shuffled = [...rows].reverse();
-        const again = selectMapLabels(shuffled, undefined, size, itemsOf(shuffled, width));
+        const again = selectMapLabels(shuffled, undefined, size, markersOf(shuffled, width));
         expect(again).toEqual(labels);
-        // The trimmed real fixture has only two city-level single markers at 1440 px (the rest cluster or have no level);
-        // every one of them must find a free side there.
-        if (width === 1440) expect(labels.length).toBeGreaterThanOrEqual(2);
-        console.log(`labels survived: width=${width} showNoData=${showNoData} -> ${labels.length}`);
       });
     }
   }
@@ -105,9 +102,9 @@ describe("Property 30: map labels never overlap markers, clusters or labels (tas
     fc.assert(
       fc.property(fc.integer({ min: 320, max: 1600 }), fc.nat({ max: rows.length - 1 }), (width, k) => {
         const size = mapSize(width);
-        const items = itemsOf(rows, width);
-        const labels = selectMapLabels(rows, rows[k]!.location.locationId, size, items);
-        assertClean(labels, items, rows, size);
+        const markers = markersOf(rows, width);
+        const labels = selectMapLabels(rows, rows[k]!.location.locationId, size, markers);
+        assertClean(labels, markers, rows, size);
       }),
       { numRuns: 100 },
     );
@@ -118,23 +115,19 @@ describe("Property 30: map labels never overlap markers, clusters or labels (tas
     const id = row.location.locationId;
     const size = { width: 1000, height: 800 };
     const w = widthOf(id, [row]);
-    const item = (x: number, y: number, extra: Partial<MarkerItem> = {}, name = id): MarkerItem => ({
-      kind: "marker",
+    const marker = (x: number, y: number, name = id, trueX = x, trueY = y): DodgedMarker => ({
       id: name,
       x,
       y,
-      fx: x / size.width,
-      fy: y / size.height,
-      memberIds: [name],
-      ...extra,
+      trueX,
+      trueY,
+      displaced: x !== trueX || y !== trueY,
     });
-    const own = item(500, 400);
-    // Blockers are cluster items so they need no row.
-    const block = (side: "right" | "left" | "above" | "below"): MarkerItem => {
+    const own = marker(500, 400);
+    // Blockers are plain markers with no row; they only act as obstacles.
+    const block = (side: "right" | "left" | "above" | "below"): DodgedMarker => {
       const b = labelBox(side, 500, 400, w);
-      const cx = (b.x0 + b.x1) / 2;
-      const cy = (b.y0 + b.y1) / 2;
-      return item(cx, cy, { kind: "cluster", memberIds: ["a", "b"] }, `cluster:${side}`);
+      return marker((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, `blocker:${side}`);
     };
     const run = (...blocked: Array<"right" | "left" | "above" | "below">) =>
       selectMapLabels([row], undefined, size, [own, ...blocked.map(block)]);
@@ -149,8 +142,24 @@ describe("Property 30: map labels never overlap markers, clusters or labels (tas
       expect(selectMapLabels([row], id, size, [own, ...all.map(block)])).toEqual([]);
     });
     it("a label that would leave the map box is not placed on that side", () => {
-      const edge = item(size.width - 20, 400);
+      const edge = marker(size.width - 20, 400);
       expect(selectMapLabels([row], undefined, size, [edge])[0]?.side).toBe("left");
+    });
+    it("a leader line from another marker blocks the side it crosses (synthetic)", () => {
+      // Another marker displaced so its leader line runs through the label's right-hand box.
+      const b = labelBox("right", 500, 400, w);
+      const y = (b.y0 + b.y1) / 2;
+      const other = marker(b.x1 + 60, y, "other:leader", b.x0 + 10, y);
+      expect(leaderBox(other)).not.toBeNull();
+      expect(selectMapLabels([row], undefined, size, [own, other])[0]?.side).toBe("left");
+    });
+    it("the label's own leader line also blocks the side it points to (synthetic)", () => {
+      // Own marker displaced to the right of its true point... the leader runs left, so right stays free.
+      const displaced = marker(500, 400, id, 470, 400);
+      expect(selectMapLabels([row], undefined, size, [displaced])[0]?.side).toBe("right");
+      // Own marker displaced to the left of its true point: the leader runs right through the right box.
+      const other = marker(500, 400, id, 530, 400);
+      expect(selectMapLabels([row], undefined, size, [other])[0]?.side).not.toBe("right");
     });
   });
 });

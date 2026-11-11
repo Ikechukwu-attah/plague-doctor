@@ -1,33 +1,82 @@
 import { test, expect } from "@playwright/test";
 import { pinClock } from "./helpers";
 
-/** UI-19.15 to UI-19.17 (doc 16.6): sort control stored in the URL. */
-test.describe("city list sort", () => {
-  test("highest activity first updates the URL, survives reload, and is 44 px", async ({ page }) => {
+/** UI-20.21, UI-20.22 (task 19.3): the column headers sort the places table; the sort lives in the URL. */
+test.describe("places table sort", () => {
+  test.beforeEach(({}, info) => {
+    test.skip(info.project.name === "mobile", "the table is rendered from 768 px; the phone list has no sort control");
+  });
+
+  test("header buttons sort, aria-sort and the URL follow, and the order survives a reload", async ({ page }) => {
     await pinClock(page);
     await page.goto("/");
-    const sort = page.getByLabel("Sort list");
-    await expect(sort).toBeVisible();
-    const box = await sort.boundingBox();
-    expect(box!.height).toBeGreaterThanOrEqual(44);
-    await expect(sort).toHaveValue("az");
+    const table = page.locator("table[data-places-table]");
+    await expect(table).toBeVisible();
+    await expect(page.getByLabel("Sort list")).toHaveCount(0);
 
+    const header = (name: string) => table.getByRole("columnheader", { name });
+    await expect(header("City")).toHaveAttribute("aria-sort", "ascending");
+    await expect(header("PHAC level")).toHaveAttribute("aria-sort", "none");
+
+    // First click: ascending by that column.
     await expect(async () => {
-      await sort.selectOption("activity");
-      await expect(page).toHaveURL(/sort=activity/, { timeout: 2_000 });
+      await header("PHAC level").getByRole("button").click();
+      await expect(page).toHaveURL(/sort=level(&|$)/, { timeout: 2_000 });
     }).toPass({ timeout: 20_000 });
+    await expect(header("PHAC level")).toHaveAttribute("aria-sort", "ascending");
+    await expect(header("City")).toHaveAttribute("aria-sort", "none");
 
-    // Any "No data" row must come after every row that has a level.
-    const texts = await page.locator("section[aria-label='Cities'] ul > li").allInnerTexts();
-    const firstNoData = texts.findIndex((t) => /No data|No monitoring site/.test(t));
-    if (firstNoData >= 0) {
-      for (const t of texts.slice(firstNoData)) expect(t).toMatch(/No data|No monitoring site/);
-    }
+    // Second click: descending, highest PHAC category first; rows without a level come last.
+    await header("PHAC level").getByRole("button").click();
+    await expect(page).toHaveURL(/sort=level%3Adesc/);
+    await expect(header("PHAC level")).toHaveAttribute("aria-sort", "descending");
+    const rows = await table.locator("tbody tr").evaluateAll((trs) =>
+      trs.map((tr) => (tr.querySelector("[data-activity]") as HTMLElement | null)?.dataset.activity ?? "none"),
+    );
+    const firstUnknown = rows.findIndex((a) => a === "unknown" || a === "none");
+    if (firstUnknown >= 0) for (const a of rows.slice(firstUnknown)) expect(["unknown", "none"]).toContain(a);
+    const known = rows.slice(0, firstUnknown < 0 ? rows.length : firstUnknown);
+    const rank: Record<string, number> = { high: 3, moderate: 2, low: 1, not_detected: 0 };
+    expect(known.map((a) => rank[a])).toEqual([...known.map((a) => rank[a]!)].sort((a, b) => b - a));
 
+    // Unknown stays last in the other direction too.
+    await header("PHAC level").getByRole("button").click();
+    await expect(page).toHaveURL(/sort=level(&|$)/);
+    const asc = await table.locator("tbody tr").evaluateAll((trs) =>
+      trs.map((tr) => (tr.querySelector("[data-activity]") as HTMLElement | null)?.dataset.activity ?? "none"),
+    );
+    expect(asc.at(-1)).toMatch(/unknown|none/);
+
+    await header("PHAC level").getByRole("button").click();
+    await expect(page).toHaveURL(/sort=level%3Adesc/);
     await page.reload();
-    await expect(page.getByLabel("Sort list")).toHaveValue("activity");
+    await expect(table).toBeVisible();
+    await expect(header("PHAC level")).toHaveAttribute("aria-sort", "descending");
 
-    await page.getByLabel("Sort list").selectOption("az");
+    // Back to City: ascending is the default and is not written to the URL.
+    await header("City").getByRole("button").click();
     await expect(page).not.toHaveURL(/sort=/);
+    await expect(header("City")).toHaveAttribute("aria-sort", "ascending");
+  });
+
+  test("the legacy sort=activity link opens as PHAC level, highest first", async ({ page }) => {
+    await pinClock(page);
+    await page.goto("/?virus=covid19&sort=activity");
+    const table = page.locator("table[data-places-table]");
+    await expect(table.getByRole("columnheader", { name: "PHAC level" })).toHaveAttribute("aria-sort", "descending");
+  });
+
+  test("announces the new order in the live region", async ({ page }) => {
+    await pinClock(page);
+    await page.goto("/");
+    const table = page.locator("table[data-places-table]");
+    await expect(table).toBeVisible();
+    await expect(async () => {
+      await table.getByRole("columnheader", { name: "Sample week" }).getByRole("button").click();
+      await expect(page.getByRole("status").filter({ hasText: /Sorted by Sample week, (oldest|newest) first/ })).toHaveCount(
+        1,
+        { timeout: 2_000 },
+      );
+    }).toPass({ timeout: 20_000 });
   });
 });

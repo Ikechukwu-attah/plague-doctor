@@ -13,12 +13,12 @@ Natural Earth data is in the public domain (https://www.naturalearthdata.com/abo
   - SHA-256 of download: `2963ee08f7743f13f37d5243acd77a2f7a510e26a36c7e04b920f1b381f2b251`
   - Page: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-populated-places/
 
-Downloaded: 2026-11-07
+Downloaded: 2026-11-10
 
 ## Processing
 
 - Provinces filtered to Canada (13 provinces and territories) and simplified with mapshaper (`5%`, keep-shapes). Output is `canada-provinces.geojson` (properties `pruid`, `name`).
-- Pre-projected with d3-geo conic conformal (parallels 49, 77, rotate 96, 0), viewBox 1000 x 851, into `canada-provinces.projected.json`.
+- Pre-projected with d3-geo conic conformal (parallels 49, 77, rotate 96, 0), viewBox 1600 x 900 (about 16:9), into `canada-provinces.projected.json`. The projection is fitted with `fitExtent` (padding 40) over every point in `city-points.json`, so the populated southern band fills the width; the outlines are clipped to the box (`clipExtent`), which crops the northern territories at the top edge instead of shrinking the map to include them. Outlines and points share this one projected space.
 - `city-points.json`: a location gets a point only if its name (and province, when known) matches exactly one Natural Earth populated place, or it has a hand-checked override carrying a `citation`. Coordinates always come from Natural Earth. Outlines are decorative; no data is attached to them.
 
 ## Regenerate

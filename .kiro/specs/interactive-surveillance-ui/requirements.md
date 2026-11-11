@@ -398,3 +398,44 @@ Source: `docs/MILESTONE_4_REVIEW_FIXES.md` (doc items 16.1 to 16.12 map to crite
 37. THE Test_Suite SHALL assert that a City_Page with the dialogs closed contains no repeated definition text and that a No-data card contains no PHAC level word (UI-12.6), without weakening the existing assertion.
 38. THE Canada_Map panel SHALL show a skeleton immediately and its first marker SHALL appear without a blank panel.
 39. THE Canada_Map SHALL place a marker name label only where its box intersects no marker, cluster or other label, trying right, left, above and below, and SHALL omit the label when no side fits (the marker keeps its accessible name and its list row).
+
+### Requirement 20: Landing page layout fixes (Milestone 5)
+
+**User Story:** As a visitor, I want a landing page with no empty space below the footer, a map where every city has its own clickable marker, and a sortable table of all places, so that I can find and open any place quickly.
+
+Source: `docs/MILESTONE_5_LANDING_REDESIGN.md` (the doc calls this "task group 18"; it is recorded as task group 19 here, and doc items 18.1 to 18.4 map to tasks 19.1 to 19.4). This requirement SUPERSEDES criteria 19.1, 19.2, 19.3 and 19.4 (numbered clustering and the chooser), the layout part of 19.18 (the roughly 340 px list column) and the location of the sort control in 19.15 to 19.17 (the sort moves into the table headers), wherever they conflict with the criteria below. Criteria 19.5 to 19.14, 19.19 to 19.38 and the label non-overlap rule 19.39 remain in force. Sort order semantics (19.16) and the URL `sort` parameter (19.17) are unchanged. The Evidence_Engine (`src/evidence/**`), the Wording_Guard, share text and licence text are unchanged; no forecast, risk score or "safe" verdict is introduced; all new copy comes from `src/ui-copy/**`. In this requirement, "Places_Table" is the full-width "All places" table, "Marker_Dodge" is the deterministic collision-relaxation step that offsets marker display positions, "Hit_Box" is a marker's clickable area, "Footer_Bottom" is the bottom edge of the page footer, and "Landing_Page" is the `/` route.
+
+#### Acceptance Criteria
+
+1. THE project SHALL keep `documentElement.scrollHeight` within 2 px of the Footer_Bottom on `/`, `/plan`, `/methods`, `/card` and `/city/toronto` at viewport widths of 1440 and 390.
+2. THE global `.visually-hidden` utility SHALL use `position: absolute`, `width: 1px`, `height: 1px`, `margin: -1px`, `overflow: hidden`, `clip-path: inset(50%)` and `white-space: nowrap`.
+3. THE list scroller and each list row that contains a `.visually-hidden` element SHALL be positioned with `position: relative`.
+4. THE Test_Suite SHALL include a Playwright test asserting criterion 20.1 for every route and width named there.
+5. THE Canada_Map projection SHALL be fitted to the map panel with `fitExtent` over the bounding box of all monitored locations and the provinces containing them, with padding.
+6. THE Canada_Map SHALL crop the territories at the top edge of the panel instead of shrinking the fitted extent to include them.
+7. THE project SHALL regenerate the projected geometry and city points in `scripts/build-geometry.ts` for the fitted extent and keep the city points in the same projected space as the province outlines.
+8. THE Canada_Map SHALL render one marker per mapped location and SHALL NOT render numbered cluster markers or a cluster chooser.
+9. WHEN two or more Hit_Boxes would overlap, THE Marker_Dodge SHALL move the display positions apart by deterministic collision relaxation.
+10. THE Marker_Dodge SHALL draw a thin leader line from each displaced marker to its true projected coordinate and SHALL leave the true coordinates unchanged.
+11. THE Marker_Dodge SHALL keep each marker within a fixed maximum displacement of its true point and SHALL return identical output for identical input.
+12. THE Canada_Map SHALL draw each marker's visible dot at about 14 px with a Hit_Box of at least 24 by 24 CSS pixels (WCAG 2.5.8).
+13. THE Canada_Map SHALL keep every marker's Hit_Box from overlapping any other marker's Hit_Box.
+14. THE Test_Suite SHALL include a Playwright test asserting that, for every marker at viewport widths of 1440 and 1024, `document.elementFromPoint` at the marker centre returns that marker.
+15. WHERE the viewport width is 390, THE Test_Suite SHALL exercise the markers through the "Show map" toggle path.
+16. THE Canada_Map SHALL show a name label for the selected marker and for the hovered marker.
+17. THE Canada_Map SHALL show name labels for the comp-labelled cities where room allows, and every label box SHALL intersect no marker, no leader line and no other label (criterion 19.39 retained and extended to leader lines).
+18. WHILE the viewport width is 1024 px or more, THE Canada_Map SHALL span the full content width at about a 16:9 aspect ratio with a height of at most 70vh.
+19. WHILE the viewport width is 1024 px or more, THE Landing_Page SHALL show the Places_Table, titled "All places", full-width below the Canada_Map.
+20. THE Places_Table SHALL have the columns City, Province, PHAC level, Trend, Sample week and Freshness.
+21. WHEN a Places_Table column header button is activated, THE Places_Table SHALL sort by that column and set `aria-sort` on that header to match the sort stored in the URL.
+22. THE Landing_Page SHALL remove the separate "Sort list" select, and THE URL SHALL keep the sort in the existing `sort` parameter.
+23. WHEN text is entered in the search box, THE Places_Table SHALL show only the rows that match.
+24. THE Landing_Page SHALL scroll with the page and SHALL NOT contain an inner scroll box for the Places_Table.
+25. WHILE the viewport width is 768 px or more, THE Places_Table SHALL render each row on one line.
+26. WHEN a place name is too long for its cell, THE Places_Table SHALL ellipsize it, expose the full name in the `title` attribute and keep the full name in the row's accessible name.
+27. WHEN a Places_Table row is activated, THE UI SHALL open the same city drawer that the matching marker opens.
+28. WHILE the viewport width is below 768 px, THE Landing_Page SHALL show a stacked list with the place name and a right-aligned status badge on line 1, and the trend and the "week of" date left-aligned under the name on line 2, with no overlapping text.
+29. WHILE the viewport width is 1024 px or more, THE Landing_Page SHALL show the virus chips, "Show discontinued sites", "Show places without data" and "Browse as list" on one aligned row.
+30. WHILE the viewport width is below 1024 px, THE controls row SHALL wrap without overlapping or clipping any control.
+31. THE project SHALL keep the Lighthouse mobile median of three runs on `/` at performance 90 or above, LCP at 2.5 s or below and CLS below 0.1, and SHALL report before and after values.
+32. THE project SHALL update `docs/KIRO_USAGE.md` with a Milestone 5 section and SHALL leave `src/evidence/**` unchanged.

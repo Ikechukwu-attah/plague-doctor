@@ -8,17 +8,19 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { buildLandingRows } from "../../src/lib/view/landing-rows";
 import type { LandingRow } from "../../src/lib/view/landing-rows";
 import { selectMapLabels, MAP_LABEL_CAP } from "../../src/lib/view/map-labels";
-import { clusterMarkers } from "../../src/lib/view/marker-clusters";
+import { dodgeMarkers } from "../../src/lib/view/marker-dodge";
 import { CanadaMap } from "../../src/components/landing/CanadaMap";
-import { MAP_H, MAP_W } from "../../src/components/landing/MapMarker";
+import { MAP_H, MAP_W } from "../../src/components/landing/map-geometry";
 import type { LocationEntry } from "../../src/evidence/types";
 import { loadTrendFixture } from "./helpers";
-const SIZE = { width: 1440, height: Math.round(1440 * 0.851) };
+const SIZE = { width: 1440, height: Math.round((1440 * MAP_H) / MAP_W) };
 function itemsFor(rs: readonly LandingRow[], size = SIZE) {
-  return clusterMarkers(
-    rs.filter((r) => r.point).map((r) => ({ id: r.location.locationId, fx: r.point!.x / MAP_W, fy: r.point!.y / MAP_H })),
-    size,
-  );
+  return dodgeMarkers(
+    rs
+      .filter((r) => r.point)
+      .map((r) => ({ id: r.location.locationId, x: (r.point!.x / MAP_W) * size.width, y: (r.point!.y / MAP_H) * size.height })),
+    { bounds: size },
+  ).markers;
 }
 function rows(): LandingRow[] {
   const seen = new Map<string, LocationEntry>();
@@ -61,7 +63,7 @@ describe("selectMapLabels (task 15.4)", () => {
   });
   it("always includes the selected location, even a site-level one, first", () => {
     const items = itemsFor(all);
-    const singles = new Set(items.filter((i) => i.kind === "marker").map((i) => i.id));
+    const singles = new Set(items.map((i) => i.id));
     const sel = all.find((r) => r.point && r.observation?.grouping === "site" && singles.has(r.location.locationId));
     if (!sel) return;
     const labels = selectMapLabels(all, sel.location.locationId, SIZE, items);

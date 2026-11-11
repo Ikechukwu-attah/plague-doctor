@@ -19,7 +19,7 @@ const RUNS = Number(process.env.PERF_RUNS ?? 3);
 // After medians (5 runs): throttled 3478 ms, unthrottled 320 ms, skeleton panel 62-340 ms. Budgets are about 1.5x-2x.
 const BUDGET_MS = { throttledFirstMarker: 6000, unthrottledFirstMarker: 2500, panelFirstPaint: 1000 };
 
-const MARKER = "[data-map] button[data-location-id], [data-map] button[data-cluster-id]";
+const MARKER = "[data-map] button[data-location-id]";
 
 interface Run {
   firstPanel: number | null; // skeleton or map panel present with a non-empty box
